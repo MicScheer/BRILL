@@ -1,0 +1,30 @@
+PyBrill
+-------
+
+Linux:
+
+To run pyBrill you need python3 gfortran to compile urad_phase_main.f
+Bash is assumed as shell.
+
+1. Step:
+export BRILL=<The directory, which contains python/pyBrill.py>
+
+2. Step
+cd $BRILL
+$BRILL/shell/compile_urad_phase.sh
+
+3.
+cd $BRILL/stage
+python3 -i ../python/pyBrill.py
+
+Windows:
+
+1. Step:
+Check ...\bat\set_brill_environment.bat and excute it, or set the
+system variables BRILL, PYTHONHOME, PYTHONPATH etc. according to your
+system.
+
+2. Step:
+
+Run %BRILL%\bat\pyBrill.bat
+
