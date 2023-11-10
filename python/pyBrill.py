@@ -63,7 +63,12 @@ clight1,cgam1,cq1,alpha1,dnull1,done1,sqrttwopi1,\
 emassg1,emasse1,echarge1,emasskg1,eps01,erad1,\
 grarad1,hbar1,hbarev1,hplanck1,pol1con1,pol2con1,\
 radgra1,rmu01,rmu04pi1,twopi1,pi1,halfpi1,wtoe1,gaussn1,ck934,\
-ecdipev,ecdipkev
+ecdipev,ecdipkev,g1const,g1max,h2const,h2max
+
+g1max=0.9212
+g1const=2.457e13
+h2max=1.474
+h2const=1.327e13
 
 hbarev1=6.58211889e-16
 clight1=2.99792458e8
@@ -95,6 +100,7 @@ alpha1=echarge1**2/(4.0e0*pi1*eps01*hbar1*clight1)
 gaussn1=1.0e0/(twopi1)**0.5
 
 ck934=echarge1/(2.0e0*pi1*emasskg1*clight1)/100.0e0
+
 def fqnke(n,K,Kyx):
 
     #NOTE: x and y reversed compared to brill_ellip.kumac
@@ -374,9 +380,9 @@ def write_brill(fout="brilliance.dat"):
     Fout.close()
 #enddef write_brill()
 global Mthreads,Step,Nelec,Noranone,Icohere,Ihbunch,Bunchlen, \
-Bunchcharge,Modebunch,PinX,PinY,PinZ,PinW,PinH,NpinY,NpinZ,Modepin, \
+Bunchcharge,Modebunch,PinX,PinY,PinZ,PinW,PinH,NpinY,NpinZ,modepin,modesphere, \
 Shift,Nper,Nharm,Harm,Beffv,Beffh,Nepho,EphMin,EphMax, \
-Disp,Dispp,Pherror,Ifixseed,ScreenWidth, ScreenHeight,Vsetup_Plot
+Disph,Dispph,Dispv,Disppv,Pherror,Ifixseed,ScreenWidth, ScreenHeight,Vsetup_Plot
 
 global Esel
 global BeamPar,UnduPar,SpecPar,BrillPar,PlotPar
@@ -478,9 +484,9 @@ def _set_uname():
   Unamelist = [ \
   'Mthreads','Ebeam','Curr','Step','Nelec','Noranone','Icohere','Ihbunch', \
   'Bunchlen','BunchCharge','Modebunch','PinX','PinY','PinZ','PinW','PinH', \
-  'NpinY','NpinZ','Modepin','Perlen','Shift','Nper','Nharm', \
+  'NpinY','NpinZ','Modepin','ModeSphere','Perlen','Shift','Nper','Nharm', \
   'Harm','Beffv','Beffh','Nepho','EphMin','EphMax','Espread','BetaH', \
-  'BetaV','EmitH','EmitV','Disp','Dispp','Modeph','Pherror']
+  'BetaV','EmitH','EmitV','Disph','Dispph','Dispv','Disppv','Modeph','Pherror']
 
   Useed = [376577121, 52147852, -1273034815, -1963249100, 1195262240, \
   -1718716574, -224354675, 432587481, 1692325775, 1934175653, \
@@ -517,10 +523,11 @@ Calculated_Brill, Fig, Ax, Grid, Calculated_Spec
 global MSetup,MBrill,MSpec
 global Kellip
 
-BeamPar = ['Ebeam','Curr','EmitH','EmitV','BetaH','BetaV','SigE','Disp','Dispp']
+BeamPar = ['Ebeam','Curr','EmitH','EmitV','BetaH','BetaV','SigE', \
+'Disph','Dispph','Dispv','Disppv']
 UnduPar = ['Perlen','Nper','Beffv','Beffh','Nharm','Harmonic','Shift']
 BrillPar = ['nKvals','Kmin','Kmax','Nmin','Nmax','Mode']
-SpecPar = ['Nelec','Modepin','Nepho','EphMin','EphMax','PinX', \
+SpecPar = ['Nelec','Modepin','ModeSphere','Nepho','EphMin','EphMax','PinX', \
 'PinY','PinZ','PinW','PinH','NpinZ','NpinY','Step','Pherror','Ifixseed']
 PlotPar = ['Mode3d','Markersize','Linewidth','Linecolor']
 
@@ -578,8 +585,8 @@ def _sel_Esel():
   global Dsetup,Vsetup,Vsetup_Beam,Vsetup_Spec,Vsetup_Brill,Vsetup_Undu, \
   Vsetup_Plot, IEsel,Esel
 
-  global Curr,EmitX,EmitV,BetaH,BetaV,SigE,Disp,Dispp,L,N,Beffv,Beffh,Nharm, \
-  Harm,Shift,nKvals,Kmin,Kmax,Nmin,Nmax,Mode,Nelec,Modepin,Nepho, \
+  global Curr,EmitX,EmitV,BetaH,BetaV,SigE,Disph,Dispph,Dispv,Disppv,L,N,Beffv,Beffh,Nharm, \
+  Harm,Shift,nKvals,Kmin,Kmax,Nmin,Nmax,Mode,Nelec,modepin,modesphere,Nepho, \
   EphMin,EphMax,PinX,PinY,PinZ,PinW,PinH,NpinZ,NpinY,Step,Pherror, \
   Ifixseed,Kellip
 
@@ -590,9 +597,9 @@ def _sel_Esel():
   Vsetup_Spec, LastSetUp_Spec, SetUp_Spec, ScreenWidth, ScreenHeight
 
   global Mthreads,Step,Nelec,Noranone,Icohere,Ihbunch,Bunchlen, \
-  Bunchcharge,Modebunch,PinX,PinY,PinZ,PinW,PinH,NpinY,NpinZ,Modepin, \
+  Bunchcharge,Modebunch,PinX,PinY,PinZ,PinW,PinH,NpinY,NpinZ,modepin,modesphere, \
   Shift,Nper,Nharm,Harm,Beffv,Beffh,Nepho,EphMin,EphMax, \
-  Disp,Dispp,Pherror,Ifixseed
+  Disph,Dispph,Dispv,Disppv,Pherror,Ifixseed
 
   global nsto,nfld,nflx,nbun,Esel
   global BeamPar,UnduPar,SpecPar,BrillPar,PlotPar
@@ -759,9 +766,9 @@ def _setup_esel():
   Vsetup_Spec, LastSetUp_Spec, SetUp_Spec, ScreenWidth, ScreenHeight
 
   global Mthreads,Step,Nelec,Noranone,Icohere,Ihbunch,Bunchlen, \
-  Bunchcharge,Modebunch,PinX,PinY,PinZ,PinW,PinH,NpinY,NpinZ,Modepin, \
+  Bunchcharge,Modebunch,PinX,PinY,PinZ,PinW,PinH,NpinY,NpinZ,modepin,modesphere, \
   Shift,Nper,Nharm,Harm,Beffv,Beffh,Nepho,EphMin,EphMax, \
-  Disp,Dispp,Pherror,Ifixseed
+  Disph,Dispph,Dispv,Disppv,Pherror,Ifixseed
 
   global nsto,nfld,nflx,nbun,Esel
   global BeamPar,UnduPar,SpecPar,BrillPar,PlotPar
@@ -815,9 +822,9 @@ def _ini_Esel():
   Vsetup_Spec, LastSetUp_Spec, SetUp_Spec, ScreenWidth, ScreenHeight
 
   global Mthreads,Step,Nelec,Noranone,Icohere,Ihbunch,Bunchlen, \
-  Bunchcharge,Modebunch,PinX,PinY,PinZ,PinW,PinH,NpinY,NpinZ,Modepin, \
+  Bunchcharge,Modebunch,PinX,PinY,PinZ,PinW,PinH,NpinY,NpinZ,modepin,modesphere, \
   Shift,Nper,Nharm,Harm,Beffv,Beffh,Nepho,EphMin,EphMax, \
-  Disp,Dispp,Pherror,Ifixseed
+  Disph,Dispph,Dispv,Disppv,Pherror,Ifixseed
 
   global nsto,nfld,nflx,nbun,Esel
   global BeamPar,UnduPar,SpecPar,BrillPar,PlotPar
@@ -857,9 +864,9 @@ def _pFdPin(key='s0'):
   Vsetup_Spec, LastSetUp_Spec, SetUp_Spec, ScreenWidth, ScreenHeight
 
   global Mthreads,Step,Nelec,Noranone,Icohere,Ihbunch,Bunchlen, \
-  Bunchcharge,Modebunch,PinX,PinY,PinZ,PinW,PinH,NpinY,NpinZ,Modepin, \
+  Bunchcharge,Modebunch,PinX,PinY,PinZ,PinW,PinH,NpinY,NpinZ,modepin,modesphere, \
   Shift,Nper,Nharm,Harm,Beffv,Beffh,Nepho,EphMin,EphMax, \
-  Disp,Dispp,Pherror,Ifixseed
+  Disph,Dispph,Dispv,Disppv,Pherror,Ifixseed
 
   global nsto,nfld,nflx,nbun,Esel
   global BeamPar,UnduPar,SpecPar,BrillPar,PlotPar
@@ -1031,9 +1038,9 @@ def _pElec(key='zizpi'):
   Vsetup_Spec, LastSetUp_Spec, SetUp_Spec, ScreenWidth, ScreenHeight
 
   global Mthreads,Step,Nelec,Noranone,Icohere,Ihbunch,Bunchlen, \
-  Bunchcharge,Modebunch,PinX,PinY,PinZ,PinW,PinH,NpinY,NpinZ,Modepin, \
+  Bunchcharge,Modebunch,PinX,PinY,PinZ,PinW,PinH,NpinY,NpinZ,modepin,modesphere, \
   Shift,Nper,Nharm,Harm,Beffv,Beffh,Nepho,EphMin,EphMax, \
-  Disp,Dispp,Pherror,Ifixseed
+  Disph,Dispph,Dispv,Disppv,Pherror,Ifixseed
 
   global nsto,nfld,nflx,nbun,Esel
   global BeamPar,UnduPar,SpecPar,BrillPar,PlotPar
@@ -1090,9 +1097,9 @@ def _pFdSpec(key='s0'):
   Vsetup_Spec, LastSetUp_Spec, SetUp_Spec, ScreenWidth, ScreenHeight
 
   global Mthreads,Step,Nelec,Noranone,Icohere,Ihbunch,Bunchlen, \
-  Bunchcharge,Modebunch,PinX,PinY,PinZ,PinW,PinH,NpinY,NpinZ,Modepin, \
+  Bunchcharge,Modebunch,PinX,PinY,PinZ,PinW,PinH,NpinY,NpinZ,modepin,modesphere, \
   Shift,Nper,Nharm,Harm,Beffv,Beffh,Nepho,EphMin,EphMax, \
-  Disp,Dispp,Pherror,Ifixseed
+  Disph,Dispph,Dispv,Disppv,Pherror,Ifixseed
 
   global nsto,nfld,nflx,nbun,Esel
   global BeamPar,UnduPar,SpecPar,BrillPar,PlotPar
@@ -1144,9 +1151,9 @@ def _pFluxSpec(key='s0'):
   Vsetup_Spec, LastSetUp_Spec, SetUp_Spec, ScreenWidth, ScreenHeight
 
   global Mthreads,Step,Nelec,Noranone,Icohere,Ihbunch,Bunchlen, \
-  Bunchcharge,Modebunch,PinX,PinY,PinZ,PinW,PinH,NpinY,NpinZ,Modepin, \
+  Bunchcharge,Modebunch,PinX,PinY,PinZ,PinW,PinH,NpinY,NpinZ,modepin,modesphere, \
   Shift,Nper,Nharm,Harm,Beffv,Beffh,Nepho,EphMin,EphMax, \
-  Disp,Dispp,Pherror,Ifixseed
+  Disph,Dispph,Dispv,Disppv,Pherror,Ifixseed
 
   global nsto,nfld,nflx,nbun,Esel
   global BeamPar,UnduPar,SpecPar,BrillPar,PlotPar
@@ -1207,9 +1214,9 @@ def _write_urad_phase_nam():
   Vsetup_Spec, LastSetUp_Spec, SetUp_Spec, ScreenWidth, ScreenHeight
 
   global Mthreads,Step,Nelec,Noranone,Icohere,Ihbunch,Bunchlen, \
-  Bunchcharge,Modebunch,PinX,PinY,PinZ,PinW,PinH,NpinY,NpinZ,Modepin, \
+  Bunchcharge,Modebunch,PinX,PinY,PinZ,PinW,PinH,NpinY,NpinZ,modepin,modesphere, \
   Shift,Nper,Nharm,Harm,Beffv,Beffh,Nepho,EphMin,EphMax, \
-  Disp,Dispp,Pherror,Ifixseed
+  Disph,Dispph,Dispv,Disppv,Pherror,Ifixseed
 
   global nsto,nfld,nflx,nbun,Esel
   global BeamPar,UnduPar,SpecPar,BrillPar,PlotPar
@@ -1255,9 +1262,9 @@ def _write_urad_phase_nam_alt():
   Vsetup_Spec, LastSetUp_Spec, SetUp_Spec, ScreenWidth, ScreenHeight
 
   global Mthreads,Step,Nelec,Noranone,Icohere,Ihbunch,Bunchlen, \
-  Bunchcharge,Modebunch,PinX,PinY,PinZ,PinW,PinH,NpinY,NpinZ,Modepin, \
+  Bunchcharge,Modebunch,PinX,PinY,PinZ,PinW,PinH,NpinY,NpinZ,modepin,modesphere, \
   Shift,Nper,Nharm,Harm,Beffv,Beffh,Nepho,EphMin,EphMax, \
-  Disp,Dispp,Pherror,Ifixseed
+  Disph,Dispph,Dispv,Disppv,Pherror,Ifixseed
 
   global nsto,nfld,nflx,nbun,Esel
   global BeamPar,UnduPar,SpecPar,BrillPar,PlotPar
@@ -1321,8 +1328,8 @@ def _dvsetup():
   global Dsetup,Vsetup,Vsetup_Beam,Vsetup_Spec,Vsetup_Brill,Vsetup_Undu, \
   Vsetup_Plot, IEsel,Esel
 
-  global Curr,EmitX,EmitV,BetaH,BetaV,SigE,Disp,Dispp,L,N,Beffv,Beffh,Nharm, \
-  Harm,Shift,nKvals,Kmin,Kmax,Nmin,Nmax,Mode,Nelec,Modepin,Nepho, \
+  global Curr,EmitX,EmitV,BetaH,BetaV,SigE,Disph,Dispph,Dispv,Disppv,L,N,Beffv,Beffh,Nharm, \
+  Harm,Shift,nKvals,Kmin,Kmax,Nmin,Nmax,Mode,Nelec,modepin,modesphere,Nepho, \
   EphMin,EphMax,PinX,PinY,PinZ,PinW,PinH,NpinZ,NpinY,Step,Pherror, \
   Ifixseed,Kellip
 
@@ -1461,9 +1468,9 @@ def _set_plot_spec():
   Vsetup_Spec, LastSetUp_Spec, SetUp_Spec, ScreenWidth, ScreenHeight
 
   global Mthreads,Step,Nelec,Noranone,Icohere,Ihbunch,Bunchlen, \
-  Bunchcharge,Modebunch,PinX,PinY,PinZ,PinW,PinH,NpinY,NpinZ,Modepin, \
+  Bunchcharge,Modebunch,PinX,PinY,PinZ,PinW,PinH,NpinY,NpinZ,modepin,modesphere, \
   Shift,Nper,Nharm,Harm,Beffv,Beffh,Nepho,EphMin,EphMax, \
-  Disp,Dispp,Pherror,Ifixseed
+  Disph,Dispph,Dispv,Disppv,Pherror,Ifixseed
 
   global nsto,nfld,nflx,nbun,Esel
   global BeamPar,UnduPar,SpecPar,BrillPar,PlotPar
@@ -1561,9 +1568,9 @@ def _setup_plot():
   Vsetup_Spec, LastSetUp_Spec, SetUp_Spec, ScreenWidth, ScreenHeight
 
   global Mthreads,Step,Nelec,Noranone,Icohere,Ihbunch,Bunchlen, \
-  Bunchcharge,Modebunch,PinX,PinY,PinZ,PinW,PinH,NpinY,NpinZ,Modepin, \
+  Bunchcharge,Modebunch,PinX,PinY,PinZ,PinW,PinH,NpinY,NpinZ,modepin,modesphere, \
   Shift,Nper,Nharm,Harm,Beffv,Beffh,Nepho,EphMin,EphMax, \
-  Disp,Dispp,Pherror,Ifixseed
+  Disph,Dispph,Dispv,Disppv,Pherror,Ifixseed
 
   global nsto,nfld,nflx,nbun,Esel
   global BeamPar,UnduPar,SpecPar,BrillPar,PlotPar
@@ -1665,9 +1672,9 @@ def _setup_spec():
   Vsetup_Spec, LastSetUp_Spec, SetUp_Spec, ScreenWidth, ScreenHeight
 
   global Mthreads,Step,Nelec,Noranone,Icohere,Ihbunch,Bunchlen, \
-  Bunchcharge,Modebunch,PinX,PinY,PinZ,PinW,PinH,NpinY,NpinZ,Modepin, \
+  Bunchcharge,Modebunch,PinX,PinY,PinZ,PinW,PinH,NpinY,NpinZ,modepin,modesphere, \
   Shift,Nper,Nharm,Harm,Beffv,Beffh,Nepho,EphMin,EphMax, \
-  Disp,Dispp,Pherror,Ifixseed
+  Disph,Dispph,Dispv,Disppv,Pherror,Ifixseed
 
   global nsto,nfld,nflx,nbun,Esel
   global BeamPar,UnduPar,SpecPar,BrillPar,PlotPar
@@ -1775,9 +1782,9 @@ def _setup_brill():
   Vsetup_Spec, LastSetUp_Spec, SetUp_Spec, ScreenWidth, ScreenHeight
 
   global Mthreads,Step,Nelec,Noranone,Icohere,Ihbunch,Bunchlen, \
-  Bunchcharge,Modebunch,PinX,PinY,PinZ,PinW,PinH,NpinY,NpinZ,Modepin, \
+  Bunchcharge,Modebunch,PinX,PinY,PinZ,PinW,PinH,NpinY,NpinZ,modepin,modesphere, \
   Shift,Nper,Nharm,Harm,Beffv,Beffh,Nepho,EphMin,EphMax, \
-  Disp,Dispp,Pherror,Ifixseed
+  Disph,Dispph,Dispv,Disppv,Pherror,Ifixseed
 
   global nsto,nfld,nflx,nbun,Esel
   global BeamPar,UnduPar,SpecPar,BrillPar,PlotPar
@@ -1882,9 +1889,9 @@ def _setup_undu():
   Vsetup_Spec, LastSetUp_Spec, SetUp_Spec, ScreenWidth, ScreenHeight
 
   global Mthreads,Step,Nelec,Noranone,Icohere,Ihbunch,Bunchlen, \
-  Bunchcharge,Modebunch,PinX,PinY,PinZ,PinW,PinH,NpinY,NpinZ,Modepin, \
+  Bunchcharge,Modebunch,PinX,PinY,PinZ,PinW,PinH,NpinY,NpinZ,modepin,modesphere, \
   Shift,Nper,Nharm,Harm,Beffv,Beffh,Nepho,EphMin,EphMax, \
-  Disp,Dispp,Pherror,Ifixseed
+  Disph,Dispph,Dispv,Disppv,Pherror,Ifixseed
 
   global nsto,nfld,nflx,nbun,Esel
   global BeamPar,UnduPar,SpecPar,BrillPar,PlotPar
@@ -1992,9 +1999,9 @@ def _setup_beam():
   Vsetup_Spec, LastSetUp_Spec, SetUp_Spec, ScreenWidth, ScreenHeight
 
   global Mthreads,Step,Nelec,Noranone,Icohere,Ihbunch,Bunchlen, \
-  Bunchcharge,Modebunch,PinX,PinY,PinZ,PinW,PinH,NpinY,NpinZ,Modepin, \
+  Bunchcharge,Modebunch,PinX,PinY,PinZ,PinW,PinH,NpinY,NpinZ,modepin,modesphere, \
   Shift,Nper,Nharm,Harm,Beffv,Beffh,Nepho,EphMin,EphMax, \
-  Disp,Dispp,Pherror,Ifixseed
+  Disph,Dispph,Dispv,Disppv,Pherror,Ifixseed
 
   global nsto,nfld,nflx,nbun,Esel
   global BeamPar,UnduPar,SpecPar,BrillPar,PlotPar
@@ -2057,8 +2064,8 @@ def _readlastrun():
   global Dsetup,Vsetup,Vsetup_Beam,Vsetup_Spec,Vsetup_Brill,Vsetup_Undu, \
   Vsetup_Plot, IEsel,Esel
 
-  global Curr,EmitX,EmitV,BetaH,BetaV,SigE,Disp,Dispp,L,N,Beffv,Beffh,Nharm, \
-  Harm,Shift,nKvals,Kmin,Kmax,Nmin,Nmax,Mode,Nelec,Modepin,Nepho, \
+  global Curr,EmitX,EmitV,BetaH,BetaV,SigE,Disph,Dispph,Dispv,Disppv,L,N,Beffv,Beffh,Nharm, \
+  Harm,Shift,nKvals,Kmin,Kmax,Nmin,Nmax,Mode,Nelec,modepin,modesphere,Nepho, \
   EphMin,EphMax,PinX,PinY,PinZ,PinW,PinH,NpinZ,NpinY,Step,Pherror, \
   Ifixseed,Kellip
 
@@ -2340,13 +2347,13 @@ def _UpdateVars():
   emassg1,emasse1,echarge1,emasskg1,eps01,erad1,\
   grarad1,hbar1,hbarev1,hplanck1,pol1con1,pol2con1,\
   radgra1,rmu01,rmu04pi1,twopi1,pi1,halfpi1,wtoe1,gaussn1,ck934,\
-  ecdipev,ecdipkev
+  ecdipev,ecdipkev,g1const,g1max,h2const,h2max
 
   global Dsetup,Vsetup,Vsetup_Beam,Vsetup_Spec,Vsetup_Brill,Vsetup_Undu, \
   Vsetup_Plot, IEsel,Esel
 
-  global Curr,EmitX,EmitV,BetaH,BetaV,SigE,Disp,Dispp,L,N,Beffv,Beffh,Nharm, \
-  Harm,Shift,nKvals,Kmin,Kmax,Nmin,Nmax,Mode,Nelec,Modepin,Nepho, \
+  global Curr,EmitX,EmitV,BetaH,BetaV,SigE,Disph,Dispph,Dispv,Disppv,L,N,Beffv,Beffh,Nharm, \
+  Harm,Shift,nKvals,Kmin,Kmax,Nmin,Nmax,Mode,Nelec,modepin,modesphere,Nepho, \
   EphMin,EphMax,PinX,PinY,PinZ,PinW,PinH,NpinZ,NpinY,Step,Pherror, \
   Ifixseed,Kellip
 
@@ -2497,9 +2504,9 @@ def _setup():
   Vsetup_Spec, LastSetUp_Spec, SetUp_Spec, ScreenWidth, ScreenHeight
 
   global Mthreads,Step,Nelec,Noranone,Icohere,Ihbunch,Bunchlen, \
-  Bunchcharge,Modebunch,PinX,PinY,PinZ,PinW,PinH,NpinY,NpinZ,Modepin, \
+  Bunchcharge,Modebunch,PinX,PinY,PinZ,PinW,PinH,NpinY,NpinZ,modepin,modesphere, \
   Shift,Nper,Nharm,Harm,Beffv,Beffh,Nepho,EphMin,EphMax, \
-  Disp,Dispp,Pherror,Ifixseed
+  Disph,Dispph,Dispv,Disppv,Pherror,Ifixseed
 
   global nsto,nfld,nflx,nbun,Esel
   global BeamPar,UnduPar,SpecPar,BrillPar,PlotPar
@@ -2553,7 +2560,7 @@ def _setup():
 def _showMenu(menu,name):
 
   global BSetup,BBrill,BSpec,ScreenWidth,ScreenHeight,WmainMaster,Modepin, \
-  mPlotSpec
+  ModeSphere,mPlotSpec
 
   fs = int(Myfont[1])
 
@@ -2625,8 +2632,10 @@ EmitV = 0.066
 BetaH = 14. #m
 BetaV = 3.4
 SigE = 0.001
-Disp = 0.0 #m
-Dispp = 0.0 #rad
+Disph = 0.0 #m
+Dispph = 0.0 #rad
+Dispv = 0.0 #m
+Disppv = 0.0 #rad
 Mode = 2 # Walker
 
 Esel = 0.0
@@ -2647,8 +2656,10 @@ Dsetup['EmitV'] =  ["Ver. Emit. [nm-rad]",EmitV]
 Dsetup['BetaH'] =  ["Hori. Beta function",BetaH]
 Dsetup['BetaV'] =  ["Vert. Beta function",BetaV]
 Dsetup['SigE'] =  ["Rel. energy spread",SigE]
-Dsetup['Disp'] =  ["Dispersion [mm]",Disp]
-Dsetup['Dispp'] =  ["Derivative of Dispersion [mrad]",Dispp]
+Dsetup['Disph'] =  ["Hori. Dispersion [mm]",Disph]
+Dsetup['Dispph'] =  ["Derivative of Hori. Dispersion [mrad]",Dispph]
+Dsetup['Dispv'] =  ["Vert. Dispersion [mm]",Dispv]
+Dsetup['Disppv'] =  ["Derivative of Vert. Dispersion [mrad]",Disppv]
 
 Dsetup['Perlen'] = ["Period-length [mm]",Perlen]
 Dsetup['Nper'] = ["Number of periods",Nper]
@@ -2667,6 +2678,7 @@ Dsetup['Mode'] = ["Brilliance Mode [-1,1,2,3]",Mode]
 
 Nelec = 1
 Modepin = 0
+ModeSphere = 0
 Nepho = 11
 EphMin = 90.
 EphMax = 110.
@@ -2693,6 +2705,7 @@ Dsetup['PinW'] = ["Width of PinHole [mm]",PinW]
 Dsetup['PinH'] = ["Height of PinHole [mm]",PinH]
 Dsetup['NpinZ'] = ["Number of hori. points",NpinZ]
 Dsetup['NpinY'] = ["Number of vert. points",NpinY]
+Dsetup['ModeSphere'] = ["Arrange grid points on sphere [0,1]",ModeSphere]
 Dsetup['Step'] = ["Tracking step size [mm]",Step]
 Dsetup['Pherror'] = ["Phase errors",Pherror]
 Dsetup['Ifixseed'] = ["Fix Seeds [0,1]",Ifixseed]
