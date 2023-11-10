@@ -1,4 +1,5 @@
-*CMZ :          17/05/2023  10.57.05  by  Michael Scheer
+*CMZ :          07/11/2023  10.39.27  by  Michael Scheer
+*CMZ :  4.01/03 17/05/2023  10.57.05  by  Michael Scheer
 *CMZ :  4.01/02 12/05/2023  13.32.32  by  Michael Scheer
 *CMZ :  4.01/00 22/02/2023  14.57.49  by  Michael Scheer
 *-- Author : Michael Scheer
@@ -110,14 +111,14 @@ c-----------------------------------------------------------------------
       real xran(1),rr(2),axr,axi,ayr,ayi,azr,azi
 
       integer :: idebug=1,noranone,i,
-     &  npiny,npinz,nper,nepho,modeph,modepin,nharm,iy,iz,iobs,
+     &  npiny,npinz,nper,nepho,modeph,modepin,modesphere,nharm,iy,iz,iobs,
      &  mthreads,nelec,icohere,ihbunch,ipho,iobph,iel,modebunch,
      &  modewave=0,isto
 
       namelist/uradphasen/
      &  perlen,shift,nper,beffv,beffh,
      &  ebeam,curr,step,noranone,
-     &  pinx,piny,pinz,pinw,pinh,npiny,npinz,modepin,nharm,harm,
+     &  pinx,piny,pinz,pinw,pinh,npiny,npinz,modepin,modesphere,nharm,harm,
      &  nepho,ephmin,ephmax,pherror,
      &  mthreads,nelec,icohere,ihbunch,modeph,modebunch,
      &  betah,betav,alphah,alphav,emith,emitv,espread,
@@ -208,7 +209,7 @@ c-----------------------------------------------------------------------
      &  mthreads,nelec,noranone,icohere,modebunch,bunchlen,bunchcharge,ihbunch,
      &  perlen,shift,nper,beffv,beffh,
      &  ebeam,curr,step,
-     &  pincen,pinw,pinh,npiny,npinz,modepin,
+     &  pincen,pinw,pinh,npiny,npinz,modepin,modesphere,
      &  nepho,ephmin,ephmax,banwid,
      &  xbeta,betah,alphah,betav,alphav,espread,emith,emitv,
      &  disph,dispph,dispv,disppv,
@@ -322,6 +323,7 @@ c     &      stokes_u(1,iobph),stokes_u(1,iobph)
       close(luna)
 
       end
+*CMZ :          07/11/2023  14.55.09  by  Michael Scheer
 *CMZ :  4.01/02 12/05/2023  17.13.05  by  Michael Scheer
 *CMZ :  4.01/00 21/02/2023  16.51.29  by  Michael Scheer
 *-- Author : Michael Scheer
@@ -329,7 +331,7 @@ c     &      stokes_u(1,iobph),stokes_u(1,iobph)
      &  mthreads,nelec,noranone,icohere,modebunch,bunchlen,bunchcharge,ihbunch,
      &  perlen,shift,nper,beffv,beffh,
      &  ebeam,curr,step,
-     &  pincen,pinw,pinh,npiny,npinz,modepin,
+     &  pincen,pinw,pinh,npiny,npinz,modepin,modesphere,
      &  nepho,ephmin,ephmax,banwid,
      &  xbeta,betah,alphah,betav,alphav,espread,emith,emitv,
      &  disph,dispph,dispv,disppv,
@@ -430,15 +432,11 @@ c-----------------------------------------------------------------------
      &  pincen(3),pinw,pinh,betah,alphah,betav,alphav,
      &  ephmin,ephmax,beffv,beffh,pherror,espread,emith,emitv,
      &  disph,dispph,dispv,disppv,y,z,dy,dz,ymin,zmin,bunchlen,bunchcharge,
-     &  xbeta
-
-      double precision df
+     &  xbeta,df,xx,yy,zz,r,xn,yn,zn
 
       integer
-     &  npiny,npinz,nper,nepho,mthreads,nelec,icohere,ihbunch,
-     &  modeph,modepin,modebunch,iy,iz,iobsv,noranone,modewave
-
-      integer i
+     &  npiny,npinz,nper,nepho,mthreads,nelec,icohere,ihbunch,i,
+     &  modeph,modepin,modesphere,modebunch,iy,iz,iobsv,noranone,modewave
 
       mthreads_u=mthreads
 
@@ -526,6 +524,17 @@ c-----------------------------------------------------------------------
           obsv_u(1,iobsv)=pincen_u(1)
           obsv_u(2,iobsv)=y
           obsv_u(3,iobsv)=z
+          if (modesphere.ne.0) then
+            !all util_break
+            xx=obsv_u(1,iobsv)
+            yy=obsv_u(2,iobsv)
+            zz=obsv_u(3,iobsv)
+            r=sqrt(xx*xx+yy*yy+zz*zz)
+            yn=yy/r
+            zn=zz/r
+            obsv_u(2,iobsv)=yn*xx
+            obsv_u(3,iobsv)=zn*xx
+          endif
         enddo
       enddo
 
