@@ -1,4 +1,4 @@
-*CMZ :          07/11/2023  10.39.27  by  Michael Scheer
+*CMZ :          13/11/2023  20.34.27  by  Michael Scheer
 *CMZ :  4.01/03 17/05/2023  10.57.05  by  Michael Scheer
 *CMZ :  4.01/02 12/05/2023  13.32.32  by  Michael Scheer
 *CMZ :  4.01/00 22/02/2023  14.57.49  by  Michael Scheer
@@ -231,11 +231,15 @@ c      close(luna)
       do iobs=1,nobsv_u
         do ipho=1,nepho_u
           iobph=iobs+nobsv_u*(ipho-1)
-          efi=real(arad_u(1:3,iobph))
-          bfi=real(arad_u(4:6,iobph))
-          rn(1)=efi(2)*bfi(3)-efi(3)*bfi(2)
-          rn(2)=efi(3)*bfi(1)-efi(1)*bfi(3)
-          rn(3)=efi(1)*bfi(2)-efi(2)*bfi(1)
+
+c          efi=real(arad_u(1:3,iobph))
+c          bfi=real(arad_u(4:6,iobph))
+c          rn(1)=efi(2)*bfi(3)-efi(3)*bfi(2)
+c          rn(2)=efi(3)*bfi(1)-efi(1)*bfi(3)
+c          rn(3)=efi(1)*bfi(2)-efi(2)*bfi(1)
+          rn(1)=real(arad_u(2,iobph)*conjg(arad_u(6,iobph))-arad_u(3,iobph)*conjg(arad_u(5,iobph)))
+          rn(2)=real(arad_u(3,iobph)*conjg(arad_u(4,iobph))-arad_u(1,iobph)*conjg(arad_u(6,iobph)))
+          rn(3)=real(arad_u(1,iobph)*conjg(arad_u(5,iobph))-arad_u(2,iobph)*conjg(arad_u(4,iobph)))
           rn=rn/norm2(rn)
           axr=real(arad_u(1,iobph))
           axi=imag(arad_u(1,iobph))
@@ -1488,6 +1492,7 @@ c-----------------------------------------------------------------------
 
       return
       end
+*CMZ :          13/11/2023  20.25.47  by  Michael Scheer
 *CMZ :  4.01/02 12/05/2023  09.04.01  by  Michael Scheer
 *CMZ :  4.01/00 22/02/2023  15.28.31  by  Michael Scheer
 *CMZ :  4.00/15 28/04/2022  15.32.20  by  Michael Scheer
@@ -2048,9 +2053,12 @@ C--- LOOP OVER ALL FREQUENCES
           aradey(ifreq)=aradey(ifreq)+ampey
           aradez(ifreq)=aradez(ifreq)+ampez
 
-          ampbx=conjg(rny*ampez-rnz*ampey)/clight
-          ampby=conjg(rnz*ampex-rnx*ampez)/clight
-          ampbz=conjg(rnx*ampey-rny*ampex)/clight
+c          ampbx=conjg(rny*ampez-rnz*ampey)/clight
+c          ampby=conjg(rnz*ampex-rnx*ampez)/clight
+c          ampbz=conjg(rnx*ampey-rny*ampex)/clight
+          ampbx=(rny*ampez-rnz*ampey)/clight
+          ampby=(rnz*ampex-rnx*ampez)/clight
+          ampbz=(rnx*ampey-rny*ampex)/clight
 
           aradbx(ifreq)=aradbx(ifreq)+ampbx
           aradby(ifreq)=aradby(ifreq)+ampby
@@ -2069,9 +2077,13 @@ C--- LOOP OVER ALL FREQUENCES
           aradey(ifreq)=aradey(ifreq)+ampey
           aradez(ifreq)=aradez(ifreq)+ampez
 
-          ampbx=conjg(rny*ampez-rnz*ampey)/clight
-          ampby=conjg(rnz*ampex-rnx*ampez)/clight
-          ampbz=conjg(rnx*ampey-rny*ampex)/clight
+c          ampbx=conjg(rny*ampez-rnz*ampey)/clight
+c          ampby=conjg(rnz*ampex-rnx*ampez)/clight
+c          ampbz=conjg(rnx*ampey-rny*ampex)/clight
+
+          ampbx=(rny*ampez-rnz*ampey)/clight
+          ampby=(rnz*ampex-rnx*ampez)/clight
+          ampbz=(rnx*ampey-rny*ampex)/clight
 
           aradbx(ifreq)=aradbx(ifreq)+ampbx
           aradby(ifreq)=aradby(ifreq)+ampby
@@ -2097,9 +2109,13 @@ C--- LOOP OVER ALL FREQUENCES
             aradey(ifreq)=aradey(ifreq)+ampey
             aradez(ifreq)=aradez(ifreq)+ampez
 
-            ampbx=conjg(rny*ampez-rnz*ampey)/clight
-            ampby=conjg(rnz*ampex-rnx*ampez)/clight
-            ampbz=conjg(rnx*ampey-rny*ampex)/clight
+c            ampbx=conjg(rny*ampez-rnz*ampey)/clight
+c            ampby=conjg(rnz*ampex-rnx*ampez)/clight
+c            ampbz=conjg(rnx*ampey-rny*ampex)/clight
+
+            ampbx=(rny*ampez-rnz*ampey)/clight
+            ampby=(rnz*ampex-rnx*ampez)/clight
+            ampbz=(rnx*ampey-rny*ampex)/clight
 
             aradbx(ifreq)=aradbx(ifreq)+ampbx
             aradby(ifreq)=aradby(ifreq)+ampby
@@ -2134,9 +2150,13 @@ c            endif
             aradey(ifreq)=aradey(ifreq)+ampey
             aradez(ifreq)=aradez(ifreq)+ampez
 
-            ampbx=conjg(rny*ampez-rnz*ampey)/clight
-            ampby=conjg(rnz*ampex-rnx*ampez)/clight
-            ampbz=conjg(rnx*ampey-rny*ampex)/clight
+c            ampbx=conjg(rny*ampez-rnz*ampey)/clight
+c            ampby=conjg(rnz*ampex-rnx*ampez)/clight
+c            ampbz=conjg(rnx*ampey-rny*ampex)/clight
+
+            ampbx=(rny*ampez-rnz*ampey)/clight
+            ampby=(rnz*ampex-rnx*ampez)/clight
+            ampbz=(rnx*ampey-rny*ampex)/clight
 
             aradbx(ifreq)=aradbx(ifreq)+ampbx
             aradby(ifreq)=aradby(ifreq)+ampby
