@@ -1,4 +1,4 @@
-*CMZ :          13/11/2023  20.34.27  by  Michael Scheer
+*CMZ :          15/11/2023  13.09.55  by  Michael Scheer
 *CMZ :  4.01/03 17/05/2023  10.57.05  by  Michael Scheer
 *CMZ :  4.01/02 12/05/2023  13.32.32  by  Michael Scheer
 *CMZ :  4.01/00 22/02/2023  14.57.49  by  Michael Scheer
@@ -99,7 +99,7 @@ c-----------------------------------------------------------------------
       double precision, dimension(:), allocatable :: z,y
       double precision, dimension(:,:), allocatable :: s
 
-      double precision :: banwid=0.1,xbeta=0.0d0,
+      double precision :: banwid=0.001,xbeta=0.0d0,
      &  perlen,shift,ebeam,curr,step,perl,
      &  pincen(3),pinw,pinh,park,wlen1,gamma,
      &  ephmin,ephmax,beffv,beffh,pherror,stosum(4),
@@ -110,7 +110,7 @@ c-----------------------------------------------------------------------
 
       real xran(1),rr(2),axr,axi,ayr,ayi,azr,azi
 
-      integer :: idebug=1,noranone,i,
+      integer :: idebug=0,noranone,i,
      &  npiny,npinz,nper,nepho,modeph,modepin,modesphere,nharm,iy,iz,iobs,
      &  mthreads,nelec,icohere,ihbunch,ipho,iobph,iel,modebunch,
      &  modewave=0,isto
@@ -579,6 +579,7 @@ c-----------------------------------------------------------------------
       obsv_u=obsv_u*1000.0d0
 
       end
+*CMZ :          15/11/2023  13.03.14  by  Michael Scheer
 *CMZ :  4.01/02 14/05/2023  11.47.49  by  Michael Scheer
 *CMZ :  4.01/00 22/02/2023  14.34.04  by  Michael Scheer
 *CMZ :  4.00/17 05/12/2022  10.30.41  by  Michael Scheer
@@ -676,6 +677,9 @@ c-----------------------------------------------------------------------
 c     end of phyconparam.cmn
 c-----------------------------------------------------------------------
 *KEND.
+
+      complex*16 cde
+      double precision :: h2,ddist,wlen,dphi
 
       !double complex , dimension (:,:), allocatable :: affe
       double complex , dimension (:,:,:), allocatable :: arad
@@ -1185,6 +1189,22 @@ c-----------------------------------------------------------------------
      &      uampbx(kfreq),uampby(kfreq),uampbz(kfreq)
      &      ]*1.0d3/sqrt(speknor/curr_u*0.10d0) !urad
 
+          ! global phase
+
+          h2=(obs(2)**2+obs(3)**2)/obs(1)**2
+
+          if (h2.lt.0.01) then
+            ddist=obs(1)*(h2/2.0d0-h2**2/8.0d0)
+          else
+            ddist=obs(1)*(sqrt(1.0d0+h2))
+          endif
+
+          wlen=wtoe1/frq(kfreq)*1.0d-9
+          dphi=twopi1*ddist/wlen
+
+          cde=cdexp(dcmplx(0.0d0,dphi))
+          amp0=amp0*cde
+
           amp=(0.0d0,0.0d0)
 
           do i=1,nper_u
@@ -1492,7 +1512,7 @@ c-----------------------------------------------------------------------
 
       return
       end
-*CMZ :          13/11/2023  20.25.47  by  Michael Scheer
+*CMZ :          14/11/2023  20.47.50  by  Michael Scheer
 *CMZ :  4.01/02 12/05/2023  09.04.01  by  Michael Scheer
 *CMZ :  4.01/00 22/02/2023  15.28.31  by  Michael Scheer
 *CMZ :  4.00/15 28/04/2022  15.32.20  by  Michael Scheer
@@ -1697,7 +1717,7 @@ c variables to zero and to treat them as saved''
      &  r0,efxn,efyn,efzn
 
       integer ieneloss,istatus,icharge,nphener,ivelofield,
-     &  nthstep,izaehl,nstep,ndim,kstep,lstep,ifreq,isto,ifail,ith,
+     &  nthstep,izaehl,nstep,ndim,kstep,lstep,kfreq,isto,ifail,ith,
      &  modewave
 
 c      integer,save :: ical=0
@@ -1737,8 +1757,8 @@ c      ical=ical+1
       if (nphener.gt.0) phener(1)=phelow
       if (nphener.gt.1) dph=(phehig-phelow)/(nphener-1)
 
-      do ifreq=2,nphener
-        phener(ifreq)=phener(ifreq-1)+dph
+      do kfreq=2,nphener
+        phener(kfreq)=phener(kfreq-1)+dph
       enddo
 
       istatus=0
@@ -1779,9 +1799,14 @@ c energy if tracked back
       dgamsum=0.0d0
       dgamtot=0.0d0
       powden=0.0d0
+
       aradex=(0.0d0,0.0d0)
       aradey=(0.0d0,0.0d0)
       aradez=(0.0d0,0.0d0)
+
+      aradbx=(0.0d0,0.0d0)
+      aradby=(0.0d0,0.0d0)
+      aradbz=(0.0d0,0.0d0)
 
       dtim=ds/vn
       dt=dtim
@@ -2020,16 +2045,16 @@ C REAL PART OF INTEGRAND }
 
 C COMPLEX PART OF INTEGRAND {
 
-C    ASSUMES phener(I+1)=2*phener(I)   FOR IFREQ2P=2
-C    OR phener(I+1)=phener(I)+DELTA    FOR IFREQ2P>2
+C    ASSUMES phener(I+1)=2*phener(I)   FOR kfreq2P=2
+C    OR phener(I+1)=phener(I)+DELTA    FOR kfreq2P>2
 
 C--- LOOP OVER ALL FREQUENCES
 
       if (nphener.gt.0) then
 
-        IFREQ=1
+        kfreq=1
 
-        OM=phener(IFREQ)/hbarev
+        OM=phener(kfreq)/hbarev
         ZIOM=ZI*OM
 
         EXPOM=EXPOM1
@@ -2039,7 +2064,7 @@ C--- LOOP OVER ALL FREQUENCES
         IF(nphener.GT.1) THEN
           DEXPOM=EXP(ZIDOM*PHASE)
           DDEXPOMPH=EXP(ZIDOM*DPHASE)
-        ENDIF  !IFREQ2P
+        ENDIF  !kfreq2P
 
         IF (IVELOFIELD.NE.2) THEN
 
@@ -2049,9 +2074,9 @@ C--- LOOP OVER ALL FREQUENCES
           ampey=rarg(2)*dum3
           ampez=rarg(3)*dum3
 
-          aradex(ifreq)=aradex(ifreq)+ampex
-          aradey(ifreq)=aradey(ifreq)+ampey
-          aradez(ifreq)=aradez(ifreq)+ampez
+          aradex(kfreq)=aradex(kfreq)+ampex
+          aradey(kfreq)=aradey(kfreq)+ampey
+          aradez(kfreq)=aradez(kfreq)+ampez
 
 c          ampbx=conjg(rny*ampez-rnz*ampey)/clight
 c          ampby=conjg(rnz*ampex-rnx*ampez)/clight
@@ -2060,9 +2085,9 @@ c          ampbz=conjg(rnx*ampey-rny*ampex)/clight
           ampby=(rnz*ampex-rnx*ampez)/clight
           ampbz=(rnx*ampey-rny*ampex)/clight
 
-          aradbx(ifreq)=aradbx(ifreq)+ampbx
-          aradby(ifreq)=aradby(ifreq)+ampby
-          aradbz(ifreq)=aradbz(ifreq)+ampbz
+          aradbx(kfreq)=aradbx(kfreq)+ampbx
+          aradby(kfreq)=aradby(kfreq)+ampby
+          aradbz(kfreq)=aradbz(kfreq)+ampbz
 
         ELSE !IVELOFIELD
 
@@ -2073,9 +2098,9 @@ c          ampbz=conjg(rnx*ampey-rny*ampex)/clight
           ampey=EXPOMV2*(BX-RNX*ZIOMR1)
           ampez=EXPOMV2*(BX-RNX*ZIOMR1)
 
-          aradex(ifreq)=aradex(ifreq)+ampex
-          aradey(ifreq)=aradey(ifreq)+ampey
-          aradez(ifreq)=aradez(ifreq)+ampez
+          aradex(kfreq)=aradex(kfreq)+ampex
+          aradey(kfreq)=aradey(kfreq)+ampey
+          aradez(kfreq)=aradez(kfreq)+ampez
 
 c          ampbx=conjg(rny*ampez-rnz*ampey)/clight
 c          ampby=conjg(rnz*ampex-rnx*ampez)/clight
@@ -2085,15 +2110,15 @@ c          ampbz=conjg(rnx*ampey-rny*ampex)/clight
           ampby=(rnz*ampex-rnx*ampez)/clight
           ampbz=(rnx*ampey-rny*ampex)/clight
 
-          aradbx(ifreq)=aradbx(ifreq)+ampbx
-          aradby(ifreq)=aradby(ifreq)+ampby
-          aradbz(ifreq)=aradbz(ifreq)+ampbz
+          aradbx(kfreq)=aradbx(kfreq)+ampbx
+          aradby(kfreq)=aradby(kfreq)+ampby
+          aradbz(kfreq)=aradbz(kfreq)+ampbz
 
         ENDIF !IVELOFIELD
 
         IF (IVELOFIELD.NE.2) THEN
 
-          DO IFREQ=2,nphener
+          DO kfreq=2,nphener
 
             OM=OM+DOM
             EXPOM=EXPOM*DEXPOM
@@ -2105,9 +2130,9 @@ c          ampbz=conjg(rnx*ampey-rny*ampex)/clight
             ampey=RARG(2)*EXPOMV2
             ampez=RARG(3)*EXPOMV2
 
-            aradex(ifreq)=aradex(ifreq)+ampex
-            aradey(ifreq)=aradey(ifreq)+ampey
-            aradez(ifreq)=aradez(ifreq)+ampez
+            aradex(kfreq)=aradex(kfreq)+ampex
+            aradey(kfreq)=aradey(kfreq)+ampey
+            aradez(kfreq)=aradez(kfreq)+ampez
 
 c            ampbx=conjg(rny*ampez-rnz*ampey)/clight
 c            ampby=conjg(rnz*ampex-rnx*ampez)/clight
@@ -2117,15 +2142,15 @@ c            ampbz=conjg(rnx*ampey-rny*ampex)/clight
             ampby=(rnz*ampex-rnx*ampez)/clight
             ampbz=(rnx*ampey-rny*ampex)/clight
 
-            aradbx(ifreq)=aradbx(ifreq)+ampbx
-            aradby(ifreq)=aradby(ifreq)+ampby
-            aradbz(ifreq)=aradbz(ifreq)+ampbz
+            aradbx(kfreq)=aradbx(kfreq)+ampbx
+            aradby(kfreq)=aradby(kfreq)+ampby
+            aradbz(kfreq)=aradbz(kfreq)+ampbz
 
-c            if (ifreq.eq.nphener/2) then
+c            if (kfreq.eq.nphener/2) then
 c              if (user(1).eq.0) then
-c                write(56,*)ical,izaehl,x2,dphase,phase,real(aradez(ifreq)),real(RARG(3)*EXPOMV2)
+c                write(56,*)ical,izaehl,x2,dphase,phase,real(aradez(kfreq)),real(RARG(3)*EXPOMV2)
 c              else
-c                write(57,*)ical,izaehl,x2,dphase,phase,real(aradez(ifreq)),real(RARG(3)*EXPOMV2)
+c                write(57,*)ical,izaehl,x2,dphase,phase,real(aradez(kfreq)),real(RARG(3)*EXPOMV2)
 c              endif
 c            endif
 
@@ -2133,7 +2158,7 @@ c            endif
 
         else
 
-          DO IFREQ=2,nphener
+          DO kfreq=2,nphener
 
             OM=OM+DOM
             EXPOM=EXPOM*DEXPOM
@@ -2146,9 +2171,9 @@ c            endif
             ampey=EXPOMV2*(BX-RNX*ZIOMR1)
             ampez=EXPOMV2*(BX-RNX*ZIOMR1)
 
-            aradex(ifreq)=aradex(ifreq)+ampex
-            aradey(ifreq)=aradey(ifreq)+ampey
-            aradez(ifreq)=aradez(ifreq)+ampez
+            aradex(kfreq)=aradex(kfreq)+ampex
+            aradey(kfreq)=aradey(kfreq)+ampey
+            aradez(kfreq)=aradez(kfreq)+ampez
 
 c            ampbx=conjg(rny*ampez-rnz*ampey)/clight
 c            ampby=conjg(rnz*ampex-rnx*ampez)/clight
@@ -2158,9 +2183,9 @@ c            ampbz=conjg(rnx*ampey-rny*ampex)/clight
             ampby=(rnz*ampex-rnx*ampez)/clight
             ampbz=(rnx*ampey-rny*ampex)/clight
 
-            aradbx(ifreq)=aradbx(ifreq)+ampbx
-            aradby(ifreq)=aradby(ifreq)+ampby
-            aradbz(ifreq)=aradbz(ifreq)+ampbz
+            aradbx(kfreq)=aradbx(kfreq)+ampbx
+            aradby(kfreq)=aradby(kfreq)+ampby
+            aradbz(kfreq)=aradbz(kfreq)+ampbz
 
           ENDDO   !LOOP OVER ALL FREQUENCES
 
@@ -2276,31 +2301,31 @@ c tracking stops if trajectory hits this plane
 
       enddo
 
-      do ifreq=1,nphener
+      do kfreq=1,nphener
 
-        aradex(ifreq)=aradex(ifreq)*rspn
-        aradey(ifreq)=aradey(ifreq)*rspn
-        aradez(ifreq)=aradez(ifreq)*rspn
+        aradex(kfreq)=aradex(kfreq)*rspn
+        aradey(kfreq)=aradey(kfreq)*rspn
+        aradez(kfreq)=aradez(kfreq)*rspn
 
         apolh=real(
-     &    aradex(ifreq)*conjg(vstokes(1,1))
-     &    +aradey(ifreq)*conjg(vstokes(1,2))
-     &    +aradez(ifreq)*conjg(vstokes(1,3)))
+     &    aradex(kfreq)*conjg(vstokes(1,1))
+     &    +aradey(kfreq)*conjg(vstokes(1,2))
+     &    +aradez(kfreq)*conjg(vstokes(1,3)))
 
         apolr=real(
-     &    aradex(ifreq)*conjg(vstokes(2,1))
-     &    +aradey(ifreq)*conjg(vstokes(2,2))
-     &    +aradez(ifreq)*conjg(vstokes(2,3)))
+     &    aradex(kfreq)*conjg(vstokes(2,1))
+     &    +aradey(kfreq)*conjg(vstokes(2,2))
+     &    +aradez(kfreq)*conjg(vstokes(2,3)))
 
         apoll=real(
-     &    aradex(ifreq)*conjg(vstokes(3,1))
-     &    +aradey(ifreq)*conjg(vstokes(3,2))
-     &    +aradez(ifreq)*conjg(vstokes(3,3)))
+     &    aradex(kfreq)*conjg(vstokes(3,1))
+     &    +aradey(kfreq)*conjg(vstokes(3,2))
+     &    +aradez(kfreq)*conjg(vstokes(3,3)))
 
         apol45=real(
-     &    aradex(ifreq)*conjg(vstokes(4,1))
-     &    +aradey(ifreq)*conjg(vstokes(4,2))
-     &    +aradez(ifreq)*conjg(vstokes(4,3)))
+     &    aradex(kfreq)*conjg(vstokes(4,1))
+     &    +aradey(kfreq)*conjg(vstokes(4,2))
+     &    +aradez(kfreq)*conjg(vstokes(4,3)))
 
         stok1=real(
      &    apolr*conjg(apolr)+
@@ -2317,10 +2342,10 @@ c tracking stops if trajectory hits this plane
      &    apolr*conjg(apolr)-
      &    apoll*conjg(apoll))
 
-        stokes(1,ifreq)=stok1
-        stokes(2,ifreq)=stok2
-        stokes(3,ifreq)=stok3
-        stokes(4,ifreq)=stok4
+        stokes(1,kfreq)=stok1
+        stokes(2,kfreq)=stok2
+        stokes(3,kfreq)=stok3
+        stokes(4,kfreq)=stok4
 
       enddo !nphener
 
