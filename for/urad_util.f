@@ -1,16 +1,3 @@
-*CMZ :  4.00/17 04/10/2022  08.10.22  by  Michael Scheer
-*CMZ :  4.00/11 27/05/2021  09.41.25  by  Michael Scheer
-*CMZ :  3.02/04 03/12/2014  15.11.16  by  Michael Scheer
-*-- Author :    Michael Scheer   03/12/2014
-      subroutine util_break
-*KEEP,DEBUGWAVE.
-      double precision x_debug,y_debug,z_debug,a_debug(100)
-      integer i_debug,k_debug
-
-      common/c_debug/x_debug,y_debug,z_debug,a_debug,i_debug,k_debug
-*KEND.
-      return
-      end
 *CMZ :  4.00/15 27/04/2022  15.20.19  by  Michael Scheer
 *CMZ :  3.06/00 14/01/2019  17.27.04  by  Michael Scheer
 *CMZ :  3.03/02 18/01/2016  13.02.27  by  Michael Scheer
@@ -67,11 +54,8 @@ c      print*,n
 *CMZ :  3.02/03 05/09/2014  12.29.51  by  Michael Scheer
 *-- Author :    Michael Scheer   05/09/2014
       subroutine util_random(n,r)
-*KEEP,RANDOM.
-      integer*8 irancalls
-      integer irnseed(64),irnmode,irnsize,irnseedi(64)
-      common /randomc/ irancalls,irnseed,irnmode,irnsize,irnseedi
-      namelist /randomn/ irnmode,irnseed
+*KEEP,random.
+      include 'random.cmn'
 *KEND.
 
       real r(n)
@@ -1117,6 +1101,56 @@ c So be careful!
         call random_seed(put=iseed)
       endif
 
+      return
+      end
+*CMZ :          22/01/2018  16.49.42  by  Michael Scheer
+*CMZ : 00.00/20 19/08/2016  15.08.19  by  Michael Scheer
+*CMZ : 00.00/15 04/01/2013  12.22.07  by  Michael Scheer
+*CMZ : 00.00/05 27/02/2007  16.32.04  by  Michael Scheer
+*CMZ : 00.00/02 04/08/2006  14.56.41  by  Michael Scheer
+*CMZ : 00.00/00 10/01/95  15.25.58  by  Michael Scheer
+*-- Author : Michael Scheer
+      subroutine util_zeit_kommentar(lun,comment)
+
+c to determine date and time and write it to logical unit lun
+
+      implicit none
+
+      integer lun
+
+      character(*) comment
+
+      character spacer(50)
+      character(10) dtday,dttime,dtzone
+      integer idatetime(8),ilast
+
+      data spacer/50*' '/
+
+      call date_and_time(dtday,dttime,dtzone,idatetime)
+
+      ilast=len_trim(comment)
+
+      write(lun,*)
+      write(lun,*)
+      if (ilast.gt.0) then
+        write(lun,*)comment(1:ilast),spacer,dttime(1:2),':',dttime(3:4),':',dttime(5:6),' '
+     &    ,dtday(7:8),'.',dtday(5:6),'.',dtday(3:4)
+      else
+        write(lun,*)spacer,dttime(1:2),':',dttime(3:4),':',dttime(5:6),' '
+     &    ,dtday(7:8),'.',dtday(5:6),'.',dtday(3:4)
+      endif
+      write(lun,*)
+
+      return
+      end
+*CMZ :  4.00/17 04/10/2022  08.10.51  by  Michael Scheer
+*CMZ :  4.00/11 27/05/2021  09.41.37  by  Michael Scheer
+*CMZ :  3.02/04 03/12/2014  15.11.16  by  Michael Scheer
+*-- Author :    Michael Scheer   03/12/2014
+      subroutine util_break
+*KEEP,debugwave.
+      include 'debugwave.cmn'
+*KEND.
       return
       end
 *CMZ :  3.03/02 17/11/2015  14.46.41  by  Michael Scheer
