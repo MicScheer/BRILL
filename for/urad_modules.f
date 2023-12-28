@@ -19,7 +19,7 @@
      &  disph_u,dispph_u,dispv_u,disppv_u,bunchlen_u,bunchcharge_u
 
       integer nstep_u,nepho_u,nobsv_u,nbunch_u,npiny_u,npinz_u,
-     &  nper_u,modeph_u,modepin_u,modesphere_u,noranone_u
+     &  nper_u,modeph_u,modepin_u,modesphere_u,noranone_u,nlpoi_u
 
       integer
      &  ibunch_u,ihbunch_u,mthreads_u,nelec_u,icohere_u,modebunch_u
