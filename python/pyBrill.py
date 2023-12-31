@@ -486,7 +486,8 @@ def _set_uname():
   'Bunchlen','BunchCharge','Modebunch','PinX','PinY','PinZ','PinW','PinH', \
   'NpinY','NpinZ','Modepin','ModeSphere','Perlen','Shift','Nper','Nharm', \
   'Harm','Beffv','Beffh','Nepho','EphMin','EphMax','Espread','BetaH', \
-  'BetaV','EmitH','EmitV','Disph','Dispph','Dispv','Disppv','Modeph','Pherror']
+  'BetaV','EmitH','EmitV','Disph','Dispph','Dispv','Disppv','Modeph','Pherror', \
+  'IFieldProp','PinXprop','PinWprop','PinHprop','NpinYprop','NpinZprop']
 
   Useed = [376577121, 52147852, -1273034815, -1963249100, 1195262240, \
   -1718716574, -224354675, 432587481, 1692325775, 1934175653, \
@@ -528,7 +529,8 @@ BeamPar = ['Ebeam','Curr','EmitH','EmitV','BetaH','BetaV','SigE', \
 UnduPar = ['Perlen','Nper','Beffv','Beffh','Nharm','Harmonic','Shift']
 BrillPar = ['nKvals','Kmin','Kmax','Nmin','Nmax','Mode']
 SpecPar = ['Nelec','Modepin','ModeSphere','Nepho','EphMin','EphMax','PinX', \
-'PinY','PinZ','PinW','PinH','NpinZ','NpinY','Step','Pherror','Ifixseed']
+'PinY','PinZ','PinW','PinH','NpinZ','NpinY','Step','Pherror', \
+'IFieldProp','PinXprop','PinWprop','PinHprop','NpinYprop','NpinZprop','Ifixseed']
 PlotPar = ['Mode3d','Markersize','Linewidth','Linecolor']
 
 global LastSetUp_Esel
@@ -854,6 +856,193 @@ def _ini_Esel():
   S_Esel.set(Esel)
 
 #enddef _ini_Esel()
+
+def _pFdProp(key='s0'):
+
+  global Dsetup
+  global Vsetup_Beam, LastSetUp_Beam,  SetUp_Beam, \
+  Vsetup_Undu, LastSetUp_Undu, SetUp_Undu, \
+  Vsetup_Brill, LastSetUp_Brill, SetUp_Brill, Vsetup_Plot, \
+  Vsetup_Spec, LastSetUp_Spec, SetUp_Spec, ScreenWidth, ScreenHeight
+
+  global Mthreads,Step,Nelec,Noranone,Icohere,Ihbunch,Bunchlen, \
+  Bunchcharge,Modebunch,PinX,PinY,PinZ,PinW,PinH,NpinY,NpinZ,modepin,modesphere, \
+  Shift,Nper,Nharm,Harm,Beffv,Beffh,Nepho,EphMin,EphMax, \
+  Disph,Dispph,Dispv,Disppv,Pherror,Ifixseed
+
+  global nsto,nfld,nflx,nbun,Esel
+  global BeamPar,UnduPar,SpecPar,BrillPar,PlotPar
+
+
+  global Esel,IEsel,S_Esel,S_IEsel
+  global LastPlot; LastPlot = ['FdProp',key]
+  global nfdp
+
+  if Calculated_Spec == False or nexist("nbun") == 0 \
+  or nexist("nfdp") == 0: _calc_spec()
+
+  s0max = nfdp.s0.max()
+  if np.isnan(s0max) == True: return
+
+  #getzone()
+  optnstat()
+  _set_plot_spec()
+
+  keyu = key.upper()
+  keyl = key.lower()
+
+  if Esel <= 0 : _ini_Esel()
+  elif Esel < EphMin :
+    Esel = EphMin
+    IEsel = 1
+  elif Esel > nfld.egam.max() :
+    Esel = EphMax
+    IEsel = Nepho
+  #endif
+
+  S_IEsel.set(IEsel)
+  S_Esel.set(Esel)
+
+  #selgam = "abs(egam-" + str(Esel) + ")<1.0e-10"
+  selgam = "iegam==" + str(IEsel)
+
+  ymin = -PinHprop/2.
+  ymax = PinHprop/2.
+  zmin = -PinWprop/2.
+  zmax = PinWprop/2.
+
+  set_plot_params_3d()
+
+  if keyu == 'S0' or keyu == 'S1' or keyu == 'S2' or keyu == 'S3' or keyu == 'P':
+
+    if keyu == 'S0': htit = 'Distribution of S$_0$'
+    elif keyu == 'S1': htit = 'Distribution of S$_1$'
+    elif keyu == 'S2': htit = 'Distribution of S$_2$'
+    elif keyu == 'S3': htit = 'Distribution of S$_3$'
+    elif keyu == 'P': htit = 'Distribution of Power'
+
+    plopt = Vsetup_Plot[0][1][1]
+
+    if plopt == 'surf' or plopt == 'boxes' or plopt == 'inter':
+      hnam = 'HpinProp_' + keyu
+      hbook2(hnam,htit,NpinZprop,zmin,zmax,NpinYprop,ymin,ymax,overwrite=1)
+      if Modepin != 0:
+        print("\n***Modepin != 0 not yet for propagated fields available ***")
+        return
+        nproj2(nbun,"z:y",keyl,selgam,idh=hnam,ioverwrite=0)
+      else:
+        nproj2(nfdp,"z:y",keyl,selgam,idh=hnam,ioverwrite=0)
+      #endif
+      hplave(hnam,plopt)
+    elif plopt == 'scat3d':
+      if Modepin != 0:
+        print("\n***Modepin != 0 not yet for propagated fields available ***")
+        return
+        nplot(nbun,"z:y:"+keyl+":"+keyl,selgam)
+      else:
+        nplot(nfdp,"z:y:"+keyl+":"+keyl,selgam)
+      #endif
+    else:
+      if Modepin != 0:
+        print("\n***Modepin != 0 not yet for propagated fields available ***")
+        return
+        nplot(nbun,"z:y",selgam,keyl)
+      else:
+        nplot(nfdp,"z:y",selgam,keyl)
+      #endif
+    #endif
+
+    tunit = 'N$_{\gamma}$' + '/mm$^2$/s/0.1' + '%BW/' + str(int(Curr*1000)) + "mA"
+
+    cbp = getcolorbarpad()
+    xuni = 0.97 + cbp
+    yuni = 0.5
+    auni = 90.
+
+    ax = plt.gca()
+    if type(ax) == Tax2d:
+      zunit = ''
+    else:
+      zunit = tunit
+    #endif
+    if keyu == 'S0':
+      txyz("Dens. of S$_0$ for E$_{\gamma}$  = " + pg5(Esel) + " eV","z [mm]","y [mm]",zunit)
+    elif keyu == 'S1':
+      txyz("Dens. of S$_1$ for E$_{\gamma}$  = " + pg5(Esel) + " eV","z [mm]","y [mm]",zunit)
+    elif keyu == 'S2':
+      txyz("Dens. of S$_2$ for E$_{\gamma}$  = " + pg5(Esel) + " eV","z [mm]","y [mm]",zunit)
+    elif keyu == 'S3':
+      txyz("Dens. of S$_3$ for E$_{\gamma}$  = " + pg5(Esel) + " eV","z [mm]","y [mm]",zunit)
+    elif keyu == 'P':
+      xuni = 1.0 + cbp
+      yuni = 1.05
+      auni = 0.0
+      zunit = '[W/mm$^2$]'
+      txyz("Dens. of Power for E$_{\gamma}$  = " + pg5(Esel) + " eV","z [mm]","y [mm]",zunit)
+    #endif
+
+    if type(ax) == Tax2d:
+      text(xuni,yuni,tunit,halign='left',angle=auni)
+    #endif
+
+  elif keyu == 'P0' or keyu == 'P1' or keyu == 'P2' or keyu == 'P3':
+    Quit("Baustelle P")
+
+    if keyu == 'P0': htit = 'Distribution of P$_0$'
+    elif keyu == 'P2': htit = 'Distribution of P$_2$'
+    elif keyu == 'P3': htit = 'Distribution of P$_3$'
+
+    plopt = Vsetup_Plot[0][1][1]
+
+    if plopt == 'surf' or plopt == 'boxes' or plopt == 'inter':
+      for p in ['0','1','2','3']:
+        hnam = 'Hpin_S' + p
+        kl = 's' + p
+        hbook2(hnam,htit,NpinZ,zmin,zmax,NpinY,ymin,ymax,overwrite=1)
+        if Modepin != 0:
+          print("\n***Modepin != 0 not yet for propagated fields available ***")
+          return
+          nproj2(nbun,"z:y",keyl,selgam,idh=hnam,ioverwrite=0)
+        else:
+          nproj2(nfld,"z:y",keyl,selgam,idh=hnam,ioverwrite=0)
+        #endif
+      #endfor
+      hnam = 'Hpin_' + keyu
+      if keyu == 'P1':
+        htit = 'Distribution of P$_1$'
+        hdiv('Hpin_S1','Hpin_S0',hnam,htit)
+      #endif
+      hplave(hnam,plopt)
+    elif plopt == 'scat3d':
+      if Modepin != 0:
+        print("\n***Modepin != 0 not yet for propagated fields available ***")
+        return
+        nplot(nbun,"z:y:"+keyl+":"+keyl,selgam)
+      else:
+        nplot(nfld,"z:y:"+keyl+":"+keyl,selgam)
+      #endif
+    else:
+      if Modepin != 0:
+        print("\n***Modepin != 0 not yet for propagated fields available ***")
+        return
+        nplot(nbun,"z:y",selgam,keyl)
+      else:
+        nplot(nfld,"z:y",selgam,keyl)
+      #endif
+    #endif
+
+    if keyu == 'P0': \
+    txyz("P$_0$ for E$_{\gamma}$  = " + pg5(Esel) + " eV","z [mm]","y [mm]")
+    elif keyu == 'P1': \
+    txyz("P$_1$ for E$_{\gamma}$  = " + pg5(Esel) + " eV","z [mm]","y [mm]")
+    elif keyu == 'P2': \
+    txyz("P$_2$ for E$_{\gamma}$  = " + pg5(Esel) + " eV","z [mm]","y [mm]")
+    elif keyu == 'P3': \
+    txyz("P$_3$ for E$_{\gamma}$  = " + pg5(Esel) + " eV","z [mm]","y [mm]")
+
+  #endif key
+
+#enddef _pFdProp()
 
 def _pFdPin(key='s0'):
 
@@ -1394,10 +1583,12 @@ def debug(s=''):
 
 def _get_spec():
   global Calculated_Spec, NcalcSpec
-  global nsto,nflx,nfld,nbun
+  global nsto,nflx,nfld,nbun,nfdp
 
   #nsto = ncread("nsto","x:y:z:iegam:egam:s0:s1:s2:s3","urad_phase.sto")
   nflx = ncread("nflx","iegam:egam:s0:s1:s2:s3","urad_phase.flx")
+  if fexist("urad_phase.fdp"):
+    nfdp = ncread("nfdp","x:y:z:iegam:egam:s0:s1:s2:s3:exr:exi:eyr:eyi:ezr:ezi:bxr:bxi:byr:byi:bzr:bzi:nx:ny:nz","urad_phase.fdp")
   nfld = ncread("nfld","x:y:z:iegam:egam:s0:s1:s2:s3:p:exr:exi:eyr:eyi:ezr:ezi:bxr:bxi:byr:byi:bzr:bzi:nx:ny:nz","urad_phase.fld")
   nbun = ncread("nbun","jbun:isub:ibu:bunchx:rxi1:ryi1:rzi1:ypi1:zpi1:rxin:ryin:rzin:ypin:zpin:eel:deel:x:y:z:iegam:egam:spec:s0:s1:s2:s3:p:fb28:dt","urad_phase.bun")
 
@@ -1417,7 +1608,7 @@ def _get_spec():
 
 def _calc_spec():
   global Calculated_Spec, NcalcSpec
-  global nsto,nflx,nfld,nbun
+  global nsto,nflx,nfld,nbun,nfdp
 
   _UpdateVars()
 
@@ -1447,6 +1638,8 @@ def _calc_spec():
   nflx = ncread("nflx","iegam:egam:s0:s1:s2:s3","urad_phase.flx")
   nfld = ncread("nfld","x:y:z:iegam:egam:s0:s1:s2:s3:p:exr:exi:eyr:eyi:ezr:ezi:bxr:bxi:byr:byi:bzr:bzi:nx:ny:nz","urad_phase.fld")
   nbun = ncread("nbun","jbun:isub:ibu:bunchx:rxi1:ryi1:rzi1:ypi1:zpi1:rxin:ryin:rzin:ypin:zpin:eel:deel:x:y:z:iegam:egam:spec:s0:s1:s2:s3:p:fb28:dt","urad_phase.bun")
+  if fexist("urad_phase.fdp"):
+    nfdp = ncread("nfdp","x:y:z:iegam:egam:s0:s1:s2:s3:exr:exi:eyr:eyi:ezr:ezi:bxr:bxi:byr:byi:bzr:bzi:nx:ny:nz","urad_phase.fdp")
   nlist()
   print("\nFinished")
 
@@ -2691,6 +2884,12 @@ NpinZ = 11
 NpinY = 11
 Step = 0.2
 Pherror = 0.0
+IFieldProp = 0
+PinXprop = 0.0
+PinWprop = 0.1
+PinHprop = 0.1
+NpinZprop = 21
+NpinYprop = 21
 Ifixseed = 0
 
 Dsetup['Nelec'] = ["Nelec",Nelec]
@@ -2708,6 +2907,14 @@ Dsetup['NpinY'] = ["Number of vert. points",NpinY]
 Dsetup['ModeSphere'] = ["Arrange grid points on sphere [0,1]",ModeSphere]
 Dsetup['Step'] = ["Tracking step size [mm]",Step]
 Dsetup['Pherror'] = ["Phase errors",Pherror]
+
+Dsetup['IFieldProp'] = ["Propagate radiation field back to origin",IFieldProp]
+Dsetup['PinXprop'] = ["Long. Position of Plane [mm]",PinXprop]
+Dsetup['PinWprop'] = ["Width of PinHole in Plane [mm]",PinWprop]
+Dsetup['PinHprop'] = ["Height of PinHole in Plane [mm]",PinHprop]
+Dsetup['NpinZprop'] = ["Number of hori. points in Plane",NpinZprop]
+Dsetup['NpinYprop'] = ["Number of vert. points in Plane",NpinYprop]
+
 Dsetup['Ifixseed'] = ["Fix Seeds [0,1]",Ifixseed]
 
 _vsetup_plot_ini()
@@ -2852,6 +3059,7 @@ MSpec.add_cascade(label='Plot', menu=mPlotSpec)
 
 MFlux = Menu(MSpec,tearoff=0,font=Myfont)
 MDist = Menu(MSpec,tearoff=1,font=Myfont)
+MProp = Menu(MSpec,tearoff=1,font=Myfont)
 
 global MFd
 MFd = Menu(MSpec,tearoff=1,font=Myfont)
@@ -2862,6 +3070,7 @@ MElec = Menu(MFlux,tearoff=0,font=Myfont)
 mPlotSpec.add_cascade(label='Flux', menu=MFlux)
 mPlotSpec.add_cascade(label='Central Flux-density', menu=MFd)
 mPlotSpec.add_cascade(label='Distributions in Pinhole', menu=MDist)
+mPlotSpec.add_cascade(label='Distributions of Propagated Fields', menu=MProp)
 mPlotSpec.add_cascade(label='Electrons', menu=MElec)
 
 MElec.add_command(label="Zi-Zi'", command= lambda key='zizpi': _pElec(key))
@@ -2893,13 +3102,25 @@ MFluxStokes.add_command(label='S3', command= lambda key='s3': _pFluxSpec(key))
 #MFluxPola.add_command(label='P3', command= lambda key='p3': _pFluxSpec(key))
 
 MDistStokes = Menu(MDist,tearoff=0,font=Myfont)
+
 MDist.add_cascade(label='Stokes', menu=MDistStokes)
 MDist.add_command(label='Power', command= lambda key='p': _pFdPin(key))
 MDist.add_command(label='Select E_photon', command=_setup_esel)
+
 MDistStokes.add_command(label='S0', command= lambda key='s0': _pFdPin(key))
 MDistStokes.add_command(label='S1', command= lambda key='s1': _pFdPin(key))
 MDistStokes.add_command(label='S2', command= lambda key='s2': _pFdPin(key))
 MDistStokes.add_command(label='S3', command= lambda key='s3': _pFdPin(key))
+
+MPropStokes = Menu(MProp,tearoff=0,font=Myfont)
+
+MProp.add_cascade(label='Stokes', menu=MPropStokes)
+MProp.add_command(label='Select E_photon', command=_setup_esel)
+
+MPropStokes.add_command(label='S0', command= lambda key='s0': _pFdProp(key))
+MPropStokes.add_command(label='S1', command= lambda key='s1': _pFdProp(key))
+MPropStokes.add_command(label='S2', command= lambda key='s2': _pFdProp(key))
+MPropStokes.add_command(label='S3', command= lambda key='s3': _pFdProp(key))
 
 bExit = Button(Toolbar,text='Exit',font=Myfont,command=_exit)
 bExit.pack(side=LEFT)
