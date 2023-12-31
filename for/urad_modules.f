@@ -4,10 +4,10 @@
       module uradphasemod
 
       double precision, dimension(:,:), allocatable :: obsv_u, stokes_u,
-     &  track_u, fbunch_u
+     &  track_u, fbunch_u, obsvprop_u,stokesprop_u
       double precision, dimension(:), allocatable ::  epho_u,specpow_u,pow_u
 
-      double complex, dimension(:,:), allocatable :: arad_u
+      double complex, dimension(:,:), allocatable :: arad_u,aradprop_u
 
       double precision
      &  ebeam_u,gamma_u,curr_u,banwid_u,
@@ -16,10 +16,12 @@
      &  ephmin_u,ephmax_u,emith_u,emitv_u,
      &  perlen_u,shift_u,beffv_u,beffh_u,pherror_u,
      &  xbeta_u,betah_u,alphah_u,betav_u,alphav_u,espread_u,
-     &  disph_u,dispph_u,dispv_u,disppv_u,bunchlen_u,bunchcharge_u
+     &  disph_u,dispph_u,dispv_u,disppv_u,bunchlen_u,bunchcharge_u,
+     &  pinxprop_u,pinwprop_u,pinhprop_u
 
       integer nstep_u,nepho_u,nobsv_u,nbunch_u,npiny_u,npinz_u,
-     &  nper_u,modeph_u,modepin_u,modesphere_u,noranone_u,nlpoi_u
+     &  nper_u,modeph_u,modepin_u,modesphere_u,noranone_u,nlpoi_u,
+     &  nobsvprop_u,npinyprop_u,npinzprop_u
 
       integer
      &  ibunch_u,ihbunch_u,mthreads_u,nelec_u,icohere_u,modebunch_u

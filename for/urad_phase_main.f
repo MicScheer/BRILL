@@ -1,4 +1,5 @@
-*CMZ :          28/12/2023  15.32.18  by  Michael Scheer
+*CMZ :          31/12/2023  14.41.16  by  Michael Scheer
+*CMZ :  4.01/04 28/12/2023  15.32.18  by  Michael Scheer
 *CMZ :  4.01/03 17/05/2023  10.57.05  by  Michael Scheer
 *CMZ :  4.01/02 12/05/2023  13.32.32  by  Michael Scheer
 *CMZ :  4.01/00 22/02/2023  14.57.49  by  Michael Scheer
@@ -26,21 +27,21 @@
      &  alphah,alphav,espread,harm,b0eff,rhv,
      &  betah,betav,eps0h,eps0v,pinx,piny,pinz,
      &  disph,dispph,dispv,disppv,bunchcharge,bunchlen,efi(3),bfi(3),rn(3),
-     &  emith,emitv
+     &  emith,emitv,pinxprop,pinwprop,pinhprop
 
       real xran(1),rr(2),axr,axi,ayr,ayi,azr,azi
 
       integer :: idebug=0,noranone,i,
      &  npiny,npinz,nper,nepho,modeph,modepin,modesphere,nharm,iy,iz,iobs,
-     &  mthreads,nelec,icohere,ihbunch,ipho,iobph,iel,modebunch,
-     &  modewave=0,isto,nlpoi=0
+     &  mthreads,nelec,icohere,ihbunch,ipho,iobph,iel,modebunch,ifieldprop,
+     &  modewave=0,isto,nlpoi=0,nobsvprop,npinyprop,npinzprop
 
       namelist/uradphasen/
      &  perlen,shift,nper,beffv,beffh,
-     &  ebeam,curr,step,noranone,
+     &  ebeam,curr,step,noranone,nobsvprop,npinyprop,npinzprop,
      &  pinx,piny,pinz,pinw,pinh,npiny,npinz,modepin,modesphere,nharm,harm,
-     &  nepho,ephmin,ephmax,pherror,
-     &  mthreads,nelec,icohere,ihbunch,modeph,modebunch,
+     &  nepho,ephmin,ephmax,pherror,pinxprop,pinwprop,pinhprop,
+     &  mthreads,nelec,icohere,ihbunch,modeph,modebunch,ifieldprop,
      &  betah,betav,alphah,alphav,emith,emitv,espread,
      &  disph,dispph,dispv,disppv,bunchcharge,bunchlen
 
@@ -136,37 +137,24 @@
      &  modeph,pherror,modewave
      &  )
 
-c      if (idebug.ne.0) call util_break
-
-c      open(newunit=luna,file='urad_phase.sto')
-c      do iobs=1,nobsv_u
-c        do ipho=1,nepho_u
-c          iobph=iobs+nobsv_u*(ipho-1)
-c          write(luna,*)obsv_u(1:3,iobs),ipho,epho_u(ipho),stokes_u(1:4,iobph)
-c        enddo
-c      enddo
-c      close(luna)
-
       open(newunit=luna,file='urad_phase.fld')
+
       do iobs=1,nobsv_u
         do ipho=1,nepho_u
           iobph=iobs+nobsv_u*(ipho-1)
 
-c          efi=real(arad_u(1:3,iobph))
-c          bfi=real(arad_u(4:6,iobph))
-c          rn(1)=efi(2)*bfi(3)-efi(3)*bfi(2)
-c          rn(2)=efi(3)*bfi(1)-efi(1)*bfi(3)
-c          rn(3)=efi(1)*bfi(2)-efi(2)*bfi(1)
           rn(1)=real(arad_u(2,iobph)*conjg(arad_u(6,iobph))-arad_u(3,iobph)*conjg(arad_u(5,iobph)))
           rn(2)=real(arad_u(3,iobph)*conjg(arad_u(4,iobph))-arad_u(1,iobph)*conjg(arad_u(6,iobph)))
           rn(3)=real(arad_u(1,iobph)*conjg(arad_u(5,iobph))-arad_u(2,iobph)*conjg(arad_u(4,iobph)))
           rn=rn/norm2(rn)
+
           axr=real(arad_u(1,iobph))
           axi=imag(arad_u(1,iobph))
           ayr=real(arad_u(2,iobph))
           ayi=imag(arad_u(2,iobph))
           azr=real(arad_u(3,iobph))
           azi=imag(arad_u(3,iobph))
+
           write(luna,'(3(1pe15.6e3),i10,21(1pe15.6e3))')
      &      obsv_u(1:3,iobs),ipho,epho_u(ipho),stokes_u(1:4,iobph),pow_u(iobs),
      &      real(arad_u(1,iobph)),imag(arad_u(1,iobph)),
@@ -176,8 +164,7 @@ c          rn(3)=efi(1)*bfi(2)-efi(2)*bfi(1)
      &      real(arad_u(5,iobph)),imag(arad_u(5,iobph)),
      &      real(arad_u(6,iobph)),imag(arad_u(6,iobph)),
      &      rn
-c          print*,(axr**2+axi**2+ayr**2+ayi**2+azr**2+azi**2)*115370630051.33882/
-c     &      stokes_u(1,iobph),stokes_u(1,iobph)
+
         enddo
       enddo
       close(luna)
@@ -246,8 +233,52 @@ c     &      stokes_u(1,iobph),stokes_u(1,iobph)
       flush(luna)
       close(luna)
 
+      if (ifieldprop.ne.0) then
+        pinxprop_u=pinxprop
+        pinwprop_u=pinwprop
+        pinhprop_u=pinhprop
+        npinyprop_u=max(1,npinyprop)
+        npinzprop_u=max(1,npinzprop)
+
+        call urad_phase_prop(mthreads)
+
+        open(newunit=luna,file='urad_phase.fdp')
+
+        do iobs=1,nobsvprop_u
+          do ipho=1,nepho_u
+            iobph=iobs+nobsvprop_u*(ipho-1)
+
+            rn(1)=real(aradprop_u(2,iobph)*conjg(aradprop_u(6,iobph))-aradprop_u(3,iobph)*conjg(aradprop_u(5,iobph)))
+            rn(2)=real(aradprop_u(3,iobph)*conjg(aradprop_u(4,iobph))-aradprop_u(1,iobph)*conjg(aradprop_u(6,iobph)))
+            rn(3)=real(aradprop_u(1,iobph)*conjg(aradprop_u(5,iobph))-aradprop_u(2,iobph)*conjg(aradprop_u(4,iobph)))
+            rn=rn/norm2(rn)
+
+            axr=real(aradprop_u(1,iobph))
+            axi=imag(aradprop_u(1,iobph))
+            ayr=real(aradprop_u(2,iobph))
+            ayi=imag(aradprop_u(2,iobph))
+            azr=real(aradprop_u(3,iobph))
+            azi=imag(aradprop_u(3,iobph))
+
+            write(luna,'(3(1pe15.6e3),i10,20(1pe15.6e3))')
+     &        obsvprop_u(1:3,iobs),ipho,epho_u(ipho),stokesprop_u(1:4,iobph),
+     &        real(aradprop_u(1,iobph)),imag(aradprop_u(1,iobph)),
+     &        real(aradprop_u(2,iobph)),imag(aradprop_u(2,iobph)),
+     &        real(aradprop_u(3,iobph)),imag(aradprop_u(3,iobph)),
+     &        real(aradprop_u(4,iobph)),imag(aradprop_u(4,iobph)),
+     &        real(aradprop_u(5,iobph)),imag(aradprop_u(5,iobph)),
+     &        real(aradprop_u(6,iobph)),imag(aradprop_u(6,iobph)),
+     &        rn
+
+          enddo
+        enddo
+
+        close(luna)
+
+      endif
+
       end
-*CMZ :          28/12/2023  15.30.57  by  Michael Scheer
+*CMZ :  4.01/04 28/12/2023  15.30.57  by  Michael Scheer
 *CMZ :  4.01/02 12/05/2023  17.13.05  by  Michael Scheer
 *CMZ :  4.01/00 21/02/2023  16.51.29  by  Michael Scheer
 *-- Author : Michael Scheer
@@ -447,7 +478,8 @@ c      endif
       if (modewave.ne.0) call util_zeit_kommentar(6,'Leaving urad_phase')
 
       end
-*CMZ :          28/12/2023  13.39.24  by  Michael Scheer
+*CMZ :          30/12/2023  18.27.14  by  Michael Scheer
+*CMZ :  4.01/04 28/12/2023  13.39.24  by  Michael Scheer
 *CMZ :  4.01/02 14/05/2023  11.47.49  by  Michael Scheer
 *CMZ :  4.01/00 22/02/2023  14.34.04  by  Michael Scheer
 *CMZ :  4.00/17 05/12/2022  10.30.41  by  Michael Scheer
@@ -496,7 +528,7 @@ c+seq,uservar.
      &  efx,efy,efz,eharm1,ecdipev,ebeam,dtpho,dt,dtelec,dd0,debeam,
      &  drn0(3),drn00(3),ds,dr0(3),dr00(3),drn(3),dpp,dph,dist,dist0,dobs(3),
      &  bunnor,clight,bunchx,beta,beff,spow,
-     &  zp0,yp0,rph,
+     &  zp0,yp0,rph,anor,
      &  xkellip,zampell,yampell,parkv,parkh,zpampell,ypampell,emom
 
       double complex, dimension (:), allocatable ::
@@ -1289,6 +1321,13 @@ c     &          )
 
       if (iemit.ne.0) deallocate(eall)
 
+      iobfr=nobsv_u*nepho_u/2+1
+      amp(1:3)=arad_u(1:3,iobfr)
+
+      anor=sqrt(stokes_u(1,iobfr)/
+     &  (amp(1)*dconjg(amp(1))+amp(2)*dconjg(amp(2))+amp(3)*dconjg(amp(3))))
+      arad_u=arad_u*anor
+
       return
       end
 *CMZ :  4.01/02 09/05/2023  13.11.31  by  Michael Scheer
@@ -1312,7 +1351,8 @@ c     &          )
 
       return
       end
-*CMZ :          28/12/2023  15.35.56  by  Michael Scheer
+*CMZ :          30/12/2023  16.09.34  by  Michael Scheer
+*CMZ :  4.01/04 28/12/2023  15.35.56  by  Michael Scheer
 *CMZ :  4.01/02 12/05/2023  09.04.01  by  Michael Scheer
 *CMZ :  4.01/00 22/02/2023  15.28.31  by  Michael Scheer
 *CMZ :  4.00/15 28/04/2022  15.32.20  by  Michael Scheer
@@ -2104,25 +2144,25 @@ c tracking stops if trajectory hits this plane
         aradey(kfreq)=aradey(kfreq)*rspn
         aradez(kfreq)=aradez(kfreq)*rspn
 
-        apolh=real(
+        apolh=
      &    aradex(kfreq)*conjg(vstokes(1,1))
      &    +aradey(kfreq)*conjg(vstokes(1,2))
-     &    +aradez(kfreq)*conjg(vstokes(1,3)))
+     &    +aradez(kfreq)*conjg(vstokes(1,3))
 
-        apolr=real(
+        apolr=
      &    aradex(kfreq)*conjg(vstokes(2,1))
      &    +aradey(kfreq)*conjg(vstokes(2,2))
-     &    +aradez(kfreq)*conjg(vstokes(2,3)))
+     &    +aradez(kfreq)*conjg(vstokes(2,3))
 
-        apoll=real(
+        apoll=
      &    aradex(kfreq)*conjg(vstokes(3,1))
      &    +aradey(kfreq)*conjg(vstokes(3,2))
-     &    +aradez(kfreq)*conjg(vstokes(3,3)))
+     &    +aradez(kfreq)*conjg(vstokes(3,3))
 
-        apol45=real(
+        apol45=
      &    aradex(kfreq)*conjg(vstokes(4,1))
      &    +aradey(kfreq)*conjg(vstokes(4,2))
-     &    +aradez(kfreq)*conjg(vstokes(4,3)))
+     &    +aradez(kfreq)*conjg(vstokes(4,3))
 
         stok1=real(
      &    apolr*conjg(apolr)+
@@ -2152,7 +2192,241 @@ c tracking stops if trajectory hits this plane
 
       return
       end
-*CMZ :          17/12/2023  11.45.19  by  Michael Scheer
+*CMZ :          31/12/2023  14.57.58  by  Michael Scheer
+*CMZ :  4.01/04 28/12/2023  15.30.57  by  Michael Scheer
+*CMZ :  4.01/02 12/05/2023  17.13.05  by  Michael Scheer
+*CMZ :  4.01/00 21/02/2023  16.51.29  by  Michael Scheer
+*-- Author : Michael Scheer
+      subroutine urad_phase_prop(mthreads)
+
+      use omp_lib
+      use uradphasemod
+
+      implicit none
+
+      double complex, dimension(:), allocatable :: expom,dexpom,phshift
+
+      double complex :: apolh,apolr,apoll,apol45
+
+      double precision dx,dx2,dy,dyph,dzph,dz,y,z,omc,domc,phlowz,phlowy,dzy2,eps(6),
+     &  dr,drred,da,x,xobs,yobs,zobs,rlambda1,ans,stok1,stok2,stok3,stok4
+
+      integer mthreads,iy,iz,n,jy,jz,iobs,ieps,ifrq,iobfr,jobs,jobfr
+
+*KEEP,phyconparam.
+      include 'phyconparam.cmn'
+*KEEP,uservar.
+      include 'uservar.cmn'
+*KEND.
+
+      nobsvprop_u=npinyprop_u*npinzprop_u
+
+      allocate(
+     &  obsvprop_u(3,nobsvprop_u),stokesprop_u(4,nobsvprop_u*nepho_u),
+     &  aradprop_u(6,nobsvprop_u*nepho_u),
+     &  expom(nobsv_u*nepho_u),dexpom(nobsv_u*nepho_u),
+     &  phshift(nobsv_u))
+
+      aradprop_u=(0.0d0,0.0d0)
+
+      if (npinyprop_u.gt.1) then
+        dyph=pinhprop_u/1000.0d0/dble(npinyprop_u-1)
+        phlowy=-pinhprop_u/2000.0d0
+      else
+        dyph=pinhprop_u/1000.0d0
+        phlowy=-pinhprop_u/1000.0d0
+      endif
+
+      if (npinzprop_u.gt.1) then
+        dzph=pinwprop_u/1000.0d0/dble(npinzprop_u-1)
+        phlowz=-pinwprop_u/2000.0d0
+      else
+        dzph=pinwprop_u/1000.0d0
+        phlowz=-pinwprop_u/1000.0d0
+      endif
+
+      da=pinw_u*pinh_u/dble(max(1,npinz_u-1)*max(1,npiny_u-1))
+
+      n=0
+
+      x=pinxprop_u/1000.0d0
+      y=phlowy-dyph
+      do iy=1,npinyprop_u
+        y=y+dyph
+        if (abs(y).lt.1.0d-12) y=0.0d0
+        z=phlowz-dzph
+        do iz=1,npinzprop_u
+          n=n+1
+          z=z+dzph
+          if (abs(z).lt.1.0d-12) z=0.0d0
+          obsvprop_u(1:3,n)=[x,y,z]
+        enddo
+      enddo
+
+      omc=epho_u(1)/(hbarev1*clight1)
+      if(nepho_u.gt.1) then
+        domc=(epho_u(2)-epho_u(1))/(hbarev1*clight1)
+      endif
+
+!$OMP PARALLEL NUM_THREADS(mthreads) DEFAULT(PRIVATE)
+!$OMP& SHARED(domc,omc,da,obsvprop_u,obsv_u,nobsv_u,nobsvprop_u,epho_u,nepho_u,aradprop_u,arad_u)
+
+!$OMP DO
+
+      do jobs=1,nobsvprop_u
+c        ith=OMP_GET_THREAD_NUM()+1
+
+        x=obsvprop_u(1,jobs)
+        y=obsvprop_u(2,jobs)
+        z=obsvprop_u(3,jobs)
+
+        DO IOBS=1,NOBSV_u
+
+          XOBS=OBSV_u(1,IOBS)/1000.0d0
+          YOBS=OBSV_u(2,IOBS)/1000.0d0
+          ZOBS=OBSV_u(3,IOBS)/1000.0d0
+
+          dx=xobs-x
+          dx2=dx*dx
+          DY=YOBS-y
+          DZ=ZOBS-z
+          DZY2=DZ*DZ+DY*DY
+
+C     TO MAKE SURE THAT TAYLOR-EXPANSION IS VALID
+
+          IF (DZY2.GT.0.01D0*dx2) THEN
+            WRITE(6,*)'*** ERROR IN URAD_PHASE_PROP ***'
+            WRITE(6,*)'CHECK INPUT FILE AND INCREASE PinX'
+            WRITE(6,*)'*** PROGRAM ABORTED ***'
+            STOP
+          ENDIF
+
+          EPS(1)=DZY2/dx2
+          DO IEPS=2,6
+            EPS(IEPS)=EPS(IEPS-1)*EPS(1)
+          ENDDO !IEPS
+
+c      TAYLOR-EXPANSION DONE WITH REDUCE
+c     IN "WTAY1.RED";
+c     on rounded;
+c     on numval;
+c     precision 13;
+c     F:=SQRT(1+EPS);
+c     DR:=TAY1(F,EPS,6);
+c     ON FORT;
+c     OUT "RED.FOR";
+c     DR;
+c     SHUT "RED.FOR";
+C ans is actually reduce by 1.0 to avoid large overall phase
+
+          ans=-0.0205078125D0*eps(6)+0.02734375D0*eps(5)
+     &      -0.0390625D0*eps(4)+
+     &      0.0625D0*eps(3)-0.125D0*eps(2)+0.5D0*eps(1)
+
+          DR=DABS(dx*(ANS+1.0D0))
+          DRRED=-DABS(dx*ANS)
+
+          IF (DR.NE.0.0d0) THEN
+            EXPOM(IOBS)=CDEXP(DCMPLX(0.0d0,DRRED*OMC))/DR
+          ELSE
+            EXPOM(IOBS)=1.0D0
+          ENDIF
+
+          DEXPOM(IOBS)=CDEXP(DCMPLX(0.0d0,DRRED*DOMC))
+c            print*,ith,iobs,expom(iobs)
+c+seq,dum2.
+        ENDDO   !NOBS
+
+        DO ifrq=1,nepho_u
+
+          jOBFR=jOBS+NOBSVprop_u*(ifrq-1)
+
+          RLAMBDA1=epho_u(ifrq)/WTOE1*1.0D9   !1/lambda[m]=1/(wtoe1/freq*1.e-9)
+
+          DO IOBS=1,NOBSV_u
+
+            IOBFR=IOBS+NOBSV_u*(ifrq-1)
+
+            IF (ifrq.EQ.1) THEN
+              PHSHIFT(IOBS)=EXPOM(IOBFR)
+            ELSE
+              PHSHIFT(IOBS)=PHSHIFT(IOBS)*DEXPOM(IOBS)
+            ENDIF   !(ifrq.EQ.1)
+
+            if (dx.gt.0.0d0) then
+              aradprop_u(1:3,jobfr)=aradprop_u(1:3,jobfr)+
+     &          arad_u(1:3,iobfr)*PHSHIFT(IOBS)*da*rlambda1
+              aradprop_u(4:6,jobfr)=aradprop_u(4:6,jobfr)+
+     &          dconjg(arad_u(4:6,iobfr))*PHSHIFT(IOBS)*da*rlambda1
+            else
+              aradprop_u(1:3,jobfr)=aradprop_u(1:3,jobfr)+
+     &          dconjg(arad_u(1:3,iobfr))*PHSHIFT(IOBS)*da*rlambda1
+              aradprop_u(4:6,jobfr)=aradprop_u(4:6,jobfr)+
+     &          arad_u(4:6,iobfr)*PHSHIFT(IOBS)*da*rlambda1
+            endif
+          ENDDO   !NFREQ
+
+        ENDDO  !NOBSV
+
+      ENDDO !nobsvprop_u
+
+!$OMP END DO
+
+!$OMP END PARALLEL
+
+      do ifrq=1,nepho_u
+        do jobs=1,nobsvprop_u
+
+          jobfr=jobs+nobsvprop_u*(ifrq-1)
+
+          apolh=
+     &      aradprop_u(1,jobfr)*dconjg(vstokes(1,1))+
+     &      aradprop_u(2,jobfr)*dconjg(vstokes(1,2))+
+     &      aradprop_u(3,jobfr)*dconjg(vstokes(1,3))
+
+          apolr=
+     &      aradprop_u(1,jobfr)*dconjg(vstokes(2,1))+
+     &      aradprop_u(2,jobfr)*dconjg(vstokes(2,2))+
+     &      aradprop_u(3,jobfr)*dconjg(vstokes(2,3))
+
+          apoll=
+     &      aradprop_u(1,jobfr)*dconjg(vstokes(3,1))+
+     &      aradprop_u(2,jobfr)*dconjg(vstokes(3,2))+
+     &      aradprop_u(3,jobfr)*dconjg(vstokes(3,3))
+
+          apol45=
+     &      aradprop_u(1,jobfr)*dconjg(vstokes(4,1))+
+     &      aradprop_u(2,jobfr)*dconjg(vstokes(4,2))+
+     &      aradprop_u(3,jobfr)*dconjg(vstokes(4,3))
+
+          stok1=dreal(
+     &      apolr*conjg(apolr)+
+     &      apoll*conjg(apoll))
+
+          stok2=-stok1+
+     &      dreal(2.*apolh*conjg(apolh))
+
+          stok3=
+     &      dreal(2.*apol45*conjg(apol45))-
+     &      stok1
+
+          stok4=dreal(
+     &      apolr*conjg(apolr)-
+     &      apoll*conjg(apoll))
+
+          stokesprop_u(1,jobfr)=stok1
+          stokesprop_u(2,jobfr)=stok2
+          stokesprop_u(3,jobfr)=stok3
+          stokesprop_u(4,jobfr)=stok4
+
+        enddo
+      enddo
+
+      obsvprop_u=obsvprop_u*1000.0d0
+
+      return
+      end
+*CMZ :  4.01/04 17/12/2023  11.45.19  by  Michael Scheer
 *CMZ :  4.01/02 08/05/2023  13.06.52  by  Michael Scheer
 *CMZ :  4.01/00 10/02/2023  13.27.16  by  Michael Scheer
 *CMZ :  4.00/15 28/04/2022  15.32.20  by  Michael Scheer
@@ -2910,7 +3184,7 @@ c tracking stops if trajectory hits this plane
 
       return
       end
-*CMZ :          25/11/2023  13.39.02  by  Michael Scheer
+*CMZ :  4.01/04 25/11/2023  13.39.02  by  Michael Scheer
 *CMZ :  4.01/02 09/05/2023  13.15.30  by  Michael Scheer
 *CMZ :  4.00/15 28/04/2022  11.45.17  by  Michael Scheer
 *CMZ :  4.00/13 16/11/2021  17.18.53  by  Michael Scheer
