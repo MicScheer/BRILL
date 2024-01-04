@@ -985,8 +985,73 @@ def _pFdProp(key='s0'):
       text(xuni,yuni,tunit,halign='left',angle=auni)
     #endif
 
+  elif keyu == 'EYI' or keyu == 'EYR' or keyu == 'EZR' or keyu == 'EZI':
+
+    if keyu == 'EYR': htit = 'Distribution of Ey_real'
+    elif keyu == 'EYI': htit = 'Distribution of Ey_imag'
+    elif keyu == 'EZR': htit = 'Distribution of Ez_real'
+    elif keyu == 'EZI': htit = 'Distribution of Ez_imag'
+
+    plopt = Vsetup_Plot[0][1][1]
+
+    if plopt == 'surf' or plopt == 'boxes' or plopt == 'inter':
+      hnam = 'HpinProp_' + keyu
+      hbook2(hnam,htit,NpinZprop,zmin,zmax,NpinYprop,ymin,ymax,overwrite=1)
+      if Modepin != 0:
+        print("\n***Modepin != 0 not yet for propagated fields available ***")
+        return
+        nproj2(nbun,"z:y",keyl,selgam,idh=hnam,ioverwrite=0)
+      else:
+        nproj2(nfdp,"z:y",keyl,selgam,idh=hnam,ioverwrite=0)
+      #endif
+      hplave(hnam,plopt)
+    elif plopt == 'scat3d':
+      if Modepin != 0:
+        print("\n***Modepin != 0 not yet for propagated fields available ***")
+        return
+        nplot(nbun,"z:y:"+keyl+":"+keyl,selgam)
+      else:
+        nplot(nfdp,"z:y:"+keyl+":"+keyl,selgam)
+      #endif
+    else:
+      if Modepin != 0:
+        print("\n***Modepin != 0 not yet for propagated fields available ***")
+        return
+        nplot(nbun,"z:y",selgam,keyl)
+      else:
+        nplot(nfdp,"z:y",selgam,keyl)
+      #endif
+    #endif
+
+    tunit = 'Sqrt(N$_{\gamma}$' + '/mm$^2$/s/0.1' + '%BW/' + str(int(Curr*1000)) + "mA)"
+
+    cbp = getcolorbarpad()
+    xuni = 0.97 + cbp
+    yuni = 0.5
+    auni = 90.
+
+    ax = plt.gca()
+    if type(ax) == Tax2d:
+      zunit = ''
+    else:
+      zunit = tunit
+    #endif
+    if keyu == 'EYR':
+      txyz("Dens. of Ey_real for E$_{\gamma}$  = " + pg5(Esel) + " eV","z [mm]","y [mm]",zunit)
+    elif keyu == 'EYI':
+      txyz("Dens. of Ey_imag for E$_{\gamma}$  = " + pg5(Esel) + " eV","z [mm]","y [mm]",zunit)
+    elif keyu == 'EZR':
+      txyz("Dens. of Ez_real for E$_{\gamma}$  = " + pg5(Esel) + " eV","z [mm]","y [mm]",zunit)
+    elif keyu == 'EZI':
+      txyz("Dens. of Ez_imag for E$_{\gamma}$  = " + pg5(Esel) + " eV","z [mm]","y [mm]",zunit)
+    #endif
+
+    if type(ax) == Tax2d:
+      text(xuni,yuni,tunit,halign='left',angle=auni)
+    #endif
+
   elif keyu == 'P0' or keyu == 'P1' or keyu == 'P2' or keyu == 'P3':
-    Quit("Baustelle P")
+    Quit("Baustelle Pprop")
 
     if keyu == 'P0': htit = 'Distribution of P$_0$'
     elif keyu == 'P2': htit = 'Distribution of P$_2$'
@@ -1165,8 +1230,67 @@ def _pFdPin(key='s0'):
       text(xuni,yuni,tunit,halign='left',angle=auni)
     #endif
 
+  elif keyu == 'EYI' or keyu == 'EYR' or keyu == 'EZI' or keyu == 'EZR':
+
+    if keyu == 'EYR': htit = 'Distribution of Ey_real'
+    elif keyu == 'EYI': htit = 'Distribution of Ey_imag'
+    elif keyu == 'EZR': htit = 'Distribution of Ez_real'
+    elif keyu == 'EZI': htit = 'Distribution of Ez_imag$'
+
+    plopt = Vsetup_Plot[0][1][1]
+
+    if plopt == 'surf' or plopt == 'boxes' or plopt == 'inter':
+      hnam = 'Hpin_' + keyu
+      hbook2(hnam,htit,NpinZ,zmin,zmax,NpinY,ymin,ymax,overwrite=1)
+      if Modepin != 0:
+        nproj2(nbun,"z:y",keyl,selgam,idh=hnam,ioverwrite=0)
+      else:
+        nproj2(nfld,"z:y",keyl,selgam,idh=hnam,ioverwrite=0)
+      #endif
+      hplave(hnam,plopt)
+    elif plopt == 'scat3d':
+      if Modepin != 0:
+        nplot(nbun,"z:y:"+keyl+":"+keyl,selgam)
+      else:
+        nplot(nfld,"z:y:"+keyl+":"+keyl,selgam)
+      #endif
+    else:
+      if Modepin != 0:
+        nplot(nbun,"z:y",selgam,keyl)
+      else:
+        nplot(nfld,"z:y",selgam,keyl)
+      #endif
+    #endif
+
+    tunit = 'Sqrt(N$_{\gamma}$' + '/mm$^2$/s/0.1' + '%BW/' + str(int(Curr*1000)) + "mA)"
+
+    cbp = getcolorbarpad()
+    xuni = 0.97 + cbp
+    yuni = 0.5
+    auni = 90.
+
+    ax = plt.gca()
+    if type(ax) == Tax2d:
+      zunit = ''
+    else:
+      zunit = tunit
+    #endif
+    if keyu == 'EYR':
+      txyz("Dens. of Ey_real for E$_{\gamma}$  = " + pg5(Esel) + " eV","z [mm]","y [mm]",zunit)
+    elif keyu == 'EYI':
+      txyz("Dens. of Ey_imag for E$_{\gamma}$  = " + pg5(Esel) + " eV","z [mm]","y [mm]",zunit)
+    elif keyu == 'EZR':
+      txyz("Dens. of Ez_real for E$_{\gamma}$  = " + pg5(Esel) + " eV","z [mm]","y [mm]",zunit)
+    elif keyu == 'EZI':
+      txyz("Dens. of Ez_imag for E$_{\gamma}$  = " + pg5(Esel) + " eV","z [mm]","y [mm]",zunit)
+    #endif
+
+    if type(ax) == Tax2d:
+      text(xuni,yuni,tunit,halign='left',angle=auni)
+    #endif
+
   elif keyu == 'P0' or keyu == 'P1' or keyu == 'P2' or keyu == 'P3':
-    Quit("Baustelle P")
+    Quit("Baustelle Pspec")
 
     if keyu == 'P0': htit = 'Distribution of P$_0$'
     elif keyu == 'P2': htit = 'Distribution of P$_2$'
@@ -1307,8 +1431,6 @@ def _pFdSpec(key='s0'):
   if np.isnan(s0max): return
 
   optnstat()
-  #getzone()
-  #zone(1,1)
 
   setmarkersize(float(Vsetup_Plot[1][1][1]))
   setlinewidth(float(Vsetup_Plot[2][1][1]))
@@ -1324,7 +1446,7 @@ def _pFdSpec(key='s0'):
     titp = "\n" + keyu + " (x={:.3g}m, y={:.3g}mm, z={:.3g}mm)". \
     format(PinX/1000.,PinY,PinZ)
   elif keyl[0] == 'p':
-    Quit("Baustelle P")
+    Quit("Baustelle PFdSpec")
   #endif key
 
   txyz(titp,xtit,ytit)
@@ -3102,8 +3224,10 @@ MFluxStokes.add_command(label='S3', command= lambda key='s3': _pFluxSpec(key))
 #MFluxPola.add_command(label='P3', command= lambda key='p3': _pFluxSpec(key))
 
 MDistStokes = Menu(MDist,tearoff=0,font=Myfont)
+MDistFields = Menu(MDist,tearoff=0,font=Myfont)
 
 MDist.add_cascade(label='Stokes', menu=MDistStokes)
+MDist.add_cascade(label='Field Amplitudes', menu=MDistFields)
 MDist.add_command(label='Power', command= lambda key='p': _pFdPin(key))
 MDist.add_command(label='Select E_photon', command=_setup_esel)
 
@@ -3112,15 +3236,27 @@ MDistStokes.add_command(label='S1', command= lambda key='s1': _pFdPin(key))
 MDistStokes.add_command(label='S2', command= lambda key='s2': _pFdPin(key))
 MDistStokes.add_command(label='S3', command= lambda key='s3': _pFdPin(key))
 
+MDistFields.add_command(label='Ey_real', command= lambda key='eyr': _pFdPin(key))
+MDistFields.add_command(label='Ey_imag', command= lambda key='eyi': _pFdPin(key))
+MDistFields.add_command(label='Ez_real', command= lambda key='ezr': _pFdPin(key))
+MDistFields.add_command(label='Ez_imag', command= lambda key='ezi': _pFdPin(key))
+
 MPropStokes = Menu(MProp,tearoff=0,font=Myfont)
+MPropFields = Menu(MProp,tearoff=0,font=Myfont)
 
 MProp.add_cascade(label='Stokes', menu=MPropStokes)
+MProp.add_cascade(label='Field Amplitudes', menu=MPropFields)
 MProp.add_command(label='Select E_photon', command=_setup_esel)
 
 MPropStokes.add_command(label='S0', command= lambda key='s0': _pFdProp(key))
 MPropStokes.add_command(label='S1', command= lambda key='s1': _pFdProp(key))
 MPropStokes.add_command(label='S2', command= lambda key='s2': _pFdProp(key))
 MPropStokes.add_command(label='S3', command= lambda key='s3': _pFdProp(key))
+
+MPropFields.add_command(label='Ey_real', command= lambda key='EYR': _pFdProp(key))
+MPropFields.add_command(label='Ey_imag', command= lambda key='EYI': _pFdProp(key))
+MPropFields.add_command(label='Ez_real', command= lambda key='EZR': _pFdProp(key))
+MPropFields.add_command(label='Ez_imag', command= lambda key='EZI': _pFdProp(key))
 
 bExit = Button(Toolbar,text='Exit',font=Myfont,command=_exit)
 bExit.pack(side=LEFT)

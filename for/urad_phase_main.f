@@ -278,6 +278,7 @@
       endif
 
       end
+*CMZ :          04/01/2024  09.27.49  by  Michael Scheer
 *CMZ :  4.01/04 28/12/2023  15.30.57  by  Michael Scheer
 *CMZ :  4.01/02 12/05/2023  17.13.05  by  Michael Scheer
 *CMZ :  4.01/00 21/02/2023  16.51.29  by  Michael Scheer
@@ -300,9 +301,8 @@
 
 *KEEP,phyconparam.
       include 'phyconparam.cmn'
-*KEEP,uservar.
-      include 'uservar.cmn'
 *KEND.
+c+seq,uservar.
 
       double precision
      &  perlen,shift,ebeam,curr,step,banwid,
@@ -356,8 +356,6 @@
       npinz_u=max(1,npinz_u)
 
       nlpoi_u=nlpoi
-c      nlpoi_u=user(12)*nper_u
-      nlpoi_u=user(12)
 
       if (modepin.eq.0) then
         nobsv_u=npiny_u*npinz_u
@@ -478,7 +476,7 @@ c      endif
       if (modewave.ne.0) call util_zeit_kommentar(6,'Leaving urad_phase')
 
       end
-*CMZ :          30/12/2023  18.27.14  by  Michael Scheer
+*CMZ :          04/01/2024  09.27.11  by  Michael Scheer
 *CMZ :  4.01/04 28/12/2023  13.39.24  by  Michael Scheer
 *CMZ :  4.01/02 14/05/2023  11.47.49  by  Michael Scheer
 *CMZ :  4.01/00 22/02/2023  14.34.04  by  Michael Scheer
@@ -499,7 +497,7 @@ c      endif
 *KEEP,track.
       include 'track.cmn'
 *KEND.
-c+seq,uservar.
+cc+seq,uservar.
 
       complex*16 cde
       double precision :: h2,ddist,wlen,dphi,phase0
@@ -1351,7 +1349,7 @@ c     &          )
 
       return
       end
-*CMZ :          30/12/2023  16.09.34  by  Michael Scheer
+*CMZ :          04/01/2024  09.27.11  by  Michael Scheer
 *CMZ :  4.01/04 28/12/2023  15.35.56  by  Michael Scheer
 *CMZ :  4.01/02 12/05/2023  09.04.01  by  Michael Scheer
 *CMZ :  4.01/00 22/02/2023  15.28.31  by  Michael Scheer
@@ -1564,9 +1562,7 @@ c variables to zero and to treat them as saved''
       integer :: idebug=0
 
 c      integer,save :: ical=0
-*KEEP,uservar.
-      include 'uservar.cmn'
-*KEND.
+c+seq,uservar.
 
       data bshift/0.5d0/
       data clight/2.99792458d8/
@@ -2192,7 +2188,7 @@ c tracking stops if trajectory hits this plane
 
       return
       end
-*CMZ :          31/12/2023  14.57.58  by  Michael Scheer
+*CMZ :          04/01/2024  09.27.11  by  Michael Scheer
 *CMZ :  4.01/04 28/12/2023  15.30.57  by  Michael Scheer
 *CMZ :  4.01/02 12/05/2023  17.13.05  by  Michael Scheer
 *CMZ :  4.01/00 21/02/2023  16.51.29  by  Michael Scheer
@@ -2215,9 +2211,8 @@ c tracking stops if trajectory hits this plane
 
 *KEEP,phyconparam.
       include 'phyconparam.cmn'
-*KEEP,uservar.
-      include 'uservar.cmn'
 *KEND.
+c+seq,uservar.
 
       nobsvprop_u=npinyprop_u*npinzprop_u
 
