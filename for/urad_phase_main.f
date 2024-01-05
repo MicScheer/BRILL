@@ -2421,6 +2421,7 @@ c+seq,dum2.
 
       return
       end
+*CMZ :          05/01/2024  11.27.46  by  Michael Scheer
 *CMZ :  4.01/04 17/12/2023  11.45.19  by  Michael Scheer
 *CMZ :  4.01/02 08/05/2023  13.06.52  by  Michael Scheer
 *CMZ :  4.01/00 10/02/2023  13.27.16  by  Michael Scheer
@@ -2626,9 +2627,7 @@ c variables to zero and to treat them as ,,saved''
       integer :: kcount=1,modewave
 
 c      integer,save :: ical=0
-*KEEP,uservar.
-      include 'uservar.cmn'
-*KEND.
+c+seq,uservar.
 
 
       data bshift/0.5d0/
@@ -2985,14 +2984,6 @@ C--- LOOP OVER ALL FREQUENCES
             aradx(ifreq)=aradx(ifreq)+RARG(1)*EXPOMV2
             arady(ifreq)=arady(ifreq)+RARG(2)*EXPOMV2
             aradz(ifreq)=aradz(ifreq)+RARG(3)*EXPOMV2
-
-c            if (ifreq.eq.nphener/2) then
-c              if (user(1).eq.0) then
-c                write(56,*)ical,izaehl,x2,dphase,phase,real(aradz(ifreq)),real(RARG(3)*EXPOMV2)
-c              else
-c                write(57,*)ical,izaehl,x2,dphase,phase,real(aradz(ifreq)),real(RARG(3)*EXPOMV2)
-c              endif
-c            endif
 
           ENDDO   !LOOP OVER ALL FREQUENCES
 
