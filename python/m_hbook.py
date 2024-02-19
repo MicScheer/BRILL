@@ -1588,10 +1588,16 @@ from mpl_toolkits.mplot3d import Axes3D
 from mpl_toolkits import mplot3d
 from matplotlib import cm #color maps
 
-#import pyhull
-#from pyhull.convex_hull import ConvexHull
-from pyhull import qconvex, qdelaunay, qvoronoi
-
+try:
+  import pyhull
+except:
+  try:
+    #from pyhull.convex_hull import ConvexHull
+    from pyhull import qconvex, qdelaunay, qvoronoi
+  except:
+    pass
+  #endtry
+#endtry
 
 global \
 clight1,cgam1,cq1,alpha1,dnull1,done1,sqrttwopi1,\
