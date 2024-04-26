@@ -1,4 +1,4 @@
-*CMZ :          16/04/2024  14.41.20  by  Michael Scheer
+*CMZ :  4.01/05 16/04/2024  14.41.20  by  Michael Scheer
 *CMZ :  4.01/04 28/12/2023  15.32.18  by  Michael Scheer
 *CMZ :  4.01/03 17/05/2023  10.57.05  by  Michael Scheer
 *CMZ :  4.01/02 12/05/2023  13.32.32  by  Michael Scheer
@@ -450,7 +450,7 @@ c              fsum=max(1.0d0,dreal(fieldbunch(7,iz,iy,iepho)))
       endif
 
       end
-*CMZ :          26/04/2024  10.49.56  by  Michael Scheer
+*CMZ :  4.01/05 26/04/2024  10.49.56  by  Michael Scheer
 *CMZ :  4.01/04 28/12/2023  15.30.57  by  Michael Scheer
 *CMZ :  4.01/02 12/05/2023  17.13.05  by  Michael Scheer
 *CMZ :  4.01/00 21/02/2023  16.51.29  by  Michael Scheer
@@ -658,7 +658,8 @@ c      if (modewave.ne.0) call util_zeit_kommentar(6,'Leaving urad_phase')
       call util_zeit_kommentar_delta(6,'Leaving urad_phase',0)
 
       end
-*CMZ :          26/04/2024  07.41.13  by  Michael Scheer
+*CMZ :          26/04/2024  20.53.24  by  Michael Scheer
+*CMZ :  4.01/05 26/04/2024  07.41.13  by  Michael Scheer
 *CMZ :  4.01/04 28/12/2023  13.39.24  by  Michael Scheer
 *CMZ :  4.01/02 14/05/2023  11.47.49  by  Michael Scheer
 *CMZ :  4.01/00 22/02/2023  14.34.04  by  Michael Scheer
@@ -1174,8 +1175,8 @@ c+self.
             !call util_random(2,pran)
             pran(:)=pranall(:,ielec)
             if (iamppincirc.eq.0) then
-              obs(2)=pc(2)+(pran(1)-0.5)*pw
-              obs(3)=pc(3)+(pran(2)-0.5)*ph
+              obs(2)=pc(2)+(pran(1)-0.5)*ph
+              obs(3)=pc(3)+(pran(2)-0.5)*pw
             else
               rpin=(pran(1)-0.5)*pr
               ppin=pran(2)*twopi1
@@ -1564,7 +1565,7 @@ c            fieldbunch(1:6,iz,iy,iepho)=fieldbunch(1:6,iz,iy,iepho)
 
       return
       end
-*CMZ :          14/04/2024  07.40.31  by  Michael Scheer
+*CMZ :  4.01/05 14/04/2024  07.40.31  by  Michael Scheer
 *CMZ :  4.01/04 28/12/2023  15.35.56  by  Michael Scheer
 *CMZ :  4.01/02 12/05/2023  09.04.01  by  Michael Scheer
 *CMZ :  4.01/00 22/02/2023  15.28.31  by  Michael Scheer
@@ -2408,7 +2409,7 @@ c tracking stops if trajectory hits this plane
 
       return
       end
-*CMZ :          15/04/2024  11.54.00  by  Michael Scheer
+*CMZ :  4.01/05 15/04/2024  11.54.00  by  Michael Scheer
 *CMZ :  4.01/04 28/12/2023  15.30.57  by  Michael Scheer
 *CMZ :  4.01/02 12/05/2023  17.13.05  by  Michael Scheer
 *CMZ :  4.01/00 21/02/2023  16.51.29  by  Michael Scheer
@@ -2432,7 +2433,7 @@ c tracking stops if trajectory hits this plane
 
       return
       end
-*CMZ :          15/04/2024  09.37.27  by  Michael Scheer
+*CMZ :  4.01/05 15/04/2024  09.37.27  by  Michael Scheer
 *CMZ :  4.01/04 28/12/2023  15.30.57  by  Michael Scheer
 *CMZ :  4.01/02 12/05/2023  17.13.05  by  Michael Scheer
 *CMZ :  4.01/00 21/02/2023  16.51.29  by  Michael Scheer
@@ -2666,7 +2667,7 @@ c+seq,dum2.
 
       return
       end
-*CMZ :          15/04/2024  21.58.40  by  Michael Scheer
+*CMZ :  4.01/05 15/04/2024  21.58.40  by  Michael Scheer
 *CMZ :  4.01/04 28/12/2023  15.30.57  by  Michael Scheer
 *CMZ :  4.01/02 12/05/2023  17.13.05  by  Michael Scheer
 *CMZ :  4.01/00 21/02/2023  16.51.29  by  Michael Scheer
@@ -2920,7 +2921,7 @@ c+seq,dum2.
 
       return
       end
-*CMZ :          15/04/2024  11.54.00  by  Michael Scheer
+*CMZ :  4.01/05 15/04/2024  11.54.00  by  Michael Scheer
 *CMZ :  4.01/04 28/12/2023  15.30.57  by  Michael Scheer
 *CMZ :  4.01/02 12/05/2023  17.13.05  by  Michael Scheer
 *CMZ :  4.01/00 21/02/2023  16.51.29  by  Michael Scheer
@@ -3110,7 +3111,7 @@ c                    cw=cw-dcw*3.0d0/4.0d0 !Simpson
 
       return
       end
-*CMZ :          05/01/2024  11.27.46  by  Michael Scheer
+*CMZ :  4.01/05 05/01/2024  11.27.46  by  Michael Scheer
 *CMZ :  4.01/04 17/12/2023  11.45.19  by  Michael Scheer
 *CMZ :  4.01/02 08/05/2023  13.06.52  by  Michael Scheer
 *CMZ :  4.01/00 10/02/2023  13.27.16  by  Michael Scheer
