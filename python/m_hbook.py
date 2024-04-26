@@ -221,13 +221,13 @@ c--   workingspace: aa(n),bb(n),cc(n),c(n),cn(n)
   """
   n = len(x)
 
-  ypp =  zeros_like(x)
+  ypp =  np.zeros_like(x)
 
-  aa = zeros_like(x)
-  bb = zeros_like(x)
-  cc = zeros_like(x)
-  c  = zeros_like(x)
-  cn = zeros_like(x)
+  aa = np.zeros_like(x)
+  bb = np.zeros_like(x)
+  cc = np.zeros_like(x)
+  c  = np.zeros_like(x)
+  cn = np.zeros_like(x)
 
   if n < 5:
     ifail=-1
@@ -610,12 +610,12 @@ C--   workingspace: aa(n),bb(n),cc(n),c(n)
   """
   n = len(x)
 
-  y2 = zeros_like(x)
+  y2 = np.zeros_like(x)
 
-  aa = zeros_like(x)
-  bb = zeros_like(x)
-  cc = zeros_like(x)
-  c  = zeros_like(x)
+  aa = np.zeros_like(x)
+  bb = np.zeros_like(x)
+  cc = np.zeros_like(x)
+  c  = np.zeros_like(x)
 
   ifail = 0
 
@@ -1591,13 +1591,11 @@ from matplotlib import cm #color maps
 try:
   import pyhull
 except:
-  try:
-    #from pyhull.convex_hull import ConvexHull
-    from pyhull import qconvex, qdelaunay, qvoronoi
-  except:
-    pass
-  #endtry
+  pass
 #endtry
+#from pyhull.convex_hull import ConvexHull
+#from pyhull import qconvex, qdelaunay, qvoronoi
+
 
 global \
 clight1,cgam1,cq1,alpha1,dnull1,done1,sqrttwopi1,\
@@ -1790,7 +1788,7 @@ def read_faces(fname,cs='xyz'):
 
   l=0
   nface=-1
-  #breakpoint()
+  #reakpoint()
   nmag = int(fread[l].strip())
   l += 1
   for imag in range(nmag):
@@ -2116,13 +2114,14 @@ def set_y_fit(y='!'):
 #enddef
 
 def set_x_stat(x='!'):
-  global XStat, Xstat, Nxzone, Nyzone
+  global XStat, Xstat, Nxzone, Nyzone,Gdebug
+  #reakpoint()
   if x == '!':
     x = XStat
+    #if Nxzone > 1: x = (Nxzone-1)*0.15
   elif x == '+':
     x = XStat + 0.2
   #endif
-  if Nxzone > 1: x = (Nxzone-1)*0.15
   Xstat = x
   XStat = x
 #enddef
@@ -2134,8 +2133,12 @@ def get_x_stat():
 
 def set_y_stat(y='!'):
   global YStat, Ystat, Nxzone, Nyzone
-  if y == '!': y = YStat
-  if Nyzone > 1:y = 0.8 - (Nyzone-1)*0.15
+  if y == '!':
+      y = YStat
+      if Nyzone > 1:y = 0.8 - (Nyzone-1)*0.15
+  elif y == '+':
+    y = YStat + 0.2
+  #endif
   Ystat = y
   YStat = y
 #enddef
@@ -7266,6 +7269,21 @@ def nstat(nt='?',var='',select='', iretval=1, isilent=0):
 
 #enddef nstat(nt='?',var='',select='',iretval,isilent)
 
+def nrms(nt='?',var='',select='', iretval=1, isilent=0):
+    #reakpoint()
+    res = nstat(nt,var,select,iretval,1)
+    if isilent==0: print(res[3])
+    if iretval: return res[3]
+    else: return
+#enddef nrms
+
+def nmean(nt='?',var='',select='', iretval=1, isilent=0):
+    res = nstat(nt,var,select,iretval,1)
+    if isilent==0: print(res[2])
+    if iretval: return res[2]
+    else: return
+#enddef nmean
+
 def nmax(nt='?',var='',select='',iretval=1):
 #+seq,mshimportsind.
 # +PATCH,//WAVES/PYTHON
@@ -8978,7 +8996,7 @@ def hbook1(idh=-1, tit='Histogram1D', nx=10, xmin=0., xmax=1., overwrite=False):
 
 #enddef hbook1
 
-def nscan(nt='?',varlis='',select='',isilent=0):
+def nscan(nt='?',varlis='',select='',isilent=0,ifirst=0,ilast=0):
 #+seq,mshimportsind.
 # +PATCH,//WAVES/PYTHON
 # +KEEP,statusglobind,T=PYTHON.
@@ -9096,10 +9114,12 @@ def nscan(nt='?',varlis='',select='',isilent=0):
     #endtry
   #endfor k in range(len(cols))
 
-  N.columns = svar
-  if not isilent: print(N.to_string())
-
   Nlines = len(N)
+  N.columns = svar
+
+  if ilast ==  0: ilast = Nlines-1
+  if not isilent: print(N[ifirst:ilast+1].to_string())
+
   return Nlines
 
 #enddef nscan
@@ -10530,6 +10550,7 @@ def GetIndexH2(idh='?'):
   global N1, N2, N3, N4, N5, N6, N7,N8,N9,Nv, Nx, Nxy, Nxyz
 
 
+  #reakpoint()
   if type(idh) == str and idh == '?':
     print("\nUsage: index = GetIndexH2(idh), H2h, H2I and Ind are also set, \nreturns -1 if histogram has not been found")
     return
@@ -11529,6 +11550,80 @@ def H2Info(idh='?'):
 
 #enddef H2Info(idh='?')
 
+def hstat2d(idh='?'):
+#+seq,mshimportsind.
+# +PATCH,//WAVES/PYTHON
+# +KEEP,statusglobind,T=PYTHON.
+  global Istatus, WarningText, ErrorText, Gdebug
+
+  # Histograms and Ntuples
+  global H1h, H1hh, H2h, H2hh, H1, H2, H1head, H2head, H1HLast, Nhead, Ntup, \
+  Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
+  H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
+  Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, \
+  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
+  FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman
+#+KEEP,plotglobind,T=PYTHON.
+#*CMZ :          28/09/2019  14.39.13  by  Michael Scheer
+  global MPLmain, MPLmaster, Nfigs,Figgeom, Figgeom2, FiggeomR, FiggeomL, XtermGeo, Figs,Fig,Ax,\
+  Fig1,Ax1,Fig6,Ax6,Fig2,Ax2,Fig7,Ax7,Fig3,Ax3,Fig8,Ax8, Figgeoms, \
+  Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
+  Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
+  FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
+  Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
+  Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
+  MarkerSize, MarkerType, MarkerColor, \
+  Markersize, Markertype, Markercolor, \
+  Fillstyle, FillStyle, \
+  Textcolor, WaveFilePrefix,WaveDump, \
+  LineStyle, LineWidth, LineColor, \
+  Linestyle, Linewidth, Linecolor, \
+  Author, \
+  Tightpad, Xtightpad,Ytightpad, ColorbarPad,\
+  LeftMargin,RightMargin,TopMargin,BottomMargin, Xspace, Yspace, \
+  Histcolor, Histedgecolor, Histbarwidth, Kdate, Kfit, Kstat, YTitle, \
+  Icont3d, Iboxes, Inoempty, Iclosed,Itrisurf, Iscatter, Iscat3d, Ifill1d, TitPad, Xtitle, Ytitle, \
+  Gtit,Xtit,Ytit,Ztit,Ttit,Ptit,Colors, Surfcolors,Linestyles, Markertypes, \
+  LexpX,LexpY,LexpRot,LexpPow,\
+  GtitFontSize,Titfontsize,Atitfontsize,Axislabelsize,Textfontsize,Datefontsize,\
+  Statfontsize, Axislabeldist, Axislabeldist3d, Axisdist, Axisdist3d, \
+  XFit, YFit, Xfit, Yfit,Ystat, YStat, \
+  GtitFontSize,TitFontSize,AtitFontSize,AxisLabelSize,TextFontSize,DateFontSize,\
+  StatFontSize, AxisLabelDist, AxisLabelDist3d, AxisTitleDist, AxisTitleDist3d, \
+  AtitFontSize3d, Atitfontsize3d, NXtick,NXtick3d, Nxtick,Nxtick3d, Ktitles,  Dummy,\
+  ZoomXmin,ZoomXmax, ZoomYmin, ZoomYmax,ZoomZmin,ZoomZmax,\
+  Tdate, TdateOv, Trun, TrunOv, Icallfromoverview,\
+  LogX,LogY, LogZ, NxBinMax, Khdeleted, Waveplot, \
+  Mrun, Mcomment, Mdate, ROFx, Rofy, Hull2D,Hull3D, Kgrid, KxAxis,KyAxis,KzAxis,Kbox, \
+  FillColor,WisLinux,Ishow
+
+#+PATCH,//WAVES/PYTHON
+#+KEEP,vecglobind,T=PYTHON.
+
+  global VsortX, VsortY, VoptX, VoptY, VsplX, VsplY, Vspl1, Vspl2, VsplI, \
+  VsplCoef, Nspline,Ninter, Nfitxy, Nfitint, Vxint, Vyint, SplineMode, \
+  VxyzX,VxyzY,VxyzZ,Tnpa,Tnone
+
+#+KEEP,nxyzglobind,T=PYTHON.
+#*CMZ :          29/09/2019  11.11.01  by  Michael Scheer
+  global N1, N2, N3, N4, N5, N6, N7,N8,N9,Nv, Nx, Nxy, Nxyz
+
+  #reakpoint()
+  if type(idh) == int:
+    idx = idh
+  else:
+    idx = GetIndexH2(idh)
+  #endif
+
+  if idx == -1: return idx
+  h2h = H2head[idx]
+  return h2h[14:18]
+
+#enddef hstat2d(idh='?')
+
 def H1List():
 #+seq,mshimportsind.
 # +PATCH,//WAVES/PYTHON
@@ -11636,6 +11731,64 @@ def hinfo(idh):
   return
 
 #enddef hinfo(idh)
+
+def hstat(idh):
+  #reakpoint()
+  idx = GetIndexH1(idh)
+
+  if idx != -1:
+      return hstat1d(idh)
+  #endif
+
+  idx = GetIndexH2(idh)
+  if idx != -1:
+      return hstat2d(idh)
+  #endif
+
+  print("*** Non-exixsting histogram ***")
+  return
+
+#enddef hstat(idh)
+
+def hrms(idh):
+  #reakpoint()
+  idx = GetIndexH1(idh)
+
+  if idx != -1:
+      res = hstat1d(idh)
+      print(res[3])
+      return res[3]
+  #endif
+
+  idx = GetIndexH2(idh)
+  if idx != -1:
+      print('Not yet!! Use hstat() instead.')
+  #endif
+
+  print("*** Non-exixsting histogram ***")
+  return
+
+#enddef hstat(idh)
+
+def hmean(idh):
+  #reakpoint()
+  idx = GetIndexH1(idh)
+
+  if idx != -1:
+      res = hstat1d(idh)
+      print(res[2])
+      return res[2]
+  #endif
+
+  idx = GetIndexH2(idh)
+  if idx != -1:
+      print('Not yet!! Use hstat() instead.')
+  #endif
+
+  print("*** Non-exixsting histogram ***")
+  return
+
+#enddef hstat(idh)
 
 def nentry(nt='?'):
 #+seq,mshimportsind.
@@ -13013,6 +13166,349 @@ def nproj2(nt='?', xy='', weight=1., select='',
   return 0
 #enddef nproj2()
 
+def nproj2n(nt='?', xy='', weight=1., select='',
+           scalex=1., scaley=1., scalez=1.0, nx=51, ny=51, idh=-1,
+           ioverwrite=1):
+
+  import numpy as np
+  import pandas as pd
+
+#+seq,mshimportsind.
+# +PATCH,//WAVES/PYTHON
+# +KEEP,statusglobind,T=PYTHON.
+  global Istatus, WarningText, ErrorText, Gdebug
+
+  # Histograms and Ntuples
+  global H1h, H1hh, H2h, H2hh, H1, H2, H1head, H2head, H1HLast, Nhead, Ntup, \
+  Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
+  H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
+  Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, \
+  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
+  FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman
+#+KEEP,plotglobind,T=PYTHON.
+#*CMZ :          28/09/2019  14.39.13  by  Michael Scheer
+  global MPLmain, MPLmaster, Nfigs,Figgeom, Figgeom2, FiggeomR, FiggeomL, XtermGeo, Figs,Fig,Ax,\
+  Fig1,Ax1,Fig6,Ax6,Fig2,Ax2,Fig7,Ax7,Fig3,Ax3,Fig8,Ax8, Figgeoms, \
+  Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
+  Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
+  FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
+  Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
+  Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
+  MarkerSize, MarkerType, MarkerColor, \
+  Markersize, Markertype, Markercolor, \
+  Fillstyle, FillStyle, \
+  Textcolor, WaveFilePrefix,WaveDump, \
+  LineStyle, LineWidth, LineColor, \
+  Linestyle, Linewidth, Linecolor, \
+  Author, \
+  Tightpad, Xtightpad,Ytightpad, ColorbarPad,\
+  LeftMargin,RightMargin,TopMargin,BottomMargin, Xspace, Yspace, \
+  Histcolor, Histedgecolor, Histbarwidth, Kdate, Kfit, Kstat, YTitle, \
+  Icont3d, Iboxes, Inoempty, Iclosed,Itrisurf, Iscatter, Iscat3d, Ifill1d, TitPad, Xtitle, Ytitle, \
+  Gtit,Xtit,Ytit,Ztit,Ttit,Ptit,Colors, Surfcolors,Linestyles, Markertypes, \
+  LexpX,LexpY,LexpRot,LexpPow,\
+  GtitFontSize,Titfontsize,Atitfontsize,Axislabelsize,Textfontsize,Datefontsize,\
+  Statfontsize, Axislabeldist, Axislabeldist3d, Axisdist, Axisdist3d, \
+  XFit, YFit, Xfit, Yfit,Ystat, YStat, \
+  GtitFontSize,TitFontSize,AtitFontSize,AxisLabelSize,TextFontSize,DateFontSize,\
+  StatFontSize, AxisLabelDist, AxisLabelDist3d, AxisTitleDist, AxisTitleDist3d, \
+  AtitFontSize3d, Atitfontsize3d, NXtick,NXtick3d, Nxtick,Nxtick3d, Ktitles,  Dummy,\
+  ZoomXmin,ZoomXmax, ZoomYmin, ZoomYmax,ZoomZmin,ZoomZmax,\
+  Tdate, TdateOv, Trun, TrunOv, Icallfromoverview,\
+  LogX,LogY, LogZ, NxBinMax, Khdeleted, Waveplot, \
+  Mrun, Mcomment, Mdate, ROFx, Rofy, Hull2D,Hull3D, Kgrid, KxAxis,KyAxis,KzAxis,Kbox, \
+  FillColor,WisLinux,Ishow
+
+#+PATCH,//WAVES/PYTHON
+#+KEEP,vecglobind,T=PYTHON.
+
+  global VsortX, VsortY, VoptX, VoptY, VsplX, VsplY, Vspl1, Vspl2, VsplI, \
+  VsplCoef, Nspline,Ninter, Nfitxy, Nfitint, Vxint, Vyint, SplineMode, \
+  VxyzX,VxyzY,VxyzZ,Tnpa,Tnone
+
+#+KEEP,nxyzglobind,T=PYTHON.
+#*CMZ :          29/09/2019  11.11.01  by  Michael Scheer
+  global N1, N2, N3, N4, N5, N6, N7,N8,N9,Nv, Nx, Nxy, Nxyz
+
+
+  if type(nt) == str:
+    if nt == "" or nt == "?":
+      print("\nUsage: nproj2n(nt='', xy='', weigth=1. select='', scalex=1., scaley=1., scalez=1., nx=51, ny=51, idh=-1)")
+      print("if histogram does not exist, it is created with nx,ny channels")
+      return 0
+  #endif
+
+  try:
+    typ = type(nt)
+  except:
+    print("*** Non-existing Ntuple in nproj2n ***")
+    return -1
+  #endtry
+
+  idn = -1
+
+  if typ != Tdf:
+    idn = GetIndexN(nt)
+    if idn == -1:
+      print("*** Non-existing Ntuple in nproj2n: " + str(nt) + " ***")
+      return -1
+    #endif idn == -1
+    nt = N
+  #endif typ != Tdf
+
+  if len(nt) == 0:
+    idn = GetIndexN(nt)
+    print("*** Empty Ntuple in nproj2n: " + str(Nind[idn]) + " ***")
+    return -1
+  #endif len(nt) == 0
+
+  if Kecho:
+    if type(idh) == str: sidh = "'" + idh + "'"
+    elif type(idh) == int: sidh = str(idh)
+    else: sidh = "'" + H2head[idx][1] + "'"
+
+    if type(nt) == str: snt = "'" + nt + "'"
+    elif type(nt) == int: snt = str(nt)
+    elif idn != -1: snt = "'" + Nhead[idn][1] + "'"
+    if idn != -1: sj2 = "nproj2n(nt='" + snt + "', xy='"
+    else: sj2 = "nproj2n(nt,"
+
+    print(sj2 + xy + "', weight='" + str(weight)\
+    + "', select='" + select + "', scalex=" + str(scalex) + ", scaley="\
+    + str(scaley) + ", scalez=" + str(scalez)\
+    + ", nx=" + str(nx) + ", ny=" + str(ny) + ", idh=" + sidh + ")" )
+  #endif Kecho
+
+  if select:
+    nt = nt.query(select)
+    Nsel = nt
+    select=''
+    if len(nt) == 0:
+      print("*** No data survived selection in nproj2n  ***")
+      return -1
+    #endif len(nt) == 0
+  #endif select:
+
+  if type(xy) == str: xy = nlistcolon(xy)
+
+  if type(xy) != list or len(xy) == 0:
+    print("*** Error in nproj2n: No list given for variables ***")
+    return -2
+  #endif type(xy) != list or len(xy) == 0
+
+  x = "(" + nparse(nt,xy[0]) + ") * " + str(scalex)
+  y = "(" + nparse(nt,xy[1]) + ") * " + str(scaley)
+
+  if weight == 1. or weight == '' or weight == '!':
+    w = "(" + nparse(nt,xy[0]) + ") * 0.0 + 1.0"
+    wt = ''
+  else:
+    w = nparse(nt,weight)
+    wt = weight
+  #endif weight == 1. or weight == '' or weight == '!'
+
+  scom = "global N; N = pd.DataFrame([" + x + "," + y + "," + w + "]).T"
+  exec(scom)
+
+  N.columns = ['x','y','w']
+  Nlines = len(N)
+  N.index = range(Nlines)
+
+  x = N.x
+  y = N.y
+  w = N.w
+
+  z2 = x * 0.0
+  ent = x * 0.0
+  zave = x * 0.0
+  ez = x * 0.0
+
+  if type(idh) != int:
+    idx = GetIndexH2(idh)
+  else:
+    idx = idh
+  #endif type(idh) != int
+
+  if idx > -1 and ioverwrite and nx > 0 and ny > 0:
+    hname = H2head[idx][0]
+    hdelete(hname)
+  #endif idx > -1:
+
+  if idx == -1 or Khdeleted:
+
+    xmin=x.min(); xmax=x.max()
+
+    if xmin == xmax:
+      dx = 1.
+      nx = 1
+    else:
+      if nx == 1:
+        dx = (xmax-xmin)
+      else:
+        dx = (xmax-xmin)/(nx-1)
+    #endif xmin == xmax
+
+    xmin -= dx/2.; xmax += dx/2.
+
+    ymin=y.min(); ymax=y.max()
+
+    if ymin == ymax:
+      dy = 1.
+      ny = 1
+    else:
+      if ny == 1:
+        dy = (ymax-ymin)
+      else:
+        dy = (ymax-ymin)/(ny-1)
+    #endif ymin == ymax
+
+    ymin -= dy/2.; ymax += dy/2.
+
+    if type(idh) == str: hname = idh
+    else: hname = 'HnPlot'
+
+    htit = hname + " :: " + xy[0] + ":" + xy[1] + ":" + wt
+
+    if type(weight) == str and len(weight):
+      htit += ":" + weight
+    elif weight == 1.0:
+      pass
+    else:
+      htit += ":" + str(weight)
+    #endif type(weight) == str and if len(weight):
+
+    if len(select): htit += " [" + select + "]"
+
+    hret = hbook2(hname,htit,nx,xmin,xmax,ny,ymin,ymax)
+
+    idx = GetIndexH2(hname)
+
+    if hname != 'HnPlot' and Kecho:
+      print("--- Have created histogram: ", idx, " ",hname," ",Nhead[idn][2])
+
+  #endif idx == -1
+
+  nx = H2hh[2]
+  xmin = H2hh[3]
+  xmax = H2hh[4]
+  dx = H2hh[5]
+
+  ny = H2hh[6]
+  ymin = H2hh[7]
+  ymax = H2hh[8]
+  dy = H2hh[9]
+
+  hn, xedg, yedg  = np.histogram2d(x, y, bins=[nx,ny], range=[[xmin,xmax],[ymin,ymax]])
+  hz, xedg, yedg  = np.histogram2d(x, y, bins=[nx,ny], range=[[xmin,xmax],[ymin,ymax]], weights=w)
+  hz2, xedg, yedg  = np.histogram2d(x, y, bins=[nx,ny], range=[[xmin,xmax],[ymin,ymax]], weights=w*w)
+
+  hz = hz / hn
+  hz2 = hz * hz
+
+  xl = np.linspace(xmin+dx/2.,xmax-dx/2.,nx)
+  yl = np.linspace(ymin+dy/2.,ymax-dy/2.,ny)
+
+  hz = hz * scalez
+  hz2 = hz2 * scalez * scalez
+
+  x,y = np.meshgrid(xl,yl)
+  x = x.T.flatten()
+  y = y.T.flatten()
+  hn = hn.flatten()
+  hz = hz.flatten()
+  hz2 = hz2.flatten()
+
+  h = pd.DataFrame([x,y,hz,hz2,hn]).T
+  h.columns=['x','y','z','z2','n']
+
+  h.z[np.isnan(h.z)] = 0.0
+  h.z2[np.isnan(h.z2)] = 0.0
+  h.n[np.isnan(h.n)] = 0.0
+
+  h['ave'] = h.z/h.n
+  h.ave[np.isnan(h.ave)] = 0.0
+
+  h['ez'] = (h.z2/h.n-h.ave**2)**0.5
+  h.ez[np.isnan(h.ez)] = 0.0
+
+  head2 = H2head[idx]
+
+  sumz = h.z.sum()
+
+  head2[10] = h.n.sum()
+  head2[11] = h.z.min()
+  head2[12] = h.z.max()
+  head2[13] = sumz
+  xmean = (h.x*h.z).sum()/sumz
+  head2[14] = xmean
+  head2[15] = max(0.0,(h.x**2*h.z).sum()/sumz-xmean**2)**0.5
+  ymean = (h.y*h.z).sum()/sumz
+  head2[16] = ymean
+  head2[17] = max(0.0,(h.y**2*h.z).sum()/sumz-ymean**2)**0.5
+
+  xmin = head2[3]
+  xmax = head2[4]
+  ymin = head2[7]
+  ymax = head2[8]
+
+  Nux = N.query('x<' + str(xmin))
+  nux = len(Nux)
+  ux = Nux.w.sum()
+
+  Nuxoy = Nux.query('y>' + str(ymax))
+  nuxoy = len(Nux)
+  uxoy = Nux.w.sum()
+
+  Nuxuy = Nux.query('y<' + str(ymin))
+  nuxuy = len(Nuxuy)
+  uxuy = Nuxuy.w.sum()
+
+  Noy = N.query('y>' + str(ymax))
+  noy = len(Noy)
+  oy = Noy.w.sum()
+
+  Nox = N.query('x>' + str(xmax))
+  nox = len(Nox)
+  ox = Nox.w.sum()
+
+  Noxov = Nox.query('y>' + str(ymax))
+  noxoy = len(Nox)
+  oxoy = Nox.w.sum()
+
+  Noxuy = Nox.query('y<' + str(ymin))
+  noxuy = len(Noxuy)
+  oxuy = Noxuy.w.sum()
+
+  Nuy = N.query('y<' + str(ymin))
+  nuy = len(Nuy)
+  uy = Nuy.w.sum()
+
+  head2[18] = nux
+  head2[19] = nox
+  head2[20] = ux
+  head2[21] = ox
+  head2[22] = nuy
+  head2[23] = noy
+  head2[24] = uy
+  head2[25] = oy
+  head2[26] = nuxuy
+  head2[27] = noxuy
+  head2[28] = uxuy
+  head2[29] = oxuy
+  head2[30] = nuxoy
+  head2[31] = noxoy
+  head2[32] = oxuy
+  head2[33] = oxoy
+
+  H2h=h
+  H2[idx]=h
+
+  return 0
+#enddef nproj2n()
+
 def nproj1(nt='?', var='', weight=1., select='', scalex=1., scaley = 1,
            nx=101, idh=-1, ioverwrite=1):
 
@@ -13320,6 +13816,317 @@ def nproj1(nt='?', var='', weight=1., select='', scalex=1., scaley = 1,
   head1[19] = ((h.x)**2).sum()
 
 #enddef nproj1()
+
+def nproj1n(nt='?', var='', weight=1., select='', scalex=1., scaley = 1,
+           nx=101, idh=-1, ioverwrite=1):
+
+  import numpy as np
+  import pandas as pd
+
+#+seq,mshimportsind.
+# +PATCH,//WAVES/PYTHON
+# +KEEP,statusglobind,T=PYTHON.
+  global Istatus, WarningText, ErrorText, Gdebug
+
+  # Histograms and Ntuples
+  global H1h, H1hh, H2h, H2hh, H1, H2, H1head, H2head, H1HLast, Nhead, Ntup, \
+  Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
+  H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
+  Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, \
+  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
+  FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman
+#+KEEP,plotglobind,T=PYTHON.
+#*CMZ :          28/09/2019  14.39.13  by  Michael Scheer
+  global MPLmain, MPLmaster, Nfigs,Figgeom, Figgeom2, FiggeomR, FiggeomL, XtermGeo, Figs,Fig,Ax,\
+  Fig1,Ax1,Fig6,Ax6,Fig2,Ax2,Fig7,Ax7,Fig3,Ax3,Fig8,Ax8, Figgeoms, \
+  Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
+  Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
+  FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
+  Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
+  Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
+  MarkerSize, MarkerType, MarkerColor, \
+  Markersize, Markertype, Markercolor, \
+  Fillstyle, FillStyle, \
+  Textcolor, WaveFilePrefix,WaveDump, \
+  LineStyle, LineWidth, LineColor, \
+  Linestyle, Linewidth, Linecolor, \
+  Author, \
+  Tightpad, Xtightpad,Ytightpad, ColorbarPad,\
+  LeftMargin,RightMargin,TopMargin,BottomMargin, Xspace, Yspace, \
+  Histcolor, Histedgecolor, Histbarwidth, Kdate, Kfit, Kstat, YTitle, \
+  Icont3d, Iboxes, Inoempty, Iclosed,Itrisurf, Iscatter, Iscat3d, Ifill1d, TitPad, Xtitle, Ytitle, \
+  Gtit,Xtit,Ytit,Ztit,Ttit,Ptit,Colors, Surfcolors,Linestyles, Markertypes, \
+  LexpX,LexpY,LexpRot,LexpPow,\
+  GtitFontSize,Titfontsize,Atitfontsize,Axislabelsize,Textfontsize,Datefontsize,\
+  Statfontsize, Axislabeldist, Axislabeldist3d, Axisdist, Axisdist3d, \
+  XFit, YFit, Xfit, Yfit,Ystat, YStat, \
+  GtitFontSize,TitFontSize,AtitFontSize,AxisLabelSize,TextFontSize,DateFontSize,\
+  StatFontSize, AxisLabelDist, AxisLabelDist3d, AxisTitleDist, AxisTitleDist3d, \
+  AtitFontSize3d, Atitfontsize3d, NXtick,NXtick3d, Nxtick,Nxtick3d, Ktitles,  Dummy,\
+  ZoomXmin,ZoomXmax, ZoomYmin, ZoomYmax,ZoomZmin,ZoomZmax,\
+  Tdate, TdateOv, Trun, TrunOv, Icallfromoverview,\
+  LogX,LogY, LogZ, NxBinMax, Khdeleted, Waveplot, \
+  Mrun, Mcomment, Mdate, ROFx, Rofy, Hull2D,Hull3D, Kgrid, KxAxis,KyAxis,KzAxis,Kbox, \
+  FillColor,WisLinux,Ishow
+
+#+PATCH,//WAVES/PYTHON
+#+KEEP,vecglobind,T=PYTHON.
+
+  global VsortX, VsortY, VoptX, VoptY, VsplX, VsplY, Vspl1, Vspl2, VsplI, \
+  VsplCoef, Nspline,Ninter, Nfitxy, Nfitint, Vxint, Vyint, SplineMode, \
+  VxyzX,VxyzY,VxyzZ,Tnpa,Tnone
+
+#+KEEP,nxyzglobind,T=PYTHON.
+#*CMZ :          29/09/2019  11.11.01  by  Michael Scheer
+  global N1, N2, N3, N4, N5, N6, N7,N8,N9,Nv, Nx, Nxy, Nxyz
+
+
+  #reakpoint()
+  idn = -1
+
+  varl = nlistcolon(var)
+
+  if len(varl) > 1:
+    if weight != 1.:
+      print("*** Error in nproj1n: Weight not 1. and var contains more then one item ***")
+      return -1
+    #endif
+    weight = varl[1]
+    var = varl[0]
+  #endif
+
+  try:
+    typ = type(nt)
+  except:
+    print("*** Non-existing Ntuple in nproj1n ***")
+    return -1
+  #endtry
+
+  if typ == str:
+    if nt == '' or nt == '?':
+      print("nproj1n(nt='', var='', weigth=1. select='', scalex=1., scaley=1. nx=100, idh=-1)")
+      print("if histogram does not exist, it is created with nx channels")
+      print("if nx <= 0: nx = min(100,len(nt))")
+      return 0
+  #endif type(nt) != Tdf and len(nt) == 0
+
+  if typ != Tdf:
+    idn = GetIndexN(nt)
+    if idn == -1:
+      print("*** Non-existing Ntuple in nproj1n: " + str(nt) + "  ***")
+      return -1
+    #endif idn == -1
+    nt = N
+  #endif typ != Tdf
+
+  if len(nt) == 0:
+    idn = GetIndexN(nt)
+    print("*** Empty Ntuple in nproj1n: " + str(Nind[idn]) + " ***")
+    return -1
+  #if len(nt) == 0
+
+  idx = GetIndexH1(idh)
+
+  if idx > -1:
+    hname = H1head[idx][0]
+    if ioverwrite and nx > 0: h1reset(hname)
+  #endif idx > -1:
+
+  if Kecho:
+
+    if type(idh) == str: sidh = "'" + idh + "'"
+    elif type(idh) == int: sidh = str(idh)
+    else: sidh = "'" + H1head[idx][1] + "'"
+
+    if type(nt) == str: snt = "'" + nt
+    elif type(nt) == int: snt = str(nt)
+    elif idn != -1: snt = "'" + Nhead[idn][1] + "'"
+    if idn != -1: sj1 = "nproj1n(nt=" + snt + ", var='"
+    else: sj1 = "nproj1n(nt, '"
+
+    print(sj1 + var + "', weight='" + str(weight)\
+    + "', select='" + select + "', scalex=" + str(scalex) + ", scaley="\
+    + str(scaley) + ", nx=" + str(nx) + ", idh=" + sidh + ", ioverwrite=" + str(ioverwrite) + ")" )
+  #endif Kecho
+
+  if type(var) == list:
+    if len(var) != 1:
+      print("*** Error in nproj1n: Length of variable list not one ***")
+      return -1
+    else:
+      var = var[0] * scalex
+  #endif len(var) != 1
+
+  if len(var) == 0:
+      print("*** Error in nproj1n: No variable specified ***")
+      return -1
+  #endif len(var) == 0
+
+  Nsel = nt
+  if select:
+    nt = nt.query(select)
+    Nsel = nt
+    if len(nt) == 0:
+      print("*** No data survived selection in nproj1n  ***")
+      return -1
+    #endif len(nt) == 0
+    select=''
+  #endif select:
+
+  nt = Nsel
+  x = "(" + nparse(nt,var) + ") * " + str(scalex)
+
+  try: w = str(float(weight))
+  except: w = weight
+
+  if w == "1.0" or w == '' or w == '!':
+    w = "(" + nparse(nt,var) + ") * 0.0 + 1.0"
+  else:
+    w = nparse(nt,weight)
+  #endif weight == 1. or weight == '' or weight == '!'
+
+  scom = "global N; N = pd.DataFrame([" + x + "," + w + "]).T"
+
+  exec(scom)
+
+  N.columns = ['x','w']
+  Nlines = len(N)
+  N.index = range(Nlines)
+
+  x = N.x
+  w = N.w
+
+  if nx <= 0: nx = min(101,len(N.x.drop_duplicates()))
+
+  #reakpoint()
+  if idx == -1 or Khdeleted:
+
+    xmin=x.min(); xmax=x.max()
+
+    if xmin == xmax:
+      if xmin == 0.0:
+        dx = 1.
+        nx = 1
+        xmin -= dx/2.; xmax += dx/2.;
+      else:
+        dx = abs(xmax)*0.05
+        nx = 1
+        xmin -= dx/2.; xmax += dx/2.;
+    else:
+      if nx == 1:
+        dx = (xmax-xmin)
+      else:
+        dx = (xmax-xmin)/(nx-1)
+      #endif nx == 1
+    #endif xmin == xmax
+
+    if type(idh) == str: hname = idh
+    else: hname = 'HnPlot'
+
+    htit = hname + " :: " + var
+
+    if type(weight) == str:
+      if len(weight) > 0: htit += ":" + weight
+    elif weight != 1.0:
+      htit += ":" + str(weight)
+    #endif
+
+    if len(select): htit += " [" + select + "]"
+
+    hret = hbook1(hname,htit,int(nx+0.5),xmin,xmax,ioverwrite)
+
+    if hname != 'HnPlot' and Kecho:
+      print("--- Have created histogram: ", idx, " ",hname," ",htit)
+
+  #endif idx == -1
+
+  idx = GetIndexH1(hname)
+
+  nx = H1hh[2]
+  xmin = H1hh[3]
+  xmax = H1hh[4]
+  dx = H1hh[5]
+
+  hn, xedg = np.histogram(x, bins=nx, range=[xmin,xmax])
+  hy, xedg = np.histogram(x, bins=nx, range=[xmin,xmax], weights=w)
+  hy2, xedg = np.histogram(x, bins=nx, range=[xmin,xmax], weights=w*w)
+
+  hy = hy / hn
+  hy2 = hy * hy
+
+  hy = hy * scaley
+  hy2 = hy2 * scaley*scaley
+
+  x = np.linspace(xmin+dx/2.,xmax-dx/2.,nx)
+  h = pd.DataFrame([x,hy,hy2,hn]).T
+
+  h.columns=['x','y','y2','n']
+
+  h.y[np.isnan(h.y)] = 0.0
+  h.y2[np.isnan(h.y2)] = 0.0
+  h.n[np.isnan(h.n)] = 0.0
+
+  h['ave'] = h.y/h.n
+  h.ave[np.isnan(h.ave)] = 0.0
+
+  if w.min() == w.max() and w.min() == 1.:
+    h['ey'] = h.n**0.5
+  else:
+    h['ey'] = (h.y2/h.n-h.ave**2)**0.5
+  #endif
+
+  h.ey[np.isnan(h.ey)] = 0.0
+
+  H1h = h
+  H1[idx] = h
+
+  head1 = H1head[idx]
+  head1[7] = min(h.y)
+  head1[8] = max(h.y)
+  head1[9] = h.n.sum()
+
+  sumy = h.y.sum()
+  ya = abs(h.y)
+  sumya = ya.sum()
+
+  xmean = 0.
+  xrms = 0.
+  xsqsum = 0.
+
+  if sumya:
+    xsqsum = ((h.x)**2*ya).sum()
+    xmean = (h.x*ya).sum()/sumya
+    xrms = np.sqrt(max(0.0,xsqsum/sumya-xmean**2))
+  #endif
+
+  head1[10] = sumy
+
+  head1[11] = xsqsum
+  head1[12] = xmean
+  head1[13] = xrms
+
+  quer = 'x < ' + str(xmin)
+  hund = h.query(quer)
+  nunder = hund.n.sum()
+  under = hund.y.sum()
+
+  quer = 'x >= ' + str(xmax)
+  hov = h.query(quer)
+  nover = hov.n.sum()
+  over = hov.y.sum()
+
+  head1[14] = nunder
+  head1[16] = under
+  head1[15] = nover
+  head1[17] = over
+
+  head1[18] = h.x.sum()
+  head1[19] = ((h.x)**2).sum()
+
+#enddef nproj1n()
 
 def setnoempty(no=1):
   global Inoempty
@@ -13925,7 +14732,11 @@ def hplot1d(idh='?', plopt='2d', Tit='!', xTit='', yTit='', legend='',
       ypl.append(yave[i])
       epl.append(stdyprof[i])
     #endfor
-    plt.errorbar(xpl,ypl,epl, ls='',marker=Markertype,fillstyle=Fillstyle, mfc=Markercolor, mec=Markercolor, ms=Markersize, mew=1, c=lincol)
+
+    if not Iline:
+        plt.errorbar(xpl,ypl,epl, ls='',marker=Markertype,fillstyle=Fillstyle, mfc=Markercolor, mec=Markercolor, ms=Markersize, mew=1, c=lincol)
+    else:
+        vplxy(xpl,ypl,'L')
 
     if Kdump:
       Ndump += 1
@@ -14825,7 +15636,7 @@ def showplot(visible=True):
 
 def optconsole(con=True): global Igetconsole; Igetconsole = con
 
-def hplot2d(idh, plopt='3d', block=False, scalex=1., scaley=1., scalez=1.,
+def hplot2d(idh, plopt='!', block=False, scalex=1., scaley=1., scalez=1.,
             cmap='', surfcolor='', tit='', xtit='', ytit='', ztit=''):
 
   import numpy as np
@@ -14944,6 +15755,11 @@ def hplot2d(idh, plopt='3d', block=False, scalex=1., scaley=1., scalez=1.,
     dy = H2head[idx][9] * np.ones_like(y) * scaley
   else:
     dy = H2head[idx][9]  * np.ones_like(y) * scaley
+  #endif
+
+  if plopt == '!':
+      if ny >1 and nx > 1: plopt='3d'
+      else: plopt='H'
   #endif
 
   dz = z
@@ -15278,7 +16094,6 @@ def zone(nx=1, ny=1, kzone=1, isame='', projection='2d', visible=True):
 
 
   global Tax2d, Tax3d, Debug
-
   if Nwins <= 0:
 
     Nfigs = len(plt.get_fignums())
@@ -17574,8 +18389,6 @@ def nplot(nt='?',varlis='',select='',weights='',plopt='', legend='',
   global N1, N2, N3, N4, N5, N6, N7,N8,N9,Nv, Nx, Nxy, Nxyz
 
 
-  #reakpoint()
-
   NxBinMax = 0
   nto = nt
 
@@ -17667,6 +18480,8 @@ def nplot(nt='?',varlis='',select='',weights='',plopt='', legend='',
   if len(varlis) == 1:
 
     getzone()
+    if Gdebug: Quit(Kstat,Xstat)
+
     Ax.tick_params(labelsize=Axislabelsize, pad=Axislabeldist)
 
     sx = "(" +nparse(nt,varlis[0]) + ") * " + str(scalex)
@@ -17729,7 +18544,17 @@ def nplot(nt='?',varlis='',select='',weights='',plopt='', legend='',
         imark = 0
         isplin = 0
 
-        if Ispline == 1:
+        if Iprof or Ierr:
+          idx = GetIndexH1(hist)
+          nproj1(nt,varlis[0],varlis[1],select,scalex=scalex,nx=nx,idh=hist)
+          if idx > -1: hist = H1[idx]
+          ocol=getmarkercolor()
+          setmarkercolor(mcol)
+          hplot1d(hist,plopt,legend=legend)
+          setmarkercolor(ocol)
+          return
+
+        elif Ispline == 1:
           nspline(nt,varliso,select,1001)
           imark = Imarker
           if Isame: vplxy(Nspline.x,Nspline.y,'sameline',color=lcol)
@@ -17782,15 +18607,6 @@ def nplot(nt='?',varlis='',select='',weights='',plopt='', legend='',
           iplot = 1
           if Imarker: iplot = 0
 
-        elif Iprof or Ierr:
-          idx = GetIndexH1(hist)
-          nproj1(nt,varlis[0],varlis[1],select,scalex=scalex,nx=nx,idh=hist)
-          if idx > -1: hist = H1[idx]
-          ocol=getmarkercolor()
-          setmarkercolor(mcol)
-          hplot1d(hist,plopt,legend=legend)
-          setmarkercolor(ocol)
-          return
         elif Ihist or Isurf or Itrisurf or Iinter or Iboxes :
           nproj2(nto,varliso,weights,select,scalex=scalex,scaley=scaley,nx=nx,ny=ny,idh=hist)
           hplot2d(hist,plopt)
@@ -18019,17 +18835,23 @@ def nplot(nt='?',varlis='',select='',weights='',plopt='', legend='',
 
 #enddef nplot(...) nt idn
 
-def nprof(nt='?',varlis='',select='',weights='',plopt='sprof', legend='',
-          scalex=1., scaley=1., scalez=1., scalet=1., cmap='', hist='HnPlot',
-         color='default',isort=0):
-          nplot(nt,varlis,select,weights,plopt, legend,scalex, scaley, scalez, scalet,
-                cmap, hist,color,isort)
+def nprof(nt='?',varlis='',select='',weights='',plopt='prof', legend='',
+scalex=1., scaley=1., scalez=1., scalet=1., cmap='', hist='HnPlot',
+color='default',isort=0):
+
+    plotoptions(plopt)
+    if not Isame and hexist(hist): hdelete(hist)
+    nplot(nt,varlis,select,weights,plopt, legend,scalex, scaley, scalez, scalet,
+    cmap, hist,color,isort)
 #enddef
-def nprofs(nt='?',varlis='',select='',weights='',plopt='samesprof', legend='',
-          scalex=1., scaley=1., scalez=1., scalet=1., cmap='', hist='HnPlot',
-         color='default',isort=0):
-          nplot(nt,varlis,select,weights,plopt, legend,scalex, scaley, scalez, scalet,
-                cmap, hist,color,isort)
+
+def nprofs(nt='?',varlis='',select='',weights='',plopt='sameprof', legend='',
+scalex=1., scaley=1., scalez=1., scalet=1., cmap='', hist='HnPlot',
+color='default',isort=0):
+    plotoptions(plopt)
+    if not Isame and hexist(hist): hdelete(hist)
+    nplot(nt,varlis,select,weights,plopt, legend,scalex, scaley, scalez, scalet,
+    cmap, hist,color,isort)
 #enddef
 
 def nnplot(nt='?',varlis='',select='',weights='',plopt='', legend='',
@@ -20454,7 +21276,7 @@ def vpeaks(x,y,pkmin=0.5,nsmooth=0,isilent=0):
   x = np.array(x)
   y = np.array(y)
 
-  #breakpoint()
+  ##reakpoint()
   fmxtot=-1.0e30
   ndim = len(x)
 
@@ -20520,7 +21342,7 @@ def vpeaks(x,y,pkmin=0.5,nsmooth=0,isilent=0):
     #print(sm,s0,sp)
     if s0 >= thresh and sm < 0.0 and sp <= 0.0:
 
-      #breakpoint()
+      ##reakpoint()
 
       npeaks=npeaks+1
 
@@ -20847,7 +21669,7 @@ def vfwhm(x='?',y='',nsmooth=0,isilent=0):
   npeaks = len(ixpeaks)
   npoi = len(x)
 
-  #breakpoint()
+  ##reakpoint()
 
   for i in range(npeaks):
 
@@ -24348,6 +25170,7 @@ hull3d = qhull3d
 plotncyl = plotncylinder
 read_facets = read_faces
 nex = nextzone
+gtit = figtext
 #end of aliases in m_hbook
 
 #end of m_hbook
@@ -24670,6 +25493,10 @@ def ngetdump(nt='Ndmp',varlis='x:y:z'):
   else:
     print('*** Could not read WaveDump ***')
   #endif
+#enddef
+
+def linear_correlation(x,y):
+    return sum((x-x.mean())*(y-y.mean())) / (x.std()*y.std()) / len(x)
 #enddef
 
 # End of sequence m_hbook

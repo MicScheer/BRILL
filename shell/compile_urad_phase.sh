@@ -10,7 +10,7 @@ cd $BRILL/for
 
 rm -f $BRILL/urad_phase.exe
 
-gfortran -c -O2 -cpp \
+gfortran -c -O3 -cpp \
 -ffpe-summary=invalid,zero,overflow \
 -fopenmp \
 -fdec -fd-lines-as-comments \
@@ -19,7 +19,7 @@ gfortran -c -O2 -cpp \
 -finit-local-zero -funroll-loops \
 urad_modules.f
 
-gfortran -c -O2 -cpp \
+gfortran -c -O3 -cpp \
 -ffpe-summary=invalid,zero,overflow \
 -fopenmp \
 -fdec -fd-lines-as-comments \
@@ -28,7 +28,7 @@ gfortran -c -O2 -cpp \
 -finit-local-zero -funroll-loops \
 urad_util.f
 
-gfortran -O2 -cpp \
+gfortran -O3 -cpp \
 -ffpe-summary=invalid,zero,overflow \
 -fopenmp \
 -fdec -fd-lines-as-comments \
