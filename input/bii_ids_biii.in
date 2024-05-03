@@ -1,0 +1,168 @@
+* +PATCH,//BRILL/INPUT
+* +DECK,ue52_ue32_ue15,T=TEXT.
+* Atis Mail Mitte August 2021
+*
+!---------------------------------------------------------
+
+1   		!   Speicherring Parameter
+n		!
+3369.863        ! gamma, 1.722 GeV
+1.e-3		! relative energy spread
+150.e-12 100.e-12 ! emittances
+0.3  		! current in amps
+4.38 		!  rho in m
+y
+
+!---------------------------------------------------------
+
+*
+2   		!   Straight section parameters
+n   		!   new values
+4.0  		!   Laenge in m
+3. 3.  	! Beta x  und  Beta y (high Beta section)
+y
+
+!---------------------------------------------------------
+
+3 1   		! UE52 hori
+0.052		! lambda 0
+61		! Anzahl der Perioden
+.5 5.58        ! Kmin Kmax g=6., B=1.15T
+1  		! erste Harmonische
+y
+0. 0. 		! energy range
+200
+0
+
+3  1 		!		
+0.052		! lambda 0
+61		! Anzahl der Perioden
+1.  2.8
+3		! dritte Harmonische
+y
+0. 0. 		! Energy range
+200
+0
+
+3   1		!
+0.052
+61              ! Anzahl der Perioden
+1.3  2.5
+5		! 5. Harmonische
+y
+0. 0. 		! Energy range
+200
+0
+
+!---------------------------------------------------------
+
+3 13   		! UE52 vert
+0.052		! lambda 0
+61		! Anzahl der Perioden
+.5 4.42        ! Kmin Kmax g=6., B=0.91T
+1  		! erste Harmonische
+y
+0. 0. 		! energy range
+200
+0
+
+!---------------------------------------------------------
+
+3 2   		! UE32 hori
+0.032		! lambda 0
+100		! Anzahl der Perioden
+.5 3.587        ! Kmin Kmax g=6., B=1.2T
+1  		! erste Harmonische
+y
+0. 0. 		! energy range
+200
+0
+
+3  2 		!		
+0.032		! lambda 0
+100		! Anzahl der Perioden
+1.  2.8
+3		! dritte Harmonische
+y
+0. 0. 		! Energy range
+200
+0
+
+3   2		!
+0.032
+100              ! Anzahl der Perioden
+1.3  2.5
+5		! 5. Harmonische
+y
+0. 0. 		! Energy range
+200
+0
+
+!---------------------------------------------------------
+
+3 7   		! UE32 vert
+0.032		! lambda 0
+100		! Anzahl der Perioden
+.5 3.078        ! Kmin Kmax g=6., B=1.03T
+1  		! erste Harmonische
+y
+0. 0. 		! energy range
+200
+0
+
+!---------------------------------------------------------
+
+3 3   		! UE15 hori g=4mm
+0.015		! lambda 0
+213		! Anzahl der Perioden
+.5 1.2       ! Kmin Kmax g=4., B=0.86T
+1  		! erste Harmonische
+y
+0. 0. 		! energy range
+200
+0
+
+3  3 		!		
+0.015		! lambda 0
+213		! Anzahl der Perioden
+0.5  1.2
+3		! dritte Harmonische
+y
+0. 0. 		! Energy range
+200
+0
+
+3   3		!
+0.015
+213              ! Anzahl der Perioden
+0.5  1.2
+5		! 5. Harmonische
+y
+0. 0. 		! Energy range
+200
+0
+
+!---------------------------------------------------------
+
+3 5   		! UE15 vert g=4mm
+0.015		! lambda 0
+213		! Anzahl der Perioden
+.5 0.981        ! Kmin Kmax g=4., B=0.7T
+1  		! erste Harmonische
+y
+0. 0. 		! energy range
+200
+0
+
+3 6   		! UE15 hori g=6mm
+0.015		! lambda 0
+213		! Anzahl der Perioden
+.5 0.59         ! Kmin Kmax g=6., B=0.827T
+1  		! erste Harmonische
+y
+0. 0. 		! energy range
+200
+0
+
+!---------------------------------------------------------
+6       	! exit to plot
