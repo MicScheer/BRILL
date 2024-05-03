@@ -1,0 +1,63 @@
+* +PATCH,//BRILL/INPUT
+* +DECK,brill_dipoles,T=TEXT.
+
+!---------------------------------------------------------
+
+1   		!   Speicherring Parameter
+n		!
+3369.863        ! gamma, 1.722 GeV
+1.e-3		! relative energy spread
+5.3e-9  0.0801e-9 ! emittances   1.5% coupling
+0.3  		! current in amps
+4.38 		!  rho in m
+y
+
+
+!---------------------------------------------------------
+
+5 -2		! BESSY II  Dipole Magnet
+0.39 15.6 	! betax betay
+y
+10.1 17000	! energy range
+200		! number of points
+
+!---------------------------------------------------------
+
+1   		!   Speicherring Parameter
+n		!
+4892.367906066536        ! gamma, 2.5 GeV
+1.e-3		! relative energy spread
+5.3e-9  0.0801e-9 ! emittances   1.5% coupling
+0.3  		! current in amps
+5.5594014705022454 		!  rho in m, 1.5T
+y
+
+!---------------------------------------------------------
+
+5 -3		! 1.5T  Dipole Magnet
+0.39 15.6 	! betax betay
+y
+10.1 17000	! energy range
+200		! number of points
+
+!---------------------------------------------------------
+
+1   		!   Speicherring Parameter
+n		!
+4892.367906066536        ! gamma, 2.5 GeV
+1.e-3		! relative energy spread
+5.3e-9  0.0801e-9 ! emittances   1.5% coupling
+0.3  		! current in amps
+4.1695511028766843 		!  rho in m, 2T
+y
+
+!---------------------------------------------------------
+
+5 -4		! 2T  Dipole Magnet
+0.39 15.6 	! betax betay
+y
+10.1 17000	! energy range
+200		! number of points
+
+!---------------------------------------------------------
+6       	! exit to plot
