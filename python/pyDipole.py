@@ -80,7 +80,7 @@ eps01=8.854187817e-12
 pi1=3.141592653589793e0
 grarad1=pi1/180.e0
 radgra1=180.e0/pi1
-hplanck1=6.626176e-34
+hplanck1=6.62606876e-34
 hbar1=hbarev1*echarge1
 wtoe1=clight1*hplanck1/echarge1*1.e9
 cq1=55.e0/32.e0/(3.0e0)**0.5*hbar1/emasskg1/clight1
@@ -1555,7 +1555,10 @@ def dip_plot():
     global absmuen,absmube,absmufe,absmupb,\
     absmuen_default,absmube_default,absmufe_default,absmupb_default
 
-    breakpoint()
+    #reakpoint()
+
+    dip_readout()
+
     emin = dip0.Egam.min()
     emax = dip0.Egam.max()
     nener = len(dip0.Egam)
@@ -1565,9 +1568,6 @@ def dip_plot():
 
     Fig = plt.gcf()
     Ax = plt.gca()
-
-    breakpoint()
-    dip_readout()
 
     #d0pl = dip0.query('FluxDen > ' + str(thresh))
     #plt.plot(d0pl.Egam,d0pl.FluxDen)
@@ -1580,7 +1580,9 @@ def dip_plot():
     Ax.set_ylabel('flux-density [N$_\gamma$/mm$^{2}$/s/BW]')
     titx = 0.7
     tity = 0.85
-    Ax.text(titx,tity,'Dose Rate: \n'+'{:.3g}'.format(fddose)+' [mGy/h]',transform=Ax.transAxes)
+
+    if fddose:
+        Ax.text(titx,tity,'Dose Rate: \n'+'{:.3g}'.format(fddose)+' [mGy/h]',transform=Ax.transAxes)
 
     plt.savefig("dipole_flux_density.pdf")
     print("dipole_flux_density.pdf written")
@@ -1599,9 +1601,10 @@ def dip_plot():
     Ax.set_title('Flux')
     Ax.set_xlabel('E$_{\gamma}$ [keV]')
     Ax.set_ylabel('flux [N$_\gamma$/s/BW]')
-    Ax.text(titx,tity,'Mean Dose Rate: \n'+'{:.3g}'.format(fluxdose)+' [mGy/h]',transform=Ax.transAxes)
-    Ax.text(titx,tity,'Mean Dose Rate: \n'+'{:.3g}'.format(fluxdose)+' [mGy/h]',transform=Ax.transAxes)
-
+    if fluxdose:
+        Ax.text(titx,tity,'Mean Dose Rate: \n'+'{:.3g}'.format(fluxdose)+' [mGy/h]',transform=Ax.transAxes)
+        Ax.text(titx,tity,'Mean Dose Rate: \n'+'{:.3g}'.format(fluxdose)+' [mGy/h]',transform=Ax.transAxes)
+    #endif
     plt.savefig("dipole_flux.pdf")
     print("dipole_flux.pdf written")
     plt.show(block=False)

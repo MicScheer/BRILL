@@ -377,7 +377,7 @@ C          AA(J)=AA(J)-AA(J)*BB(J-1)
 
       RETURN
       END
-*CMZ :          31/10/2022  17.05.45  by  Michael Scheer
+*CMZ :  4.01/05 31/10/2022  17.05.45  by  Michael Scheer
 *CMZ : 00.00/16 19/03/2014  12.30.26  by  Michael Scheer
 *CMZ : 00.00/15 03/09/2012  09.27.13  by  Michael Scheer
 *CMZ : 00.00/07 22/03/2010  15.28.00  by  Michael Scheer
@@ -699,7 +699,7 @@ C--- ARRAY YA IS FUNCTION OF RA AND SORTED ACCORDINGLY
         YA(I)=YYA
       GO TO 10
       END
-*CMZ :          15/04/2024  15.07.21  by  Michael Scheer
+*CMZ :  4.01/05 15/04/2024  15.07.21  by  Michael Scheer
 *CMZ :  4.01/02 11/05/2023  12.10.27  by  Michael Scheer
 *-- Author :    Michael Scheer   08/05/2023
       subroutine util_get_electron(xbeta,betah,alphah,betav,alphav,emith,emitv,
@@ -862,6 +862,7 @@ c util_random_get_seed.
 
       return
       end
+*CMZ :          16/08/2024  17.10.30  by  Michael Scheer
 *CMZ :  4.01/03 17/05/2023  11.24.58  by  Michael Scheer
 *CMZ :  4.01/02 12/05/2023  11.49.33  by  Michael Scheer
 *CMZ : 00.00/16 21/11/2014  14.53.59  by  Michael Scheer
@@ -873,12 +874,29 @@ c util_random_get_seed.
       implicit none
 
       double precision x(nx),y(ny),f(nx,ny),result
-      integer istat,nx,ny,ix,iy,kstat,kalloc
+      integer :: istat,nx,ny,ix,iy,kstat,kalloc,nxyo=0,kallo=0
 
       double precision, allocatable :: fb(:),fb2(:),coef(:),
      &  w1(:),w2(:),w3(:),w4(:)
 
       save
+
+      if (kalloc.eq.0) then
+        if (kallo.eq.0) then
+          kalloc=1
+        else
+          if (max(nx,ny).gt.nxyo) then
+            deallocate(fb)
+            deallocate(fb2)
+            deallocate(coef)
+            deallocate(w1)
+            deallocate(w2)
+            deallocate(w3)
+            deallocate(w4)
+            kalloc=1
+          endif
+        endif
+      endif
 
       if (kalloc.gt.0) then
         allocate(fb(max(nx,ny)))
@@ -888,6 +906,8 @@ c util_random_get_seed.
         allocate(w2(max(nx,ny)))
         allocate(w3(max(nx,ny)))
         allocate(w4(max(nx,ny)))
+        kallo=1
+        kalloc=0
       else if (kalloc.lt.0) then
         deallocate(fb)
         deallocate(fb2)
@@ -923,8 +943,11 @@ c util_random_get_seed.
         kstat=kstat+istat
       endif !nx.gt.ny
 
+      nxyo=max(nx,ny)
+
       return
       end
+*CMZ :          16/08/2024  14.55.31  by  Michael Scheer
 *CMZ :  4.01/03 16/05/2023  19.38.31  by  Michael Scheer
 *CMZ : 00.00/02 17/08/2004  09.47.26  by  Michael Scheer
 *CMZ : 00.00/00 10/01/95  15.25.29  by  Michael Scheer
@@ -942,8 +965,7 @@ C---  CALCULATES INTERGRAL OF Y(X) VIA SPLINES
 
 C---  SPLINE-COEFFICIENTS
 
-      CALL UTIL_SPLINE_COEF_STATus(X,Y,N,-9999.0d0,-9999.0d0,COEF,
-     &  WORK1,WORK2,WORK3,WORK4,ISTAT)
+      CALL UTIL_SPLINE_COEF_STATus(X,Y,N,0.0d0,0.0d0,COEF,WORK1,WORK2,WORK3,WORK4,ISTAT)
 
 C--- INTEGRATION
 
@@ -1157,7 +1179,7 @@ c to determine date and time and write it to logical unit lun
 
       return
       end
-*CMZ :          16/04/2024  12.38.45  by  Michael Scheer
+*CMZ :  4.01/05 16/04/2024  12.38.45  by  Michael Scheer
 *CMZ :  2.05/04 16/12/2023  12.06.33  by  Michael Scheer
 *CMZ :  2.04/19 16/09/2023  16.33.50  by  Michael Scheer
 *CMZ :  2.03/00 26/07/2022  07.55.50  by  Michael Scheer
@@ -1326,7 +1348,821 @@ c     &    ,isize
 
       return
       end
-*CMZ :          12/01/2024  16.28.35  by  Michael Scheer
+*CMZ :          16/05/2024  10.08.43  by  Michael Scheer
+*CMZ : 00.00/02 21/08/2006  11.07.41  by  Michael Scheer
+*-- Author :    Michael Scheer   21/08/2006
+      subroutine util_simpson_integral(n,x,f,sum)
+
+      implicit none
+
+      double precision x(n),f(n),sum
+      integer n,i
+
+      sum=0.0d0
+
+      do i=1,n-1
+        sum=sum+(f(i+1)+f(i))*(x(i+1)-x(i))/2.d0
+      enddo
+
+      return
+      end
+*CMZ :  4.01/05 28/03/2024  11.30.43  by  Michael Scheer
+*CMZ : 00.00/02 22/04/99  17.27.52  by  Michael Scheer
+*CMZ : 00.00/00 10/01/95  15.25.29  by  Michael Scheer
+*-- Author : Michael Scheer
+      subroutine util_fourier_linear_complex(nx,x,y,nom,om,ft,ifail)
+
+c---  calculates integral(f(x)*sin(omega*x)) and integral(f(x)*cos(omega*x))
+
+      implicit none
+
+      integer nx,nom,iom,ix,ifail,ic
+
+      real*8, parameter :: pi1=3.141592653589793d0
+
+      complex*16 :: y(nx),fw,ci=(0.0d0,1.0d0),ex0oma,ft(nom),cn,dexpomx,dexpom,ex00,
+     &  ddexpomx
+
+      real*8 x(nx),om(nom),const,a0,yr(nx),oma,dom,dx
+
+      ifail=0
+      const=1.0d0/sqrt(2.0d0*pi1)
+
+      dx=x(2)-x(1)
+      dom=om(2)-om(1)
+
+      dexpomx=exp(-ci*dx*om(1))
+      ddexpomx=exp(-ci*dx*dom)
+
+      do ic=1,2
+
+        if (ic.eq.1) then
+          yr(1:nx)=dreal(y(1:nx))
+        else
+          yr(1:nx)=dimag(y(1:nx))
+        endif
+
+        ex00=exp(-ci*x(1)*om(1))
+        dexpom=exp(-ci*x(1)*dom)
+
+        do iom=1,nom
+
+          oma=om(iom)
+
+          if (abs(oma).lt.1.0d-9) then
+            a0=0.0d0
+            do ix=1,nx-1
+              a0=a0+(yr(ix)+yr(ix+1))/2.0d0*dx
+            enddo
+            if (ic.eq.1) then
+              ft(iom)=dcmplx(a0*const,0.0d0)
+            else
+              ft(iom)=ft(iom)+dcmplx(0.0d0,a0*const)
+            endif
+            ex00=ex00*dexpom
+            dexpomx=dexpomx*ddexpomx
+            cycle
+          endif
+
+          ex0oma=ex00
+
+          cn=yr(1)*ex0oma/2.0d0
+          fw=cn*dx
+          ex0oma=ex0oma*dexpomx
+
+          do ix=2,nx-1
+            cn=yr(ix)*ex0oma
+            fw=fw+cn*dx
+            ex0oma=ex0oma*dexpomx
+          enddo !ix
+
+          cn=yr(nx)*ex0oma/2.0d0
+          fw=fw+cn*dx
+
+          if (ic.eq.1) then
+            ft(iom)=fw*const
+          else
+            ft(iom)=ft(iom)+ci*fw*const
+          endif
+
+          ex00=ex00*dexpom
+          dexpomx=dexpomx*ddexpomx
+
+        enddo !oma
+
+      enddo !ic
+
+      return
+      end
+*CMZ :  4.01/05 28/03/2024  14.33.20  by  Michael Scheer
+*CMZ : 00.00/02 22/04/99  17.27.52  by  Michael Scheer
+*CMZ : 00.00/00 10/01/95  15.25.29  by  Michael Scheer
+*-- Author : Michael Scheer
+      subroutine util_fourier_linear_complex_2d(nx,ny,x,y,f,nomx,nomy,omx,omy,ft,ifail)
+
+      implicit none
+
+      integer nx,ny,nomx,nomy,ix,iy,ifail,jfail
+
+      complex*16 :: f(nx,ny),ft(nomx,nomy),fxy(max(nx,ny)),ftxy(max(nx,ny)),ftx(nomx,ny)
+
+      real*8 x(nx),y(ny),omx(nomx),omy(nomy)
+
+      ifail=0
+
+      do iy=1,ny
+        fxy(1:nx)=f(1:nx,iy)
+        call util_fourier_linear_complex(nx,x,fxy,nomx,omx,ftxy,jfail)
+        ftx(1:nomx,iy)=ftxy(1:nomx)
+        ifail=ifail+jfail
+      enddo !ny
+
+      do ix=1,nomx
+        fxy(1:ny)=ftx(ix,1:ny)
+        call util_fourier_linear_complex(ny,y,fxy,nomy,omy,ftxy,jfail)
+        ft(ix,1:nomy)=ftxy(1:nomy)
+        ifail=ifail+jfail
+      enddo !ny
+
+      return
+      end
+*CMZ :          16/05/2024  11.37.20  by  Michael Scheer
+*-- Author : Michael Scheer
+      subroutine util_wigner(ndime,nx,nt,x,t,om,er,ei,wig,istat)
+
+      implicit none
+
+      real*8, parameter :: CLIGHT1=2.99792458D8
+
+      integer :: ndime,nx,nt,istat,ix,it,ixp,l,kp,km,iw
+
+      real*8 :: x(ndime),t(nt),er(ndime),ei(ndime),sim(ndime),om
+      complex*16 cex(ndime),cee(ndime),wig(nx,nt)
+
+      real*8 omc,erp,xp,xxpm,xxpp,wr,wi,erm,eip,eim,dx
+      complex*16 :: czero=(0.0d0,0.0d0)
+
+      if (ndime.le.1) then
+        istat=-1
+        wig=czero
+        return
+      endif
+
+      dx=(x(ndime)-x(1))/(ndime-1)
+      omc=om/clight1
+
+      do it=1,nt
+        do ixp=1,ndime
+          cex(ixp)=cdexp(dcmplx(0.0d0,omc*t(it)*x(ixp)))
+        enddo !ixp
+        iw=0
+        do ix=1,ndime
+          l=0
+          do ixp=1,ndime
+            xp=x(ixp)
+            xxpp=x(ix)+xp/2.0d0
+            if (xxpp.gt.x(ndime).or.xxpp.lt.x(1)) cycle
+            xxpm=x(ix)-xp/2.0d0
+            if (xxpm.gt.x(ndime).or.xxpm.lt.x(1)) cycle
+            kp=int((xxpp-x(1))/dx)+1
+            if (kp.ge.ndime) kp=ndime-1
+            km=int((xxpm-x(1))/dx)+1
+            if (km.ge.ndime) km=ndime-1
+            erp=er(kp)+(er(kp+1)-er(kp))/dx*(xxpp-x(kp))
+            eip=ei(kp)+(ei(kp+1)-ei(kp))/dx*(xxpp-x(kp))
+            erm=er(km)+(er(km+1)-er(km))/dx*(xxpm-x(km))
+            eim=ei(km)+(ei(km+1)-ei(km))/dx*(xxpm-x(km))
+            l=l+1
+            cee(l)=dcmplx(erp,-eip)*dcmplx(erm,eim)*cex(ixp)
+          enddo !ixp
+          if (l.eq.ndime) then
+            sim=dreal(cee)
+            call util_simpson_integral(ndime,x,sim,wr)
+            sim=dimag(cee)
+            call util_simpson_integral(ndime,x,sim,wi)
+            iw=iw+1
+            wig(iw,it)=dcmplx(wr,wi)
+          endif
+        enddo !ix
+      enddo !it
+
+      istat=0
+      if (iw.ne.nx) istat=-2
+
+      end
+*CMZ :          05/06/2024  12.03.37  by  Michael Scheer
+*-- Author : Michael Scheer
+      subroutine util_wigner_2d(
+     &  ndimez,nz,ntz,z,tz,
+     &  ndimey,ny,nty,y,ty,
+     &  om,er,ei,wig,mthreads,istat)
+
+      implicit none
+
+      real*8, parameter :: CLIGHT1=2.99792458D8
+
+      integer ::
+     &  ndimez,nz,ntz,ndimey,ny,nty,mthreads,istat,
+     &  iz,itz,izp,ith,
+     &  iy,ity,iyp,iyl,iyh,izl,izr,
+     &  l,kpz,kmz,kmy,kpy,iwz,iwy,ly,lz,itzty,ly1,ly2,lz1,lz2
+
+      integer OMP_GET_THREAD_NUM
+
+      real*8 ::
+     &  ze(ndimez/2*4+1),ye(ndimey/2*4+1)
+      integer nze,nye
+      complex*16 cex(ndimez/2*4+1,ndimey/2*4+1),wig(nz,ny,ntz,nty),sim
+
+      real*8 ::
+     &  z(ndimez),tz(ntz),y(ndimey),ty(nty),
+     &  er(ndimez,ndimey),ei(ndimez,ndimey)
+
+      real*8 omc,erp,zp,zzpm,zzpp,wr,wi,erm,eip,eim,dz,om,ph,pw,
+     &  fb,ft,fpr,fpi,fmr,fmi,dzz,dyy,dzy,dy,yp,yypp,yypm,simfac
+
+      if (ndimez.le.1.or.ndimey.le.1) then
+        istat=-1
+        return
+      endif
+
+      dy=(y(ndimey)-y(1))/(ndimey-1)
+      dz=(z(ndimez)-z(1))/(ndimez-1)
+      dzy=dz*dy
+
+      nze=ndimez/2*4+1
+      nye=ndimey/2*4+1
+
+      ye(1)=2.0d0*y(1)
+      do iy=2,nye
+        ye(iy)=ye(iy-1)+dy
+        if (abs(ye(iy)).lt.1.0d-9) ye(iy)=0.0d0
+      enddo
+
+      ze(1)=2.0d0*z(1)
+      do iz=2,nze
+        ze(iz)=ze(iz-1)+dz
+        if (abs(ze(iz)).lt.1.0d-9) ze(iz)=0.0d0
+      enddo
+
+      omc=om/clight1
+      wig=(0.0d0,0.0d0)
+
+!$OMP PARALLEL NUM_THREADS(mthreads) DEFAULT(PRIVATE)
+!$OMP& SHARED(ndimez,z,ndimey,y,nze,nz,ntz,ze,tz,nye,ny,nty,ye,ty,omc,er,ei,wig,mthreads,dz,dy,dzy)
+
+      izl=(ndimez/2+1)/2+1
+      izr=ndimez-izl+1
+      iyl=(ndimey/2+1)/2+1
+      iyh=ndimey-iyl+1
+
+      ity=1
+      itz=0
+      ith=OMP_GET_THREAD_NUM()+1
+
+!$OMP DO
+      do itzty=1,nty*ntz
+
+        itz=mod(itzty-1,ntz)+1
+        ity=(itzty-1)/ntz+1
+
+        do izp=1,nze
+          do iyp=1,nye
+            cex(izp,iyp)=cdexp(dcmplx(0.0d0,2.0d0*omc*(tz(itz)*ze(izp)+ty(ity)*ye(iyp))))*4.0d0*dzy
+          enddo !iyp
+        enddo !izp
+
+        iwy=0
+        ly=0
+
+        do iy=iyl,iyh
+
+          iwy=iwy+1
+          iwz=0
+
+          do iz=izl,izr
+
+            iwz=iwz+1
+
+            do iyp=1,nye
+
+              yp=ye(iyp)
+              yypp=y(iy)+yp
+              if (yypp.gt.y(ndimey).or.yypp.lt.y(1)) cycle
+              yypm=y(iy)-yp
+              if (yypm.gt.y(ndimey).or.yypm.lt.y(1)) cycle
+
+              kpy=int((yypp-y(1))/dy)+1
+              kmy=int((yypm-y(1))/dy)+1
+
+              ly=ly+1
+              lz=0
+
+              do izp=1,nze
+
+                zp=ze(izp)
+                zzpp=z(iz)+zp
+                if (zzpp.gt.z(ndimez).or.zzpp.lt.z(1)) cycle
+                zzpm=z(iz)-zp
+                if (zzpm.gt.z(ndimez).or.zzpm.lt.z(1)) cycle
+
+                kpz=int((zzpp-z(1))/dz)+1
+                kmz=int((zzpm-z(1))/dz)+1
+
+                lz=lz+1
+
+                dzz=zzpm-z(kmz)
+                if (abs(dzz-dz).le.1.0d-15) then
+                  kmz=kmz+1
+                endif
+
+                dyy=yypm-y(kmy)
+                if (abs(dyy-dy).le.1.0d-15) then
+                  kmy=kmy+1
+                endif
+
+                dzz=zzpp-z(kpz)
+                if (abs(dzz-dz).le.1.0d-15) then
+                  kpz=kpz+1
+                endif
+
+                dyy=yypp-y(kpy)
+                if (abs(dyy-dy).le.1.0d-15) then
+                  kpy=kpy+1
+                endif
+
+                dzz=zzpp-z(kpz)
+                if (abs(dzz-dz).le.1.0d-15) then
+                  kpz=kpz+1
+                endif
+
+                dyy=yypp-y(kpy)
+                if (abs(dyy-dy).le.1.0d-15) then
+                  kpy=kpy+1
+                endif
+
+                fmr=er(kmz,kmy)
+                fmi=ei(kmz,kmy)
+                fpr=er(kpz,kpy)
+                fpi=ei(kpz,kpy)
+
+                simfac=1.0d0
+                if (ly.eq.1) simfac=simfac/2.0d0
+                if (lz.eq.1) simfac=simfac/2.0d0
+
+                sim=dcmplx(fpr,-fpi)*dcmplx(fmr,fmi)*cex(izp,iyp)
+                wig(iwz,iwy,itz,ity)=wig(iwz,iwy,itz,ity)+sim*simfac
+
+              enddo !izp
+
+              wig(iwz,iwy,itz,ity)=wig(iwz,iwy,itz,ity)-sim*simfac/2.0d0
+
+            enddo !iyp
+
+            wig(iwz,iwy,itz,ity)=wig(iwz,iwy,itz,ity)-sim*simfac/4.0d0
+
+          enddo !iz
+        enddo !iy
+
+      enddo !itzty
+
+!$OMP END DO
+!$OMP END PARALLEL
+
+      istat=0
+
+      end
+*CMZ :          08/06/2024  07.58.46  by  Michael Scheer
+*-- Author : Michael Scheer
+      subroutine util_wigner_2d_kernel(
+     &  nz,ny,
+     &  er,ei,wkern,istat)
+
+      implicit none
+
+      integer ::
+     &  nz,ny,istat,iyl,iyh,izl,izr,
+     &  iz,izp,iy,iyp,kpy,kmy,kpz,kmz,izc,iyc
+
+      complex*16 wkern(nz,ny,nz,ny)
+
+      real*8 :: fpi,fpr,fmi,fmr,
+     &  er(nz,ny),ei(nz,ny)
+
+      if (nz.le.1.or.ny.le.1) then
+        istat=-1
+        return
+      endif
+
+      wkern=(0.0d0,0.0d0)
+      iyc=ny/2+1
+      izc=nz/2+1
+
+      do iy=-ny/2,ny/2
+
+        do iz=-nz/2,nz/2
+
+          do iyp=-ny/2,ny/2
+
+            kpy=iy+iyp+iyc
+            if (kpy.gt.ny.or.kpy.lt.1) cycle
+            kmy=iy-iyp+iyc
+            if (kmy.gt.ny.or.kmy.lt.1) cycle
+
+            do izp=-nz/2,nz/2
+
+              kpz=iz+izp+izc
+              if (kpz.gt.nz.or.kpz.lt.1) cycle
+              kmz=iz-izp+izc
+              if (kmz.gt.nz.or.kmz.lt.1) cycle
+
+              fmr=er(kmz,kmy)
+              fmi=ei(kmz,kmy)
+              fpr=er(kpz,kpy)
+              fpi=ei(kpz,kpy)
+
+              wkern(iz+izc,iy+iyc,izp+izc,iyp+iyc)=dcmplx(fpr,-fpi)*dcmplx(fmr,fmi)
+c              if (iz.eq.izc.and.iy.eq.iyc) print*,iz,iy,izp,iyp
+
+            enddo !izp
+
+          enddo !iyp
+
+        enddo !iz
+      enddo !iy
+
+      istat=0
+
+      end
+*CMZ :          04/06/2024  11.51.30  by  Michael Scheer
+*-- Author : Michael Scheer
+      subroutine util_wigner_2d_oldwig(
+     &  ndimez,nz,ntz,z,tz,
+     &  ndimey,ny,nty,y,ty,
+     &  om,er,ei,wig,mthreads,istat)
+
+      implicit none
+
+      real*8, parameter :: CLIGHT1=2.99792458D8
+
+      integer ::
+     &  ndimez,nz,ntz,ndimey,ny,nty,mthreads,istat,
+     &  iz,itz,izp,ith,
+     &  iy,ity,iyp,iyl,iyh,izl,izr,
+     &  l,kpz,kmz,kmy,kpy,iwz,iwy,ly,lz,itzty,ly1,ly2,lz1,lz2
+
+      integer OMP_GET_THREAD_NUM
+      integer nze,nye
+
+      real*8 ::
+     &  ze(ndimez/2*4+1),ye(ndimey/2*4+1)
+
+      complex*16 cex(ndimez/2*4+1,ndimey/2*4+1),wig(nz,ny,ntz,nty),sim
+
+      real*8 ::
+     &  z(ndimez),tz(ntz),y(ndimey),ty(nty),
+     &  er(ndimez,ndimey),ei(ndimez,ndimey)
+
+      real*8 omc,erp,zp,zzpm,zzpp,wr,wi,erm,eip,eim,dz,om,ph,pw,
+     &  fb,ft,fpr,fpi,fmr,fmi,dzz,dyy,dzy,dy,yp,yypp,yypm,simfac
+
+      if (ndimez.le.1.or.ndimey.le.1) then
+        istat=-1
+        return
+      endif
+
+      dy=(y(ndimey)-y(1))/(ndimey-1)
+      dz=(z(ndimez)-z(1))/(ndimez-1)
+      dzy=dz*dy
+
+      nze=ndimez/2*4+1
+      nye=ndimey/2*4+1
+
+      ye(1)=2.0d0*y(1)
+      do iy=2,nye
+        ye(iy)=ye(iy-1)+dy
+        if (abs(ye(iy)).lt.1.0d-9) ye(iy)=0.0d0
+      enddo
+
+      ze(1)=2.0d0*z(1)
+      do iz=2,nze
+        ze(iz)=ze(iz-1)+dz
+        if (abs(ze(iz)).lt.1.0d-9) ze(iz)=0.0d0
+      enddo
+
+      omc=om/clight1
+      wig=(0.0d0,0.0d0)
+
+c!$OMP& FIRSTPRIVATE(cex)
+!$OMP PARALLEL NUM_THREADS(mthreads) DEFAULT(PRIVATE)
+!$OMP& SHARED(ndimez,z,ndimey,y,nze,nz,ntz,ze,tz,nye,ny,nty,ye,ty,omc,er,ei,wig,mthreads,dz,dy,dzy)
+
+      izl=(ndimez/2+1)/2+1
+      izr=ndimez-izl+1
+      iyl=(ndimey/2+1)/2+1
+      iyh=ndimey-iyl+1
+
+      ity=1
+      itz=0
+      ith=OMP_GET_THREAD_NUM()+1
+
+!$OMP DO
+      do itzty=1,nty*ntz
+
+        itz=mod(itzty-1,nty)+1
+        ity=(itzty-1)/ntz+1
+
+        do izp=1,nze
+          do iyp=1,nye
+            cex(izp,iyp)=cdexp(dcmplx(0.0d0,omc*(tz(itz)*ze(izp)+ty(ity)*ye(iyp))))*dzy
+          enddo !iyp
+        enddo !izp
+
+        iwy=0
+        ly=0
+
+        do iy=iyl,iyh
+
+          iwy=iwy+1
+          iwz=0
+
+          do iz=izl,izr
+
+            iwz=iwz+1
+
+            do iyp=1,nye
+
+              yp=ye(iyp)
+              yypp=y(iy)+yp/2.0d0
+              if (yypp.gt.y(ndimey).or.yypp.lt.y(1)) cycle
+              yypm=y(iy)-yp/2.0d0
+              if (yypm.gt.y(ndimey).or.yypm.lt.y(1)) cycle
+
+              kpy=int((yypp-y(1))/dy)+1
+              if (kpy.ge.ndimey) kpy=ndimey-1
+              kmy=int((yypm-y(1))/dy)+1
+              if (kmy.ge.ndimey) kmy=ndimey-1
+
+              ly=ly+1
+              lz=0
+
+              do izp=1,nze
+
+                zp=ze(izp)
+                zzpp=z(iz)+zp/2.0d0
+                if (zzpp.gt.z(ndimez).or.zzpp.lt.z(1)) cycle
+                zzpm=z(iz)-zp/2.0d0
+                if (zzpm.gt.z(ndimez).or.zzpm.lt.z(1)) cycle
+
+                kpz=int((zzpp-z(1))/dz)+1
+                if (kpz.ge.ndimez) kpz=ndimez-1
+                kmz=int((zzpm-z(1))/dz)+1
+                if (kmz.ge.ndimez) kmz=ndimez-1
+
+                lz=lz+1
+
+                dyy=yypp-y(kpy)
+                dzz=zzpp-z(kpz)
+
+                fb=er(kpz,kpy)+(er(kpz+1,kpy)-er(kpz,kpy))/dz*dzz
+                ft=er(kpz,kpy+1)+(er(kpz+1,kpy+1)-er(kpz,kpy+1))/dz*dzz
+                fpr=fb+(ft-fb)/dy*dyy
+
+                fb=ei(kpz,kpy)+(ei(kpz+1,kpy)-ei(kpz,kpy))/dz*dzz
+                ft=ei(kpz,kpy+1)+(ei(kpz+1,kpy+1)-ei(kpz,kpy+1))/dz*dzz
+                fpi=fb+(ft-fb)/dy*dyy
+
+                dyy=yypm-y(kmy)
+                dzz=zzpm-z(kmz)
+
+                fb=er(kmz,kmy)+(er(kmz+1,kmy)-er(kmz,kmy))/dz*dzz
+                ft=er(kmz,kmy+1)+(er(kmz+1,kmy+1)-er(kmz,kmy+1))/dz*dzz
+                fmr=fb+(ft-fb)/dy*dyy
+
+                fb=ei(kmz,kmy)+(ei(kmz+1,kmy)-ei(kmz,kmy))/dz*dzz
+                ft=ei(kmz,kmy+1)+(ei(kmz+1,kmy+1)-ei(kmz,kmy+1))/dz*dzz
+                fmi=fb+(ft-fb)/dy*dyy
+
+                simfac=1.0d0
+c                if (ly.eq.1.or.ly.eq.ndimey) simfac=simfac/2.0d0
+c                if (lz.eq.1.or.lz.eq.ndimez) simfac=simfac/2.0d0
+                if (ly.eq.1) simfac=simfac/2.0d0
+                if (lz.eq.1) simfac=simfac/2.0d0
+
+                sim=dcmplx(fpr,-fpi)*dcmplx(fmr,fmi)*cex(izp,iyp)
+                wig(iwz,iwy,itz,ity)=wig(iwz,iwy,itz,ity)+sim*simfac
+
+c                if (lz.eq.ndimez) then
+c                  exit
+c                endif
+
+              enddo !izp
+
+              wig(iwz,iwy,itz,ity)=wig(iwz,iwy,itz,ity)-sim*simfac/2.0d0
+
+c              if (ly.eq.ndimey) then
+c                print*,ith,iwz,iwy,itz,ity,wig(iwz,iwy,itz,ity)
+c                exit
+c              endif
+
+            enddo !iyp
+
+            wig(iwz,iwy,itz,ity)=wig(iwz,iwy,itz,ity)-sim*simfac/4.0d0
+
+          enddo !iz
+        enddo !iy
+
+      enddo !itzty
+
+!$OMP END DO
+!$OMP END PARALLEL
+
+      istat=0
+
+      end
+*CMZ :          05/06/2024  10.42.57  by  Michael Scheer
+*-- Author : Michael Scheer
+      subroutine util_wigner_2d_good(
+     &  ndimez,nz,ntz,z,tz,
+     &  ndimey,ny,nty,y,ty,
+     &  om,er,ei,wig,mthreads,istat)
+
+      implicit none
+
+      real*8, parameter :: CLIGHT1=2.99792458D8
+
+      integer ::
+     &  ndimez,nz,ntz,ndimey,ny,nty,mthreads,istat,
+     &  iz,itz,izp,ith,
+     &  iy,ity,iyp,iyl,iyh,izl,izr,
+     &  l,kpz,kmz,kmy,kpy,iwz,iwy,ly,lz,itzty,ly1,ly2,lz1,lz2
+
+      integer OMP_GET_THREAD_NUM
+
+      real*8 ::
+     &  ze(ndimez/2*4+1),ye(ndimey/2*4+1)
+      integer nze,nye
+      complex*16 cex(ndimez/2*4+1,ndimey/2*4+1),wig(nz,ny,ntz,nty),sim
+
+      real*8 ::
+     &  z(ndimez),tz(ntz),y(ndimey),ty(nty),
+     &  er(ndimez,ndimey),ei(ndimez,ndimey)
+
+      real*8 omc,erp,zp,zzpm,zzpp,wr,wi,erm,eip,eim,dz,om,ph,pw,
+     &  fb,ft,fpr,fpi,fmr,fmi,dzz,dyy,dzy,dy,yp,yypp,yypm,simfac
+
+      if (ndimez.le.1.or.ndimey.le.1) then
+        istat=-1
+        return
+      endif
+
+      dy=(y(ndimey)-y(1))/(ndimey-1)
+      dz=(z(ndimez)-z(1))/(ndimez-1)
+      dzy=dz*dy
+
+      nze=ndimez/2*4+1
+      nye=ndimey/2*4+1
+
+      ye(1)=2.0d0*y(1)
+      do iy=2,nye
+        ye(iy)=ye(iy-1)+dy
+        if (abs(ye(iy)).lt.1.0d-9) ye(iy)=0.0d0
+      enddo
+
+      ze(1)=2.0d0*z(1)
+      do iz=2,nze
+        ze(iz)=ze(iz-1)+dz
+        if (abs(ze(iz)).lt.1.0d-9) ze(iz)=0.0d0
+      enddo
+
+      omc=om/clight1
+      wig=(0.0d0,0.0d0)
+
+!$OMP PARALLEL NUM_THREADS(mthreads) DEFAULT(PRIVATE)
+!$OMP& SHARED(ndimez,z,ndimey,y,nze,nz,ntz,ze,tz,nye,ny,nty,ye,ty,omc,er,ei,wig,mthreads,dz,dy,dzy)
+
+      izl=(ndimez/2+1)/2+1
+      izr=ndimez-izl+1
+      iyl=(ndimey/2+1)/2+1
+      iyh=ndimey-iyl+1
+
+      ity=1
+      itz=0
+      ith=OMP_GET_THREAD_NUM()+1
+
+!$OMP DO
+      do itzty=1,nty*ntz
+
+        itz=mod(itzty-1,ntz)+1
+        ity=(itzty-1)/ntz+1
+
+        do izp=1,nze
+          do iyp=1,nye
+            cex(izp,iyp)=cdexp(dcmplx(0.0d0,2.0d0*omc*(tz(itz)*ze(izp)+ty(ity)*ye(iyp))))*2.0d0*dzy
+          enddo !iyp
+        enddo !izp
+
+        iwy=0
+        ly=0
+
+        do iy=iyl,iyh
+
+          iwy=iwy+1
+          iwz=0
+
+          do iz=izl,izr
+
+            iwz=iwz+1
+
+            do iyp=1,nye
+
+              yp=ye(iyp)
+              yypp=y(iy)+yp
+              if (yypp.gt.y(ndimey).or.yypp.lt.y(1)) cycle
+              yypm=y(iy)-yp
+              if (yypm.gt.y(ndimey).or.yypm.lt.y(1)) cycle
+
+              kpy=int((yypp-y(1))/dy)+1
+              kmy=int((yypm-y(1))/dy)+1
+
+              ly=ly+1
+              lz=0
+
+              do izp=1,nze
+
+                zp=ze(izp)
+                zzpp=z(iz)+zp
+                if (zzpp.gt.z(ndimez).or.zzpp.lt.z(1)) cycle
+                zzpm=z(iz)-zp
+                if (zzpm.gt.z(ndimez).or.zzpm.lt.z(1)) cycle
+
+                kpz=int((zzpp-z(1))/dz)+1
+                kmz=int((zzpm-z(1))/dz)+1
+
+                lz=lz+1
+
+                dzz=zzpm-z(kmz)
+                if (abs(dzz-dz).le.1.0d-15) then
+                  kmz=kmz+1
+                endif
+
+                dyy=yypm-y(kmy)
+                if (abs(dyy-dy).le.1.0d-15) then
+                  kmy=kmy+1
+                endif
+
+                dzz=zzpp-z(kpz)
+                if (abs(dzz-dz).le.1.0d-15) then
+                  kpz=kpz+1
+                endif
+
+                dyy=yypp-y(kpy)
+                if (abs(dyy-dy).le.1.0d-15) then
+                  kpy=kpy+1
+                endif
+
+                dzz=zzpp-z(kpz)
+                if (abs(dzz-dz).le.1.0d-15) then
+                  kpz=kpz+1
+                endif
+
+                dyy=yypp-y(kpy)
+                if (abs(dyy-dy).le.1.0d-15) then
+                  kpy=kpy+1
+                endif
+
+                fmr=er(kmz,kmy)
+                fmi=ei(kmz,kmy)
+                fpr=er(kpz,kpy)
+                fpi=ei(kpz,kpy)
+
+                simfac=1.0d0
+                if (ly.eq.1) simfac=simfac/2.0d0
+                if (lz.eq.1) simfac=simfac/2.0d0
+
+                sim=dcmplx(fpr,-fpi)*dcmplx(fmr,fmi)*cex(izp,iyp)
+                wig(iwz,iwy,itz,ity)=wig(iwz,iwy,itz,ity)+sim*simfac
+
+              enddo !izp
+
+              wig(iwz,iwy,itz,ity)=wig(iwz,iwy,itz,ity)-sim*simfac/2.0d0
+
+            enddo !iyp
+
+            wig(iwz,iwy,itz,ity)=wig(iwz,iwy,itz,ity)-sim*simfac/4.0d0
+
+          enddo !iz
+        enddo !iy
+
+      enddo !itzty
+
+!$OMP END DO
+!$OMP END PARALLEL
+
+      istat=0
+
+      end
+*CMZ :  4.01/05 12/01/2024  16.28.35  by  Michael Scheer
 *-- Author :    Michael Scheer   11/11/2023
 
       SUBROUTINE util_CFT(A,B,NTOT,N,NSPAN,ISN,maxf,maxp,at,ck,bt,sk,np)
@@ -1905,7 +2741,7 @@ C     ERROR FINISH, INSUFFICIENT ARRAY STORAGE
       WRITE(6,999)
   999 FORMAT('*** Error in util_cft: ARRAY BOUNDS EXCEEDED, change number of points to avoid too big a prime factor')
       END
-*CMZ :          12/01/2024  18.00.46  by  Michael Scheer
+*CMZ :  4.01/05 12/01/2024  18.00.46  by  Michael Scheer
 *-- Author :    Michael Scheer   11/11/2023
       subroutine util_cft_2d(nx,ny,arin,aiin,arout,aiout,isn)
       implicit none

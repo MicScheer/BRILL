@@ -1615,7 +1615,7 @@ eps01=8.854187817e-12
 pi1=3.141592653589793e0
 grarad1=pi1/180.e0
 radgra1=180.e0/pi1
-hplanck1=6.626176e-34
+hplanck1=6.62606876e-34
 hbar1=hbarev1*echarge1
 wtoe1=clight1*hplanck1/echarge1*1.e9
 cq1=55.e0/32.e0/(3.0e0)**0.5*hbar1/emasskg1/clight1
@@ -3556,7 +3556,7 @@ def plothull3d(isame=0,facecolor='blue',alpha=0.5,edgecolor='black',
   if ishow: showplot()
 #enddef plothull3()
 
-def nmerge(n1,n2,n12,vars1='',vars2='',vars12=''):
+def nmerge(n1,n2,n12,vars1='',vars2='',vars12='',ioverwrite=1):
 
   idx1 = GetIndexN(n1)
 
@@ -3599,7 +3599,7 @@ def nmerge(n1,n2,n12,vars1='',vars2='',vars12=''):
 
   if vars12 == '': vars12 = vars1 + ":" + vars2
 
-  n12 = ncre(n12,n12,vars12)
+  n12 = ncre(n12,n12,vars12,ioverwrite)
 
   varl1 = nlistcolon(vars1)
   varl2 = nlistcolon(vars2)
@@ -5178,6 +5178,29 @@ def zoom(xmin,xmax,ymin=-1.2345e30,ymax=1.2345e30,zmin=1.2345e30,zmax=1.2345e30)
 
   showplot()
 #enddef zoom
+
+def get_xy_limits():
+
+  Ax = plt.gca()
+
+  xn, xx = Ax.get_xlim()
+  yn, yx = Ax.get_ylim()
+
+  return xn,xx,yn,yx
+
+#enddef
+
+def get_xyz_limits():
+
+  Ax = plt.gca()
+
+  xn, xx = Ax.get_xlim()
+  yn, yx = Ax.get_ylim()
+  zn, zx = Ax.get_zlim()
+
+  return xn,xx,yn,yx,zn,zx
+
+#enddef
 
 def zoom3d(xmin,xmax,ymin=-1.2345e30,ymax=1.2345e30,zmin=1.2345e30,zmax=1.2345e30):
 #+KEEP,plotglobind,T=PYTHON.
@@ -12962,6 +12985,7 @@ def nproj2(nt='?', xy='', weight=1., select='',
   x = "(" + nparse(nt,xy[0]) + ") * " + str(scalex)
   y = "(" + nparse(nt,xy[1]) + ") * " + str(scaley)
 
+  #reakpoint()
   if weight == 1. or weight == '' or weight == '!':
     w = "(" + nparse(nt,xy[0]) + ") * 0.0 + 1.0"
     wt = ''
@@ -18663,11 +18687,13 @@ def nplot(nt='?',varlis='',select='',weights='',plopt='', legend='',
 
     else:
 
-        w = nt[weights] * scalez
+        #w = nt[weights] * scalez
 
         sx = "(" + nparse(nt,varlis[0]) + ") * " + str(scalex)
         sy = "(" + nparse(nt,varlis[1]) + ") * " + str(scaley)
         sw = "(" + nparse(nt,weights) + ") * " + str(scalez)
+
+        w = eval(sw)
 
         if Ihist or Isurf or Itrisurf or Iinter or Iboxes:
 
@@ -25170,7 +25196,7 @@ hull3d = qhull3d
 plotncyl = plotncylinder
 read_facets = read_faces
 nex = nextzone
-gtit = figtext
+gtit = set_global_title
 #end of aliases in m_hbook
 
 #end of m_hbook
@@ -25498,6 +25524,20 @@ def ngetdump(nt='Ndmp',varlis='x:y:z'):
 def linear_correlation(x,y):
     return sum((x-x.mean())*(y-y.mean())) / (x.std()*y.std()) / len(x)
 #enddef
+
+def fold_gauss(x,y,sig,modus='full'):
+    nx = len(x)
+    xmin = x.min()
+    xmax = x.max()
+    dx = xmax - xmin
+    gx = np.linspace(-dx/2.,dx/2.,nx)
+    s22 = 1./(2.*sig*sig)
+    g = np.exp(-gx*gx*s22)/np.sqrt(2.0*np.pi)/sig
+    g = g/g.sum()
+    f = np.convolve(y,g,modus)
+    xg = np.linspace(xmin-dx/2.,xmax+dx/2.,len(f))
+    return xg,f
+#enddef fold_gauss(x,y,sig)
 
 # End of sequence m_hbook
 ########################################################
