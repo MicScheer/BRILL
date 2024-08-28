@@ -1,4 +1,4 @@
-*CMZ :          24/08/2024  15.30.43  by  Michael Scheer
+*CMZ :          27/08/2024  11.06.15  by  Michael Scheer
 *CMZ :  4.01/05 16/04/2024  14.41.20  by  Michael Scheer
 *CMZ :  4.01/04 28/12/2023  15.32.18  by  Michael Scheer
 *CMZ :  4.01/03 17/05/2023  10.57.05  by  Michael Scheer
@@ -201,6 +201,20 @@ c      endif
       dypin=pinh/max(1,npiny-1)
       dzpin=pinw/max(1,npinz-1)
 
+      allocate(z(npinz),y(npiny))
+
+      y(1)=ymin
+      do iy=2,npiny
+        y(iy)=y(iy-1)+dypin
+        if(abs(y(iy)).lt.1.0e-9) y(iy)=0.0d0
+      enddo
+
+      z(1)=zmin
+      do iz=2,npinz
+        z(iz)=z(iz-1)+dzpin
+        if(abs(z(iz)).lt.1.0e-9) z(iz)=0.0d0
+      enddo
+
       if (iwigner.ne.0) then
 
         if (nywig.eq.0) nythewig=1
@@ -292,7 +306,7 @@ c      endif
      &  modeph,pherror,phgshift,modewave
      &  )
 
-      allocate(z(npinz),y(npiny),zprop(npinzprop),yprop(npinyprop),s(npinz,npiny),
+      allocate(zprop(npinzprop),yprop(npinyprop),s(npinz,npiny),
      &  f(max(npinz,npiny,npinzprop,npinyprop)),
      &  fg(max(npinz,npiny,npinzprop,npinyprop)),
      &  f2d(npinz,npiny),
@@ -303,13 +317,6 @@ c      endif
      &  aradf(nfoldp,npinz,npiny,nepho),
      &  aradfprop(nfoldp,npinzprop,npinyprop,nepho),
      &  ws1(max(npinz,npiny,npinzprop,npinyprop)),ws2(max(npinz,npiny,npinzprop,npinyprop)))
-
-      z(1:npinz_u)=obsv_u(3,1:npinz_u)
-
-      do iy=1,npiny_u
-        iobs=npinz_u*(iy-1)+1
-        y(iy)=obsv_u(2,iobs)
-      enddo
 
       if (ifold.ne.0.and.(emith.ne.0.or.emitv.ne.0)) then
 
@@ -505,9 +512,6 @@ c      endif
           enddo
         enddo
 
-
-
-
         do iepho=1,nepho
           do iy=1,npinyprop
             do iz=1,npinzprop
@@ -616,26 +620,66 @@ c      endif
         open(newunit=luna,file='urad_phase.ebm')
         do iepho=1,nepho_u
           do iy=1,npinyo_u-1
-            yy=ymin+(dble(iy)-0.5)*dypin
+
+c            yy=ymin+(dble(iy)-0.5)*dypin
+            yy=y(iy)+0.5d0*dypin
             if(abs(yy).lt.1.0e-9) yy=0.0d0
+
             do iz=1,npinzo_u-1
-              zz=zmin+(dble(iz)-0.5)*dzpin
+
+c              zz=zmin+(dble(iz)-0.5)*dzpin
+              zz=z(iz)+0.5d0*dzpin
               if(abs(zz).lt.1.0e-9) zz=0.0d0
+
+              amp(1:6)=fieldbunch(1:6,iz,iy,iepho)
+
+              apolh=
+     &          amp(1)*conjg(vstokes(1,1))
+     &          +amp(2)*conjg(vstokes(1,2))
+     &          +amp(3)*conjg(vstokes(1,3))
+
+              apolr=
+     &          amp(1)*conjg(vstokes(2,1))
+     &          +amp(2)*conjg(vstokes(2,2))
+     &          +amp(3)*conjg(vstokes(2,3))
+
+              apoll=
+     &          amp(1)*conjg(vstokes(3,1))
+     &          +amp(2)*conjg(vstokes(3,2))
+     &          +amp(3)*conjg(vstokes(3,3))
+
+              apol45=
+     &          amp(1)*conjg(vstokes(4,1))
+     &          +amp(2)*conjg(vstokes(4,2))
+     &          +amp(3)*conjg(vstokes(4,3))
+
+              stok1=dreal(apolr*conjg(apolr)+apoll*conjg(apoll))
+              stok2=dreal(-stok1+2.0d0*apolh*conjg(apolh))
+              stok3=dreal(2.0d0*apol45*conjg(apol45)-stok1)
+              stok4=dreal(apolr*conjg(apolr)-apoll*conjg(apoll))
+
+              rn(1)=real(amp(2)*conjg(amp(6))-amp(3)*conjg(amp(5)))
+              rn(2)=real(amp(3)*conjg(amp(4))-amp(1)*conjg(amp(6)))
+              rn(3)=real(amp(1)*conjg(amp(5))-amp(2)*conjg(amp(4)))
+              rn=rn/norm2(rn)
+
 c              fsum=max(1.0d0,dreal(fieldbunch(7,iz,iy,iepho)))
               write(luna,*)iepho,iz,iy,epho_u(iepho),zz,yy,
-     &          dreal(fieldbunch(1,iz,iy,iepho)),
-     &          dimag(fieldbunch(1,iz,iy,iepho)),
-     &          dreal(fieldbunch(2,iz,iy,iepho)),
-     &          dimag(fieldbunch(2,iz,iy,iepho)),
-     &          dreal(fieldbunch(3,iz,iy,iepho)),
-     &          dimag(fieldbunch(3,iz,iy,iepho)),
-     &          dreal(fieldbunch(4,iz,iy,iepho)),
-     &          dimag(fieldbunch(4,iz,iy,iepho)),
-     &          dreal(fieldbunch(5,iz,iy,iepho)),
-     &          dimag(fieldbunch(5,iz,iy,iepho)),
-     &          dreal(fieldbunch(6,iz,iy,iepho)),
-     &          dimag(fieldbunch(6,iz,iy,iepho)),
-     &          dreal(fieldbunch(7,iz,iy,iepho))
+     &          dreal(amp(1)),
+     &          dimag(amp(1)),
+     &          dreal(amp(2)),
+     &          dimag(amp(2)),
+     &          dreal(amp(3)),
+     &          dimag(amp(3)),
+     &          dreal(amp(4)),
+     &          dimag(amp(4)),
+     &          dreal(amp(5)),
+     &          dimag(amp(5)),
+     &          dreal(amp(6)),
+     &          dimag(amp(6)),
+     &          stok1,stok2,stok3,stok4,
+     &          dreal(fieldbunch(7,iz,iy,iepho)),
+     &          rn
             enddo
           enddo
         enddo
