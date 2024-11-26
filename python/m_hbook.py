@@ -1518,6 +1518,10 @@ Isurf = 0
 Iline = 0
 Iinter = 0
 Ifill1d = 0
+Xtit = ''
+Ytit = ''
+Ztit = ''
+Ptit = ''
 Gtit = ''
 Colors = ['black','red','blue','green','cyan','magenta','gray','yellow', 'white']
 Surfcolors = ['none','blue','cyan','gray','green','navajowhite','magenta','mediumspringgreen','red','salmon','yellow']
@@ -4138,7 +4142,8 @@ def legend(lege='',loc='best',x='',y=''):
     plt.legend(lege,loc=loc)
   #endif
 
-  showplot()
+  showplot(kpdf=1)
+
 #def legend(lege)
 
 def wans(text="Q or q to quit:"):
@@ -15760,6 +15765,8 @@ def window_geometry(geom='', fig=-1, set=True):
     Figman =  plt.get_current_fig_manager()
   #endif type(fig) == int and fig == -1
 
+  print("geom:",geom)
+
   if set:
     fig.canvas.manager.window.wm_geometry(geom)
   else:
@@ -16089,7 +16096,7 @@ def winl(title='Win_l', geom="!", block=False, projection = '2d', getconsole=Tru
   shpl()
 #enddef winl(title='', geom="!", block=False, projection = '2d')
 
-def showplot(visible=True):
+def showplot(visible=True,kpdf=0):
 #+seq,mshimportsind.
 # +PATCH,//WAVES/PYTHON
 # +KEEP,statusglobind,T=PYTHON.
@@ -16256,6 +16263,13 @@ def showplot(visible=True):
 #  getplotsize()
 
   Kplots[Kzone-1] = 1
+
+  if kpdf:
+    Npdf += 1
+    fout = WaveFilePrefix + str(Npdf) + ".pdf"
+    pplot(fout,'A4','landscape')
+    #print("\nPlot written to ",fout)
+  #endif Kdump
 
 #enddef showplot()
 
@@ -25806,6 +25820,7 @@ plotncyl = plotncylinder
 read_facets = read_faces
 nex = nextzone
 gtit = set_global_title
+setgeo = window_geometry
 #end of aliases in m_hbook
 
 #end of m_hbook
@@ -26229,3 +26244,16 @@ def getVxyzZ():
 def getVxyzE():
   global VxyzE
   return VxyzE
+
+def get_Imarker():
+  global Imarker
+  return Imarker
+def get_Iline():
+  global Iline
+  return Iline
+def set_Imarker(i):
+  global Imarker
+  Imarker = i
+def set_Iline(i):
+  global Iline
+  Iline = i

@@ -512,7 +512,6 @@ def _set_uname():
   Dsetup['Modebunch'] = ['Not yet',0]
   Dsetup['Modeph'] = ['Mode for phase-error',0]
   Dsetup['Noranone'] = ['No random change for first e-',1]
-  Dsetup['Noranone'] = ['No random change for first e-',0]
 
 #enddef _set_uname()
 
@@ -528,7 +527,7 @@ BeamPar = ['Ebeam','Curr','EmitH','EmitV','BetaH','BetaV','SigE', \
 'Disph','Dispph','Dispv','Disppv']
 UnduPar = ['Perlen','Nper','Beffv','Beffh','Nharm','Harmonic','Shift']
 BrillPar = ['nKvals','Kmin','Kmax','Nmin','Nmax','Mode']
-SpecPar = ['Nelec','Modepin','ModeSphere','Nepho','EphMin','EphMax','PinX', \
+SpecPar = ['Nelec','Modepin','Noranone','ModeSphere','Nepho','EphMin','EphMax','PinX', \
 'PinY','PinZ','PinW','PinH','NpinZ','NpinY','Step','Pherror', \
 'IFieldProp','PinXprop','PinWprop','PinHprop','NpinYprop','NpinZprop','Ifixseed']
 PlotPar = ['Mode3d','Markersize','Linewidth','Linecolor']
@@ -1743,11 +1742,13 @@ def _calc_spec():
   if platform.system() == 'Windows':
     print('\n',"Starting spectrum calculation with urad_phase_win32.exe")
     print(localtime)
-    os.system(cwd + '\\..\\bin\\urad_phase_win32.exe')
+    #os.system(cwd + '\\..\\bin\\urad_phase_win32.exe')
+    os.system('%BRILL%\\bin\\urad_phase_win32.exe')
   else:
     print('\n',"Starting spectrum calculation with urad_phase.exe")
     print(localtime)
-    os.system(cwd + "/../bin/urad_phase.exe")
+    #os.system(cwd + "/../bin/urad_phase.exe")
+    os.system("$BRILL/bin/urad_phase.exe")
   #endif platform.system() == 'Windows'
 
   t1 = time.time()
@@ -2952,6 +2953,7 @@ Dispph = 0.0 #rad
 Dispv = 0.0 #m
 Disppv = 0.0 #rad
 Mode = 2 # Walker
+Noranone = 1
 
 Esel = 0.0
 IEsel = 0
@@ -2962,6 +2964,7 @@ Nharm = 1
 Harmonic = 100.0
 Shift = 0.0
 
+#reakpoint()
 Dsetup = {}
 
 Dsetup['Ebeam'] =  ["Beam energy [GeV]",Ebeam]
@@ -3016,6 +3019,7 @@ Ifixseed = 0
 
 Dsetup['Nelec'] = ["Nelec",Nelec]
 Dsetup['Modepin'] = ["Monte-Carlo mode [0,1]",Modepin]
+Dsetup['Noranone'] = ["No randomization of first e- [0,1]",Noranone]
 Dsetup['Nepho'] = ["Number of Photon Energies",Nepho]
 Dsetup['EphMin'] = ["Min. Photon Energy [eV]",EphMin]
 Dsetup['EphMax'] = ["Max. Photon Energy [eV]",EphMax]
