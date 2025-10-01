@@ -123,7 +123,7 @@ def readint(s,default=-9999):
   else: return int(float(ans))
 #enddef
 
-def printnl(line):
+def printnl(line=''):
   print("\n",line,"\n")
 #enddef printnl()
 
@@ -138,7 +138,7 @@ def set_console_title(console='Python'):
   Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
   H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
   Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, Nsum, \
-  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  TpdS, Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
   H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
   FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman,TnpFloat64,Tnpcmpl128
 #+KEEP,plotglobind,T=PYTHON.
@@ -148,7 +148,7 @@ def set_console_title(console='Python'):
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -194,7 +194,7 @@ def set_console_title(console='Python'):
     sys.stdout.write("\x1b]2;" + console + "\x07")
   elif platform.system() == 'Windows':
     #ctypes.windll.kernel32.SetConsoleTitleW(console)
-    system("title "+console)
+    os.system("title "+console)
   #endif
 
 #enddef set_console_title()
@@ -316,7 +316,7 @@ c--   workingspace: aa(n),bb(n),cc(n),c(n),cn(n)
 
   #enddo
 
-  # vorletzte zeile
+  # vorletzte Zeile
 
   bb[n2]=bb[n2]/aa[n2]
   cc[n2]=cc[n2]/aa[n2]
@@ -540,7 +540,7 @@ def util_spline_coef(x,y,yp1=9999.,ypn=9999.):
   Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
   H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
   Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, Nsum, \
-  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  TpdS, Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
   H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
   FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman,TnpFloat64,Tnpcmpl128
 #+KEEP,plotglobind,T=PYTHON.
@@ -550,7 +550,7 @@ def util_spline_coef(x,y,yp1=9999.,ypn=9999.):
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -949,13 +949,21 @@ def util_vnorm(v):
 
 def util_rotate(cen,vrot,phi,vin,eps=1.0e-10):
 
+
       istat=0
+      rm = [[1.0,0.0,0.0],[0.0,1.0,0.0],[0.0,0.0,1.0]]
+
+      if phi == 0.0:
+        vout=vin
+        return istat, vout,rm
+      #endif
+
       vlen=util_vnorm(vrot)
 
       if vlen == 0.0:
         vout=vin
         istat=1
-        return istat, vout
+        return istat, vout,rm
       #endif
 
       o = vrot/vlen
@@ -1098,11 +1106,13 @@ global H1h, H1hh, H2h, H2hh, H1, H2, H1head, H2head, H1HLast, Nhead, Ntup, \
 Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
 H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
 Nmin, Nmax, Nmean, Nrms, Nsum, Nxopt, Nyopt, Nlook, \
-Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+TpdS, Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
 H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
 FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman,TnpFloat64,Tnpcmpl128
 
 Tdf = type(pd.DataFrame())
+nt = pd.DataFrame([],columns=['x'])
+exec("global TpdS; TpdS = type(nt.x)")
 
 Tfig = None
 Figman = None
@@ -1207,7 +1217,7 @@ Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
 Fig1,Ax1,Fig6,Ax6,Fig2,Ax2,Fig7,Ax7,Fig3,Ax3,Fig8,Ax8,\
 Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
 FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, \
+Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, \
 Kplots, Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Legend, CanButId, CanButIds, \
 Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Icmap, \
 MarkerSize, MarkerType, MarkerColor, \
@@ -1271,6 +1281,7 @@ Fyoff = 10
 
 Kdate = False
 Kstat = False
+Kfit = False
 
 Ktitles = 1
 Kecho = 1
@@ -1514,6 +1525,7 @@ Iclosed = 0
 Iboxes = 0
 Inoempty = 0
 Ierr = 0
+Inoerr = 0
 Isurf = 0
 Iline = 0
 Iinter = 0
@@ -1630,7 +1642,7 @@ clight1,cgam1,cq1,alpha1,dnull1,done1,sqrttwopi1,\
 emassg1,emasse1,echarge1,emasskg1,eps01,erad1,\
 grarad1,hbar1,hbarev1,hplanck1,pol1con1,pol2con1,\
 radgra1,rmu01,rmu04pi1,twopi1,pi1,halfpi1,wtoe1,gaussn1,ck934,\
-ecdipev,ecdipkev,fwhmgauss1,fwhmsinxx21,rmssinxx21,g1max,h2max
+ecdipev,ecdipkev,fwhmgauss1,fwhmsinxx21,rmssinxx21,g1max,h2max,specnor_si
 
 global complex_0,complex_i
 
@@ -1677,6 +1689,17 @@ fwhmgauss1=np.sqrt(2.0*np.log(2))*2.0
 fwhmsinxx21=2.783115
 rmssinxx21=1.05244
 
+#merke/synchrotron_radiation.txt
+specnor_si=1.0/echarge1/hbar1*clight1/pi1*eps01
+
+global \
+sclight1,secharge1,shbarev1
+
+sclight1 = str(clight1)
+secharge1 = str(echarge1)
+shbarev1 = str(hbarev1)
+
+
 global Ftyp,Ftype
 Ff = open("ftypedum","w")
 Ftyp = type(Ff)
@@ -1687,6 +1710,14 @@ os.remove("ftypedum")
 global Legend
 Legend = []
 # end of sequence mshimports
+
+def abs(x):
+  global TpdS
+  #reakpoint()
+  if (type(x) == TpdS):
+    return pd.Series.abs(x)
+  else: return np.abs(x)
+#enddef abs
 
 #+seq,plotglobal.
 #CMap = 'rainbow'
@@ -1707,7 +1738,7 @@ def debug(kmenu=None,kitem=None):
   Kmitemold, Iback, Istak, Tcolor, Vetocolor, SFrame, SComment, SMitem, \
   VarToWaveIn, PosX, PosY, WinPos, Nsitem,Pmenu,PadX,PadY,SMexist, \
   I,ZONE,ZNULL,Ical,Lmitem,FIOitem,PMenuGeo, Nfocus, MyWavesFont,Ifocus, \
-  ScreenW,ScreeH,WinX,WinY,CanW,CanH
+  ScreenW,ScreeH,WinX,WinY,CanW,CanH,ClearCanvas
   pass
 #  print("\n\n debug::kmenu,kitem",kmenu,kitem,SMitem[kmenu])
 #  print("\n\n debug::kmenu,kitem",kmenu,kitem)
@@ -1724,7 +1755,7 @@ else:
 
 Backslash = '\\'
 
-from numpy import *
+#from numpy import *
 
 global Narg,Argv
 Narg = len(sys.argv)
@@ -1758,6 +1789,8 @@ VlocDist = 0
 
 global Aspect
 Aspect = "auto"
+
+global globyopt
 
 def plotfaces(faces, isame=0,
                 facecolor='b',edgecolor='black',alpha=0.5,
@@ -2610,6 +2643,8 @@ def set_y_stat(y='!'):
       if Nyzone > 1:y = 0.8 - (Nyzone-1)*0.15
   elif y == '+':
     y = YStat + 0.2
+  elif y == '-':
+    y = YStat - 0.2
   #endif
   Ystat = y
   YStat = y
@@ -2619,6 +2654,10 @@ def get_y_stat():
   global Ystat
   return Ystat
 #endif
+
+def rystat(): ystat(0.8)
+def pystat(): ystat('+')
+def mystat(): ystat('-')
 
 def ellipse(x0,y0,a,b,alpha=0.0,n=1000):
 
@@ -3107,10 +3146,24 @@ def get_geo_all():
 #Elast
 
 #Internal functions {
-def _clearCanvas():
-  window_clear()
-  showplot(False)
+def _clearCanvas(kclear=0):
+  global ClearCanvas
+  #reakpoint()
+  if kclear or ClearCanvas:
+    window_clear()
+    showplot(False)
+    ClearCanvas = 0
 #enddef _clearCanvas()
+
+def set_ClearCanvas(kclear=0):
+  global ClearCanvas
+  ClearCanvas = kclear
+#enddef set_ClearCanvas()
+
+def get_ClearCanvas():
+  global ClearCanvas
+  return ClearCanvas
+#enddef set_ClearCanvas()
 
 def _delPlot():
     fig = plt.gcf()
@@ -3820,6 +3873,8 @@ def _setcolorbarpad(pad='!'):
   Colorbarpad = pad
 #enddef
 
+def _getcolorbarpad(): return ColorbarPad
+
 #}Internal functions
 
 def optbox(k=True):
@@ -4195,7 +4250,7 @@ def hdump(hist='?',filh='hdump.dat'):
   Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
   H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
   Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, Nsum, \
-  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  TpdS, Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
   H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
   FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman,TnpFloat64,Tnpcmpl128
 #+KEEP,plotglobind,T=PYTHON.
@@ -4205,7 +4260,7 @@ def hdump(hist='?',filh='hdump.dat'):
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -4282,7 +4337,7 @@ def hprint(hist='?'):
   Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
   H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
   Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, Nsum, \
-  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  TpdS, Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
   H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
   FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman,TnpFloat64,Tnpcmpl128
 #+KEEP,plotglobind,T=PYTHON.
@@ -4292,7 +4347,7 @@ def hprint(hist='?'):
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -4358,7 +4413,7 @@ def hfun(hist='?',fun='x', nx=101, xmin=-0.5, xmax=100.5):
   Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
   H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
   Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, Nsum, \
-  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  TpdS, Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
   H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
   FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman,TnpFloat64,Tnpcmpl128
 #+KEEP,plotglobind,T=PYTHON.
@@ -4368,7 +4423,7 @@ def hfun(hist='?',fun='x', nx=101, xmin=-0.5, xmax=100.5):
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -4468,7 +4523,7 @@ def h1header_update(hist='?'):
   Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
   H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
   Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, Nsum, \
-  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  TpdS, Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
   H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
   FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman,TnpFloat64,Tnpcmpl128
 #+KEEP,plotglobind,T=PYTHON.
@@ -4478,7 +4533,7 @@ def h1header_update(hist='?'):
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -4637,7 +4692,7 @@ def h1reset(h):
   Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
   H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
   Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, Nsum, \
-  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  TpdS, Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
   H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
   FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman,TnpFloat64,Tnpcmpl128
 #+KEEP,plotglobind,T=PYTHON.
@@ -4647,7 +4702,7 @@ def h1reset(h):
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -4715,7 +4770,7 @@ def hdelete(h='?'):
   Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
   H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
   Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, Nsum, \
-  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  TpdS, Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
   H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
   FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman,TnpFloat64,Tnpcmpl128
 #+KEEP,plotglobind,T=PYTHON.
@@ -4725,7 +4780,7 @@ def hdelete(h='?'):
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -4799,7 +4854,7 @@ def hmin(h='?'):
   Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
   H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
   Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, Nsum, \
-  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  TpdS, Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
   H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
   FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman,TnpFloat64,Tnpcmpl128
 #+KEEP,plotglobind,T=PYTHON.
@@ -4809,7 +4864,7 @@ def hmin(h='?'):
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -4881,7 +4936,7 @@ def hmax(h='?'):
   Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
   H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
   Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, Nsum, \
-  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  TpdS, Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
   H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
   FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman,TnpFloat64,Tnpcmpl128
 #+KEEP,plotglobind,T=PYTHON.
@@ -4891,7 +4946,7 @@ def hmax(h='?'):
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -4960,7 +5015,7 @@ def printplopt():
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -5010,6 +5065,7 @@ def printplopt():
   print("boxes; Iboxes:",Iboxes)
   print("cont3d; Icont3d:",Icont3d)
   print("err, E; Ierr:",Ierr)
+  print("nerr, NE; Inoerr:",Inoerr)
   print("fill1d, F; Ifill1d:",Ifill1d)
   print("hist, H; Ihist:",Ihist)
   print("inter; Iinter:",Iinter)
@@ -5034,7 +5090,7 @@ def plotoptions(plopt=''):
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -5085,6 +5141,7 @@ def plotoptions(plopt=''):
   Icont3d = 0
   Itrisurf = 0
   Ierr = 0
+  Inoerr = 0
   Isurf = 0
   Iline = 0
   Iinter = 0
@@ -5147,6 +5204,7 @@ def plotoptions(plopt=''):
   if re.search('fill1d',plopt) or re.search('F',plopt): Iplotopt = 1;  Ifill1d = 1
   if re.search('prof',plopt) or re.search('P',plopt): Iplotopt = 1;  Iprof = 1
   if re.search('sprof',plopt) or re.search('profs',plopt) or re.search('spread',plopt): Iplotopt = 1;  Iprof = 1; Ierr = 1
+  if re.search('noerr',plopt) or re.search('NE',plopt): Iplotopt = 1;  Inoerr = 1; Ierr = 0
   if re.search('noempty',plopt) or re.search('N',plopt): Iplotopt = 1;  Inoempty = 1
 
   if not Linestyle or Linestyle == 'none' or Linewidth <= 0.: Iline = 0
@@ -5219,7 +5277,7 @@ def mhb_mkdir(chdir='!'):
   Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
   H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
   Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, Nsum, \
-  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  TpdS, Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
   H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
   FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman,TnpFloat64,Tnpcmpl128
 #+KEEP,plotglobind,T=PYTHON.
@@ -5229,7 +5287,7 @@ def mhb_mkdir(chdir='!'):
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -5323,7 +5381,7 @@ def mhb_ldir():
   Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
   H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
   Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, Nsum, \
-  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  TpdS, Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
   H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
   FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman,TnpFloat64,Tnpcmpl128
 #+KEEP,plotglobind,T=PYTHON.
@@ -5333,7 +5391,7 @@ def mhb_ldir():
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -5397,7 +5455,7 @@ def mhb_pwd(isilent=0,iretval=0):
   Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
   H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
   Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, Nsum, \
-  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  TpdS, Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
   H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
   FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman,TnpFloat64,Tnpcmpl128
 #+KEEP,plotglobind,T=PYTHON.
@@ -5407,7 +5465,7 @@ def mhb_pwd(isilent=0,iretval=0):
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -5466,7 +5524,7 @@ def mhb_cd(cdir='!'):
   Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
   H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
   Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, Nsum, \
-  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  TpdS, Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
   H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
   FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman,TnpFloat64,Tnpcmpl128
 #+KEEP,plotglobind,T=PYTHON.
@@ -5476,7 +5534,7 @@ def mhb_cd(cdir='!'):
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -5594,7 +5652,7 @@ def zoom(xmin,xmax,ymin=-1.2345e30,ymax=1.2345e30,zmin=1.2345e30,zmax=1.2345e30)
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -5671,7 +5729,7 @@ def zoom3d(xmin,xmax,ymin=-1.2345e30,ymax=1.2345e30,zmin=1.2345e30,zmax=1.2345e3
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -5759,7 +5817,7 @@ def pplot(pname="WavePlot.pdf",w=0,h=0):
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -5796,7 +5854,7 @@ def pplot(pname="WavePlot.pdf",w=0,h=0):
   #endif type(w) ==  float and type(h) == float and w*h != 0.0 or type(w)== str
 
   try:
-    Fig.savefig(pname)
+    Fig.savefig(pname,bbox_inches='tight')
     print("\nFigure written to ",pname)
   except:
     print("\nCould not write PDF-Dokument, try another format... ")
@@ -5817,7 +5875,7 @@ def h1pack(idh='?', data=None):
   Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
   H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
   Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, Nsum, \
-  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  TpdS, Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
   H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
   FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman,TnpFloat64,Tnpcmpl128
 #+KEEP,plotglobind,T=PYTHON.
@@ -5827,7 +5885,7 @@ def h1pack(idh='?', data=None):
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -5898,7 +5956,7 @@ def hcopn(idh='?', nt='', varlis='x:y:ey', ntit='!',kweedzero=1):
   Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
   H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
   Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, Nsum, \
-  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  TpdS, Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
   H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
   FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman,TnpFloat64,Tnpcmpl128
 #+KEEP,plotglobind,T=PYTHON.
@@ -5908,7 +5966,7 @@ def hcopn(idh='?', nt='', varlis='x:y:ey', ntit='!',kweedzero=1):
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -6023,7 +6081,7 @@ def hcopn(idh='?', nt='', varlis='x:y:ey', ntit='!',kweedzero=1):
 
 #enddef hcopn(idh='?', nt='', varlis='')
 
-def nrandom(nt='?',varlis='', n=100, modu='u', iplot=0, modus='new'):
+def nrandom(nt='?',varlis='', n=100, width=[1.], modu='u', iplot=0):
 #+seq,mshimportsind.
 # +PATCH,//WAVES/PYTHON
 # +KEEP,statusglobind,T=PYTHON.
@@ -6034,7 +6092,7 @@ def nrandom(nt='?',varlis='', n=100, modu='u', iplot=0, modus='new'):
   Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
   H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
   Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, Nsum, \
-  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  TpdS, Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
   H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
   FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman,TnpFloat64,Tnpcmpl128
 #+KEEP,plotglobind,T=PYTHON.
@@ -6044,7 +6102,7 @@ def nrandom(nt='?',varlis='', n=100, modu='u', iplot=0, modus='new'):
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -6085,39 +6143,30 @@ def nrandom(nt='?',varlis='', n=100, modu='u', iplot=0, modus='new'):
 
 
   if type(nt) == str and nt == '?':
-    print("\nUsage: nt = nrandom(nt,varlis, n=100, modu='u', iplot=0)")
+    print("\nUsage: nt = nrandom(nt,varlis, n=100, width=[1.], modu='u', iplot=0)")
     return
-
-  varl = nlistcolon(varlis)
-  dim = Ncolon + 1
-
-  #reakpoint()
-  if modus != 'new':
-    if modu == 'u':
-      points = np.random.rand(n,dim)
-      name = nt + "_" + str(n) + "_uniform_" + str(dim)
-    else:
-      points = np.random.randn(n,dim)
-      name = nt + "_" + str(n) + "_normal_" + str(dim)
-    #endif modu == 'u'
-  else:
-    rng = np.random.default_rng()
-    points = []
-    for i in range(dim):
-      if modu == 'u':
-        p = rng.random(n)
-        name = nt + "_" + str(n) + "_uniform_" + str(dim)
-#        print(p)
-      else:
-        p = rng.standard_normal(n)
-        name = nt + "_" + str(n) + "_normal_" + str(dim)
-      #endif modu == 'u'
-      points.append(p)
-      #endfor
   #endif
 
-  nt = ncre(nt,name,varlis)
-  nt = nfill(nt,points)
+  varl = nlistcolon(varlis)
+  ndim = Ncolon + 1
+
+  #reakpoint()
+  nt = ncre(nt,nt,varlis,ioverwrite=1)
+
+  for i in range(ndim):
+    if modu == 'u':
+      try: w = width[i]
+      except: w = 1.0
+      r = np.random.uniform(-w/2./+w/2.,n)
+    else:
+      try: w = width[i]
+      except: w = 1.0
+      r = np.random.normal(0.0,w,n)
+    #endif
+    nt[varl[i]] = r
+  #endfor
+
+  nupdate_header(nt)
 
   if iplot and dim < 4:
     nplot(nt,varlis)
@@ -6137,7 +6186,7 @@ def nhull2d(nt='?',varlis='',select='', iplot=1, iretval=1):
   Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
   H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
   Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, Nsum, \
-  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  TpdS, Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
   H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
   FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman,TnpFloat64,Tnpcmpl128
 #+KEEP,plotglobind,T=PYTHON.
@@ -6147,7 +6196,7 @@ def nhull2d(nt='?',varlis='',select='', iplot=1, iretval=1):
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -6346,7 +6395,7 @@ def vhull2d(vx,vy,varlis='',iplot=0):
   Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
   H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
   Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, Nsum, \
-  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  TpdS, Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
   H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
   FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman,TnpFloat64,Tnpcmpl128
 #+KEEP,plotglobind,T=PYTHON.
@@ -6356,7 +6405,7 @@ def vhull2d(vx,vy,varlis='',iplot=0):
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -6650,7 +6699,7 @@ def nhull3dbad(nt='?',varlis='',select='', plopt='',iplot=1, iretval=0,color='!'
   Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
   H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
   Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, Nsum, \
-  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  TpdS, Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
   H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
   FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman,TnpFloat64,Tnpcmpl128
 #+KEEP,plotglobind,T=PYTHON.
@@ -6660,7 +6709,7 @@ def nhull3dbad(nt='?',varlis='',select='', plopt='',iplot=1, iretval=0,color='!'
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -7066,7 +7115,7 @@ def nappend(nt='?', nt2=''):
   Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
   H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
   Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, Nsum, \
-  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  TpdS, Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
   H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
   FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman,TnpFloat64,Tnpcmpl128
 #+KEEP,plotglobind,T=PYTHON.
@@ -7076,7 +7125,7 @@ def nappend(nt='?', nt2=''):
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -7153,7 +7202,7 @@ def nfill(nt='?', data=''):
   Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
   H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
   Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, Nsum, \
-  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  TpdS, Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
   H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
   FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman,TnpFloat64,Tnpcmpl128
 #+KEEP,plotglobind,T=PYTHON.
@@ -7163,7 +7212,7 @@ def nfill(nt='?', data=''):
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -7279,7 +7328,7 @@ def npeaksabs(nt='?', varlis='', select='', pkmin=0.5,nsmooth=0,isilent=0,iretva
   Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
   H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
   Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, Nsum, \
-  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  TpdS, Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
   H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
   FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman,TnpFloat64,Tnpcmpl128
 #+KEEP,plotglobind,T=PYTHON.
@@ -7289,7 +7338,7 @@ def npeaksabs(nt='?', varlis='', select='', pkmin=0.5,nsmooth=0,isilent=0,iretva
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -7406,7 +7455,7 @@ def hpeaks(h='?', select='', pkmin=0.5,nsmooth=0,isilent=0,iretval=0):
   Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
   H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
   Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, Nsum, \
-  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  TpdS, Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
   H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
   FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman,TnpFloat64,Tnpcmpl128
 #+KEEP,plotglobind,T=PYTHON.
@@ -7416,7 +7465,7 @@ def hpeaks(h='?', select='', pkmin=0.5,nsmooth=0,isilent=0,iretval=0):
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -7484,7 +7533,7 @@ def npeaks(nt='?', varlis='', select='', pkmin=0.5,nsmooth=0,isilent=0,iretval=0
   Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
   H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
   Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, Nsum, \
-  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  TpdS, Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
   H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
   FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman,TnpFloat64,Tnpcmpl128
 #+KEEP,plotglobind,T=PYTHON.
@@ -7494,7 +7543,7 @@ def npeaks(nt='?', varlis='', select='', pkmin=0.5,nsmooth=0,isilent=0,iretval=0
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -7606,7 +7655,7 @@ def nstat(nt='?',var='',select='', iretval=1, isilent=0):
   Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
   H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
   Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, Nsum, \
-  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  TpdS, Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
   H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
   FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman,TnpFloat64,Tnpcmpl128
 #+KEEP,plotglobind,T=PYTHON.
@@ -7616,7 +7665,7 @@ def nstat(nt='?',var='',select='', iretval=1, isilent=0):
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -7792,7 +7841,7 @@ def nsum(nt='?',var='',select='', iretval=1, isilent=0):
   Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
   H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
   Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, Nsum, \
-  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  TpdS, Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
   H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
   FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman,TnpFloat64,Tnpcmpl128
 #+KEEP,plotglobind,T=PYTHON.
@@ -7802,7 +7851,7 @@ def nsum(nt='?',var='',select='', iretval=1, isilent=0):
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -7899,7 +7948,7 @@ def nmax(nt='?',var='',select='',iretval=1):
   Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
   H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
   Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, Nsum, \
-  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  TpdS, Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
   H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
   FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman,TnpFloat64,Tnpcmpl128
 #+KEEP,plotglobind,T=PYTHON.
@@ -7909,7 +7958,7 @@ def nmax(nt='?',var='',select='',iretval=1):
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -8009,7 +8058,7 @@ def nmin(nt='?',var='',select='', iretval=1):
   Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
   H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
   Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, Nsum, \
-  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  TpdS, Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
   H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
   FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman,TnpFloat64,Tnpcmpl128
 #+KEEP,plotglobind,T=PYTHON.
@@ -8019,7 +8068,7 @@ def nmin(nt='?',var='',select='', iretval=1):
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -8119,7 +8168,7 @@ def nminmax(nt='?',var='',select='',iretval=1):
   Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
   H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
   Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, Nsum, \
-  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  TpdS, Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
   H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
   FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman,TnpFloat64,Tnpcmpl128
 #+KEEP,plotglobind,T=PYTHON.
@@ -8129,7 +8178,7 @@ def nminmax(nt='?',var='',select='',iretval=1):
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -8447,7 +8496,7 @@ def nrenvars(nt,varlis):
   Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
   H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
   Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, Nsum, \
-  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  TpdS, Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
   H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
   FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman,TnpFloat64,Tnpcmpl128
 #+KEEP,plotglobind,T=PYTHON.
@@ -8457,7 +8506,7 @@ def nrenvars(nt,varlis):
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -8535,7 +8584,7 @@ def nparse(nt,varlis):
   Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
   H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
   Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, Nsum, \
-  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  TpdS, Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
   H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
   FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman,TnpFloat64,Tnpcmpl128
 #+KEEP,plotglobind,T=PYTHON.
@@ -8545,7 +8594,7 @@ def nparse(nt,varlis):
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -8725,7 +8774,7 @@ def set_linecolor(lcol='r'):
   Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
   H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
   Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, Nsum, \
-  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  TpdS, Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
   H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
   FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman,TnpFloat64,Tnpcmpl128
 #+KEEP,plotglobind,T=PYTHON.
@@ -8735,7 +8784,7 @@ def set_linecolor(lcol='r'):
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -8792,7 +8841,7 @@ def h2fill(idh='?', x=1.e30, y=1.e30, w=1.):
   Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
   H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
   Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, Nsum, \
-  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  TpdS, Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
   H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
   FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman,TnpFloat64,Tnpcmpl128
 #+KEEP,plotglobind,T=PYTHON.
@@ -8802,7 +8851,7 @@ def h2fill(idh='?', x=1.e30, y=1.e30, w=1.):
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -9009,7 +9058,7 @@ def h1fill(idh=-1, x=1.e30, wei=1.):
   Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
   H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
   Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, Nsum, \
-  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  TpdS, Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
   H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
   FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman,TnpFloat64,Tnpcmpl128
 #+KEEP,plotglobind,T=PYTHON.
@@ -9019,7 +9068,7 @@ def h1fill(idh=-1, x=1.e30, wei=1.):
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -9168,7 +9217,7 @@ def hbook2(idh=-1, tit='Histogram2D',
   Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
   H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
   Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, Nsum, \
-  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  TpdS, Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
   H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
   FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman,TnpFloat64,Tnpcmpl128
 #+KEEP,plotglobind,T=PYTHON.
@@ -9178,7 +9227,7 @@ def hbook2(idh=-1, tit='Histogram2D',
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -9235,7 +9284,7 @@ def hbook2(idh=-1, tit='Histogram2D',
   #endif xmin >= xmax
 
   if ymin >= ymax:
-    print("*** Error in bhook2(...): ymin >= ymax ***")
+    print("*** Error in hbook2(...): ymin >= ymax ***")
     return -3
   #endif ymin >= ymax
 
@@ -9342,7 +9391,7 @@ def h2reset(idh):
   Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
   H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
   Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, Nsum, \
-  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  TpdS, Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
   H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
   FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman,TnpFloat64,Tnpcmpl128
 #+KEEP,plotglobind,T=PYTHON.
@@ -9352,7 +9401,7 @@ def h2reset(idh):
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -9480,7 +9529,7 @@ def hbook1(idh=-1, tit='Histogram1D', nx=10, xmin=0., xmax=1., overwrite=False):
   Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
   H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
   Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, Nsum, \
-  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  TpdS, Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
   H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
   FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman,TnpFloat64,Tnpcmpl128
 #+KEEP,plotglobind,T=PYTHON.
@@ -9490,7 +9539,7 @@ def hbook1(idh=-1, tit='Histogram1D', nx=10, xmin=0., xmax=1., overwrite=False):
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -9611,7 +9660,7 @@ def nscan(nt='?',varlis='',select='',isilent=0,ifirst=0,ilast=0):
   Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
   H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
   Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, Nsum, \
-  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  TpdS, Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
   H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
   FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman,TnpFloat64,Tnpcmpl128
 #+KEEP,plotglobind,T=PYTHON.
@@ -9621,7 +9670,7 @@ def nscan(nt='?',varlis='',select='',isilent=0,ifirst=0,ilast=0):
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -9662,7 +9711,7 @@ def nscan(nt='?',varlis='',select='',isilent=0,ifirst=0,ilast=0):
 
 
   if type(nt) == str and nt == '?':
-    print("\nUsage: nscan(nt,varlis,select)")
+    print("\nUsage: nscan(nt,varlis,select='',isilent=0,ifirst=0,ilast=0))")
     return
   #if type(nt) == str and nt == '?'
 
@@ -9743,7 +9792,7 @@ def nfitxy(nt='?',varlis='',select='',fitfun=None, absolute_sigma='default',
   Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
   H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
   Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, Nsum, \
-  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  TpdS, Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
   H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
   FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman,TnpFloat64,Tnpcmpl128
 #+KEEP,plotglobind,T=PYTHON.
@@ -9753,7 +9802,7 @@ def nfitxy(nt='?',varlis='',select='',fitfun=None, absolute_sigma='default',
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -9797,7 +9846,7 @@ def nfitxy(nt='?',varlis='',select='',fitfun=None, absolute_sigma='default',
   Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
   H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
   Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, Nsum, \
-  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  TpdS, Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
   H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
   FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman,TnpFloat64,Tnpcmpl128
 
@@ -9863,14 +9912,16 @@ def nfitxy(nt='?',varlis='',select='',fitfun=None, absolute_sigma='default',
   #endif Ncolon == 1
 
   N.columns = ['x','y','ey']
-  Nlines = len(N)
-  N.index = range(Nlines)
 
   if Ncolon == 1:
     ey = ''
   else:
     ey = N.ey
   #endif
+
+  N = N.drop_duplicates()
+  Nlines = len(N)
+  N.index = range(Nlines)
 
   igauss = 0
 
@@ -9928,12 +9979,9 @@ def nfitxy(nt='?',varlis='',select='',fitfun=None, absolute_sigma='default',
   Nfitxy.ey = ey
   Nfitxy.f = f
 
-  nw = Nfitxy.drop_duplicates()
-
-  Nfitxy.x = nw.x
-  Nfitxy.y = nw.y
-  Nfitxy.ey = nw.ey
-  Nfitxy.f = nw.f
+#  Fout = open('ndump.dat','w')
+#  Nfitxy.to_csv(Fout,header=False,index=False,sep=' ')
+#  Fout.close()
 
   nupdate_header(Nfitxy)
 
@@ -9941,9 +9989,7 @@ def nfitxy(nt='?',varlis='',select='',fitfun=None, absolute_sigma='default',
 
     if fitcol == '!': fitcol = 'black'
 
-#    Kold = Kstat
-#    if Kstat: Kstat = False
-
+    #reakpoint()
     npl(Nfitxy,"x:y")
 
     if Nfitxy.ey.abs().max() > 0:
@@ -9953,6 +9999,9 @@ def nfitxy(nt='?',varlis='',select='',fitfun=None, absolute_sigma='default',
       mec=lcol, ms=Markersize, mew=1, c=lcol)
     #endif
 
+    Kold = Kstat
+    if Kstat: Kstat = False
+
     x = Nfitxy.x.drop_duplicates()
     if len(x) == len(Nfitxy.x):
       vplxy(x,Nfitxy.f[:len(x)],"samespline",color=fitcol)
@@ -9960,7 +10009,7 @@ def nfitxy(nt='?',varlis='',select='',fitfun=None, absolute_sigma='default',
       vplxy(x,Nfitxy.f[:len(x)],"sameline",color=fitcol)
     #endif
 
-#    Kstat = Kold
+    Kstat = Kold
 
     if Kfit:
       if StatFontSize < 0:
@@ -9981,13 +10030,13 @@ def nfitxy(nt='?',varlis='',select='',fitfun=None, absolute_sigma='default',
         tex = ""
         ip = 0
         for p in par:
-          tex += "P" + str(ip) + " = " + '{:.4g}'.format(p)  + '{:.4g}'.format(sig[ip]) + "\n"
+          tex += "P" + str(ip) + " = " + '{:.4g}'.format(p)   + " +/- " + '{:.4g}'.format(sig[ip]) + "\n"
           ip += 1
         #endfor
       #endif
 
-      tex += Tex_chi2ndf + " = " + '{:.4g}'.format(chi2ndf) + "\n"
-      tex += Tex_chi2prob + " = " + '{:.4g}'.format(FitChi2Prob) + "\n"
+      tex += TeX_chi2ndf + " = " + '{:.4g}'.format(chi2ndf) + "\n"
+      tex += TeX_chi2prob + " = " + '{:.4g}'.format(FitChi2Prob) + "\n"
       text(Xstat,Ystat,tex,halign='left')
 
     #endif Kstat
@@ -10038,7 +10087,7 @@ def nintern(nt='?',varlis='',select='',xint='!'):
   Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
   H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
   Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, Nsum, \
-  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  TpdS, Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
   H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
   FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman,TnpFloat64,Tnpcmpl128
 #+KEEP,plotglobind,T=PYTHON.
@@ -10048,7 +10097,7 @@ def nintern(nt='?',varlis='',select='',xint='!'):
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -10155,7 +10204,7 @@ def ninter(nt='?',varlis='',select='',xint='!'):
   Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
   H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
   Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, Nsum, \
-  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  TpdS, Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
   H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
   FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman,TnpFloat64,Tnpcmpl128
 #+KEEP,plotglobind,T=PYTHON.
@@ -10165,7 +10214,7 @@ def ninter(nt='?',varlis='',select='',xint='!'):
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -10326,7 +10375,7 @@ def nspline(nt='?',varlis='',select='',xspl='!',periodic=False):
   Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
   H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
   Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, Nsum, \
-  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  TpdS, Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
   H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
   FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman,TnpFloat64,Tnpcmpl128
 #+KEEP,plotglobind,T=PYTHON.
@@ -10336,7 +10385,7 @@ def nspline(nt='?',varlis='',select='',xspl='!',periodic=False):
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -10459,7 +10508,7 @@ def nsolve(nt='?',varlis='',select='',val=0.0):
   Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
   H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
   Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, Nsum, \
-  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  TpdS, Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
   H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
   FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman,TnpFloat64,Tnpcmpl128
 #+KEEP,plotglobind,T=PYTHON.
@@ -10469,7 +10518,7 @@ def nsolve(nt='?',varlis='',select='',val=0.0):
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -10582,7 +10631,7 @@ def ndump(nt='',varlis='',select='',fout='ndump.dat', sep=' ',floatform='%.5e',
   Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
   H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
   Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, Nsum, \
-  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  TpdS, Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
   H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
   FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman,TnpFloat64,Tnpcmpl128
 #+KEEP,plotglobind,T=PYTHON.
@@ -10592,7 +10641,7 @@ def ndump(nt='',varlis='',select='',fout='ndump.dat', sep=' ',floatform='%.5e',
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -10740,7 +10789,7 @@ def nreset(nt='?', varlis=''):
   Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
   H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
   Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, Nsum, \
-  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  TpdS, Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
   H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
   FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman,TnpFloat64,Tnpcmpl128
 #+KEEP,plotglobind,T=PYTHON.
@@ -10750,7 +10799,7 @@ def nreset(nt='?', varlis=''):
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -10849,7 +10898,7 @@ def ndelete(nt='?',isilent=0):
   Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
   H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
   Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, Nsum, \
-  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  TpdS, Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
   H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
   FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman,TnpFloat64,Tnpcmpl128
 #+KEEP,plotglobind,T=PYTHON.
@@ -10859,7 +10908,7 @@ def ndelete(nt='?',isilent=0):
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -10945,7 +10994,7 @@ def ncre(ntname='', nttit='', varlis='', ioverwrite=0):
   Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
   H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
   Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, Nsum, \
-  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  TpdS, Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
   H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
   FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman,TnpFloat64,Tnpcmpl128
 #+KEEP,plotglobind,T=PYTHON.
@@ -10955,7 +11004,7 @@ def ncre(ntname='', nttit='', varlis='', ioverwrite=0):
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -11095,7 +11144,7 @@ def GetIndexH2(idh='?'):
   Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
   H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
   Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, Nsum, \
-  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  TpdS, Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
   H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
   FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman,TnpFloat64,Tnpcmpl128
 #+KEEP,plotglobind,T=PYTHON.
@@ -11105,7 +11154,7 @@ def GetIndexH2(idh='?'):
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -11196,7 +11245,7 @@ def GetIndexN(nt='?', isilent=0):
   Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
   H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
   Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, Nsum, \
-  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  TpdS, Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
   H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
   FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman,TnpFloat64,Tnpcmpl128
 #+KEEP,plotglobind,T=PYTHON.
@@ -11206,7 +11255,7 @@ def GetIndexN(nt='?', isilent=0):
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -11315,7 +11364,7 @@ def GetIndexNct(idh='?'):
   Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
   H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
   Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, Nsum, \
-  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  TpdS, Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
   H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
   FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman,TnpFloat64,Tnpcmpl128
 #+KEEP,plotglobind,T=PYTHON.
@@ -11325,7 +11374,7 @@ def GetIndexNct(idh='?'):
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -11398,7 +11447,7 @@ def GetIndexH1(idh='?'):
   Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
   H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
   Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, Nsum, \
-  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  TpdS, Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
   H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
   FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman,TnpFloat64,Tnpcmpl128
 #+KEEP,plotglobind,T=PYTHON.
@@ -11408,7 +11457,7 @@ def GetIndexH1(idh='?'):
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -11502,7 +11551,7 @@ def GetIndex(idh='?'):
   Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
   H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
   Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, Nsum, \
-  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  TpdS, Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
   H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
   FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman,TnpFloat64,Tnpcmpl128
 #+KEEP,plotglobind,T=PYTHON.
@@ -11512,7 +11561,7 @@ def GetIndex(idh='?'):
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -11603,7 +11652,7 @@ def h1opt(idh):
   Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
   H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
   Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, Nsum, \
-  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  TpdS, Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
   H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
   FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman,TnpFloat64,Tnpcmpl128
 #+KEEP,plotglobind,T=PYTHON.
@@ -11613,7 +11662,7 @@ def h1opt(idh):
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -11730,7 +11779,7 @@ def voptpar(vx,vy):
   Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
   H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
   Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, Nsum, \
-  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  TpdS, Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
   H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
   FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman,TnpFloat64,Tnpcmpl128
 #+KEEP,plotglobind,T=PYTHON.
@@ -11740,7 +11789,7 @@ def voptpar(vx,vy):
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -11845,7 +11894,7 @@ def h1print(idh='?'):
   Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
   H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
   Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, Nsum, \
-  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  TpdS, Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
   H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
   FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman,TnpFloat64,Tnpcmpl128
 #+KEEP,plotglobind,T=PYTHON.
@@ -11855,7 +11904,7 @@ def h1print(idh='?'):
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -11924,7 +11973,7 @@ def H1Info(idh='?'):
   Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
   H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
   Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, Nsum, \
-  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  TpdS, Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
   H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
   FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman,TnpFloat64,Tnpcmpl128
 #+KEEP,plotglobind,T=PYTHON.
@@ -11934,7 +11983,7 @@ def H1Info(idh='?'):
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -12025,7 +12074,7 @@ def H2Info(idh='?'):
   Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
   H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
   Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, Nsum, \
-  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  TpdS, Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
   H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
   FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman,TnpFloat64,Tnpcmpl128
 #+KEEP,plotglobind,T=PYTHON.
@@ -12035,7 +12084,7 @@ def H2Info(idh='?'):
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -12147,7 +12196,7 @@ def hstat2d(idh='?'):
   Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
   H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
   Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, Nsum, \
-  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  TpdS, Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
   H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
   FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman,TnpFloat64,Tnpcmpl128
 #+KEEP,plotglobind,T=PYTHON.
@@ -12157,7 +12206,7 @@ def hstat2d(idh='?'):
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -12220,7 +12269,7 @@ def H1List():
   Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
   H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
   Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, Nsum, \
-  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  TpdS, Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
   H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
   FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman,TnpFloat64,Tnpcmpl128
 #+KEEP,plotglobind,T=PYTHON.
@@ -12230,7 +12279,7 @@ def H1List():
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -12284,7 +12333,7 @@ def H2List():
   Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
   H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
   Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, Nsum, \
-  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  TpdS, Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
   H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
   FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman,TnpFloat64,Tnpcmpl128
   print("\n Index in H2, ID, Title  Nxbins Xmin Xmax, Nybins Ymin, Ymax, ContMin, ContMax, Status")
@@ -12393,7 +12442,7 @@ def nentry(nt='?'):
   Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
   H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
   Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, Nsum, \
-  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  TpdS, Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
   H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
   FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman,TnpFloat64,Tnpcmpl128
 #+KEEP,plotglobind,T=PYTHON.
@@ -12403,7 +12452,7 @@ def nentry(nt='?'):
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -12474,7 +12523,7 @@ def ninfo(nt='?'):
   Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
   H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
   Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, Nsum, \
-  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  TpdS, Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
   H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
   FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman,TnpFloat64,Tnpcmpl128
 #+KEEP,plotglobind,T=PYTHON.
@@ -12484,7 +12533,7 @@ def ninfo(nt='?'):
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -12575,7 +12624,7 @@ def nlist():
   Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
   H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
   Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, Nsum, \
-  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  TpdS, Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
   H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
   FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman,TnpFloat64,Tnpcmpl128
 #+KEEP,plotglobind,T=PYTHON.
@@ -12585,7 +12634,7 @@ def nlist():
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -12644,7 +12693,7 @@ def NctList():
   Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
   H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
   Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, Nsum, \
-  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  TpdS, Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
   H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
   FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman,TnpFloat64,Tnpcmpl128
 #+KEEP,plotglobind,T=PYTHON.
@@ -12654,7 +12703,7 @@ def NctList():
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -12712,7 +12761,7 @@ def ncolumns(fname='ntuple.dat', skiphead=-1, sep=' '):
   Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
   H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
   Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, Nsum, \
-  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  TpdS, Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
   H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
   FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman,TnpFloat64,Tnpcmpl128
 #+KEEP,plotglobind,T=PYTHON.
@@ -12722,7 +12771,7 @@ def ncolumns(fname='ntuple.dat', skiphead=-1, sep=' '):
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -12817,7 +12866,7 @@ def ncolumnsguess(fname='ntuple.dat'):
   Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
   H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
   Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, Nsum, \
-  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  TpdS, Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
   H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
   FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman,TnpFloat64,Tnpcmpl128
 #+KEEP,plotglobind,T=PYTHON.
@@ -12827,7 +12876,7 @@ def ncolumnsguess(fname='ntuple.dat'):
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -12933,7 +12982,7 @@ silent=0, comment='*', sep=' ',iguessncols=1, iplot=1):
   Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
   H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
   Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, Nsum, \
-  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  TpdS, Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
   H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
   FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman,TnpFloat64,Tnpcmpl128
 #+KEEP,plotglobind,T=PYTHON.
@@ -12943,7 +12992,7 @@ silent=0, comment='*', sep=' ',iguessncols=1, iplot=1):
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -13019,7 +13068,7 @@ silent=0, comment='*', sep=' ', iguessncols=1, iplot=1):
   Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
   H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
   Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, Nsum, \
-  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  TpdS, Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
   H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
   FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman,TnpFloat64,Tnpcmpl128
 #+KEEP,plotglobind,T=PYTHON.
@@ -13029,7 +13078,7 @@ silent=0, comment='*', sep=' ', iguessncols=1, iplot=1):
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -13102,7 +13151,7 @@ comment='*', sep=' '):
   Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
   H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
   Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, Nsum, \
-  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  TpdS, Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
   H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
   FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman,TnpFloat64,Tnpcmpl128
 #+KEEP,plotglobind,T=PYTHON.
@@ -13112,7 +13161,7 @@ comment='*', sep=' '):
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -13152,7 +13201,7 @@ comment='*', sep=' '):
   global N1, N2, N3, N4, N5, N6, N7,N8,N9,Nv, Nx, Nxy, Nxyz
 
 
-  if len(nt) == 0:
+  if type(nt) == str() and len(nt) == 0:
     print("nt = nread(nt, file='ntuple.dat',header=None, skiphead=-1, skipfoot=0, silent=0, comment='*', sep=' ')")
     return None
   #endif
@@ -13262,7 +13311,7 @@ comment='*', sep=' ',iguessncols=1, ioverwrite=1):
   Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
   H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
   Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, Nsum, \
-  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  TpdS, Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
   H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
   FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman,TnpFloat64,Tnpcmpl128
 #+KEEP,plotglobind,T=PYTHON.
@@ -13272,7 +13321,7 @@ comment='*', sep=' ',iguessncols=1, ioverwrite=1):
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -13426,7 +13475,7 @@ def nproj2(nt='?', xy='', weight=1., select='',
   Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
   H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
   Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, Nsum, \
-  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  TpdS, Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
   H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
   FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman,TnpFloat64,Tnpcmpl128
 #+KEEP,plotglobind,T=PYTHON.
@@ -13436,7 +13485,7 @@ def nproj2(nt='?', xy='', weight=1., select='',
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -13525,10 +13574,13 @@ def nproj2(nt='?', xy='', weight=1., select='',
   #endif Kecho
 
   if select:
+    ntf = nt
     nt = nt.query(select)
     Nsel = nt
     select=''
     if len(nt) == 0:
+      print("Ntuple:\n",ntf)
+      print("select:\n",select,'\n')
       print("*** No data survived selection in nproj2  ***")
       return -1
     #endif len(nt) == 0
@@ -13791,7 +13843,7 @@ def nproj2n(nt='?', xy='', weight=1., select='',
   Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
   H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
   Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, Nsum, \
-  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  TpdS, Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
   H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
   FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman,TnpFloat64,Tnpcmpl128
 #+KEEP,plotglobind,T=PYTHON.
@@ -13801,7 +13853,7 @@ def nproj2n(nt='?', xy='', weight=1., select='',
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -14132,7 +14184,7 @@ def nproj1(nt='?', var='', weight=1., select='', scalex=1., scaley = 1,
   Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
   H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
   Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, Nsum, \
-  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  TpdS, Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
   H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
   FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman,TnpFloat64,Tnpcmpl128
 #+KEEP,plotglobind,T=PYTHON.
@@ -14142,7 +14194,7 @@ def nproj1(nt='?', var='', weight=1., select='', scalex=1., scaley = 1,
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -14440,7 +14492,7 @@ def nproj1n(nt='?', var='', weight=1., select='', scalex=1., scaley = 1,
   Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
   H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
   Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, Nsum, \
-  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  TpdS, Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
   H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
   FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman,TnpFloat64,Tnpcmpl128
 #+KEEP,plotglobind,T=PYTHON.
@@ -14450,7 +14502,7 @@ def nproj1n(nt='?', var='', weight=1., select='', scalex=1., scaley = 1,
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -14757,7 +14809,7 @@ def hstat1d(idh='?'):
   Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
   H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
   Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, Nsum, \
-  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  TpdS, Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
   H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
   FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman,TnpFloat64,Tnpcmpl128
 #+KEEP,plotglobind,T=PYTHON.
@@ -14767,7 +14819,7 @@ def hstat1d(idh='?'):
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -14813,7 +14865,7 @@ def hstat1d(idh='?'):
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -14915,7 +14967,7 @@ def vstat(x='?',y=''):
   Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
   H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
   Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, Nsum, \
-  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  TpdS, Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
   H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
   FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman,TnpFloat64,Tnpcmpl128
 #+KEEP,plotglobind,T=PYTHON.
@@ -14925,7 +14977,7 @@ def vstat(x='?',y=''):
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -14971,7 +15023,7 @@ def vstat(x='?',y=''):
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -15046,9 +15098,18 @@ def vmean(x='?',y=''):
   return res[2]
 #enddef
 
-def vrms(x='?',y=''):
-  res = vstat(x,y)
-  return res[3]
+def vcovcorr(x,y,a=1.,b=1.):
+  n=len(x)
+  rmsx=x.std()
+  varx=rmsx**2*n
+  rmsy=y.std()
+  vary=rmsy**2*n
+  xy=x*y
+  sumxy=xy.sum()
+  cov=sumxy/n
+  rmsxy=np.sqrt((a**2*varx+2.0*a*b*sumxy+b**2*vary)/n)
+  corr=cov/rmsx/rmsy
+  return rmsx,rmsy,rmsxy,cov,corr
 #enddef
 
 def hplot1d(idh='?', plopt='2d', Tit='!', xTit='', yTit='', legend='',
@@ -15064,7 +15125,7 @@ def hplot1d(idh='?', plopt='2d', Tit='!', xTit='', yTit='', legend='',
   Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
   H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
   Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, Nsum, \
-  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  TpdS, Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
   H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
   FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman,TnpFloat64,Tnpcmpl128
 #+KEEP,plotglobind,T=PYTHON.
@@ -15074,7 +15135,7 @@ def hplot1d(idh='?', plopt='2d', Tit='!', xTit='', yTit='', legend='',
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -15120,7 +15181,7 @@ def hplot1d(idh='?', plopt='2d', Tit='!', xTit='', yTit='', legend='',
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -15261,14 +15322,15 @@ def hplot1d(idh='?', plopt='2d', Tit='!', xTit='', yTit='', legend='',
     if plopt == 'same' or plopt == 'S':
       if ey.max() == 0:
         plopt = 'h'
-      else:
+      elif Inoerr == 0:
         plopt = 'e'
       #endif ey.max() == 0
     else:
       if ey.max() == 0:
         plopt = 'hsame'
       else:
-        plopt = 'errsame'
+        if Inoerr == 0: plopt = 'errsame'
+        else: plopt = 'same'
       #endif ey.max() == 0
     #endif
   #endif plopt == '':
@@ -15334,13 +15396,18 @@ def hplot1d(idh='?', plopt='2d', Tit='!', xTit='', yTit='', legend='',
       if ny[i] == 0: continue
       xpl.append(x[i])
       ypl.append(yave[i])
-      epl.append(stdyprof[i])
+      if Inoerr == 0:
+        epl.append(stdyprof[i])
+      else:
+        epl.append(0.0)
+      #endif
     #endfor
 
     if not Iline:
         plt.errorbar(xpl,ypl,epl, ls='',marker=Markertype,fillstyle=Fillstyle, mfc=Markercolor, mec=Markercolor, ms=Markersize, mew=1, c=lincol)
     else:
         vplxy(xpl,ypl,'L')
+    #endif
 
     VxyzX = deepcopy(x)
     VxyzY = deepcopy(yave)
@@ -15504,6 +15571,7 @@ def hplot1d(idh='?', plopt='2d', Tit='!', xTit='', yTit='', legend='',
 
   if len(legend): Legend.append(legend)
 
+  #reakpoint()
   txyz(Tit,xTit,yTit)
   showplot()
 
@@ -15530,7 +15598,7 @@ def hplot(idh, plopt='!', Tit='!', xTit='', yTit='', zTit = '', legend='', block
   Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
   H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
   Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, Nsum, \
-  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  TpdS, Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
   H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
   FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman,TnpFloat64,Tnpcmpl128
 #+KEEP,plotglobind,T=PYTHON.
@@ -15540,7 +15608,7 @@ def hplot(idh, plopt='!', Tit='!', xTit='', yTit='', zTit = '', legend='', block
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -15607,7 +15675,7 @@ def hplave(idh, plopt='!', Tit='!', xTit='', yTit='', zTit = '', legend='', bloc
   Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
   H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
   Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, Nsum, \
-  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  TpdS, Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
   H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
   FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman,TnpFloat64,Tnpcmpl128
 #+KEEP,plotglobind,T=PYTHON.
@@ -15617,7 +15685,7 @@ def hplave(idh, plopt='!', Tit='!', xTit='', yTit='', zTit = '', legend='', bloc
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -15765,7 +15833,7 @@ def window_geometry(geom='', fig=-1, set=True):
     Figman =  plt.get_current_fig_manager()
   #endif type(fig) == int and fig == -1
 
-  print("geom:",geom)
+  #print("geom:",geom)
 
   if set:
     fig.canvas.manager.window.wm_geometry(geom)
@@ -15834,7 +15902,7 @@ def window(title='', geom="!", block=False, projection = '2d',
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -15976,7 +16044,7 @@ def win2(title='Win_2', geom="!", block=False, projection = '2d', getconsole=Tru
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -16017,7 +16085,7 @@ def winr(title='Win_r', geom="!", block=False, projection = '2d', getconsole=Tru
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -16062,7 +16130,7 @@ def winl(title='Win_l', geom="!", block=False, projection = '2d', getconsole=Tru
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -16107,7 +16175,7 @@ def showplot(visible=True,kpdf=0):
   Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
   H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
   Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, Nsum, \
-  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  TpdS, Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
   H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
   FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman,TnpFloat64,Tnpcmpl128
 #+KEEP,plotglobind,T=PYTHON.
@@ -16117,7 +16185,7 @@ def showplot(visible=True,kpdf=0):
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -16290,7 +16358,7 @@ def hplot2d(idh, plopt='!', block=False, scalex=1., scaley=1., scalez=1.,
   Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
   H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
   Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, Nsum, \
-  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  TpdS, Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
   H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
   FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman,TnpFloat64,Tnpcmpl128
 #+KEEP,plotglobind,T=PYTHON.
@@ -16300,7 +16368,7 @@ def hplot2d(idh, plopt='!', block=False, scalex=1., scaley=1., scalez=1.,
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -16723,7 +16791,7 @@ def zone(nx=1, ny=1, kzone=1, isame='', projection='2d', visible=True):
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -16756,7 +16824,9 @@ def zone(nx=1, ny=1, kzone=1, isame='', projection='2d', visible=True):
   global Istatus, WarningText, ErrorText, Gdebug
 
 
-  global Tax2d, Tax3d, Debug
+  global Tax2d, Tax3d, Debug, ClearCanvas
+
+  ClearCanvas = 0
 
   if ny == 1: set_y_of_xlab(-0.1)
   if ny == 2: set_y_of_xlab(-0.2)
@@ -16908,7 +16978,7 @@ def window_close(win=-1):
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -16978,6 +17048,10 @@ def window_close(win=-1):
 
 #enddef window_close(win=None):
 
+def wca():
+  for i in range(Nwins): window_close()
+#enddef
+
 def window_clear(win=-1):
 
 #+KEEP,plotglobind,T=PYTHON.
@@ -16987,7 +17061,7 @@ def window_clear(win=-1):
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -17064,7 +17138,7 @@ def set_title(title='Title',tfs=-9.,titx=-9.,tity=-9):
   Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
   H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
   Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, Nsum, \
-  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  TpdS, Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
   H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
   FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman,TnpFloat64,Tnpcmpl128
 #+KEEP,plotglobind,T=PYTHON.
@@ -17074,7 +17148,7 @@ def set_title(title='Title',tfs=-9.,titx=-9.,tity=-9):
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -17139,7 +17213,7 @@ def set_x_title(xtit='xTit',pos=0.5):
   Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
   H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
   Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, Nsum, \
-  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  TpdS, Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
   H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
   FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman,TnpFloat64,Tnpcmpl128
 #+KEEP,plotglobind,T=PYTHON.
@@ -17149,7 +17223,7 @@ def set_x_title(xtit='xTit',pos=0.5):
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -17205,7 +17279,7 @@ def set_z_title(ztit='zTit',pos=0.5):
   Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
   H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
   Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, Nsum, \
-  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  TpdS, Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
   H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
   FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman,TnpFloat64,Tnpcmpl128
 #+KEEP,plotglobind,T=PYTHON.
@@ -17215,7 +17289,7 @@ def set_z_title(ztit='zTit',pos=0.5):
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -17273,7 +17347,7 @@ def set_titles(gtit='',pltit='Title',xtit='xTit', ytit='yTit', ztit=''):
   Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
   H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
   Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, Nsum, \
-  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  TpdS, Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
   H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
   FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman,TnpFloat64,Tnpcmpl128
 #+KEEP,plotglobind,T=PYTHON.
@@ -17283,7 +17357,7 @@ def set_titles(gtit='',pltit='Title',xtit='xTit', ytit='yTit', ztit=''):
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -17343,7 +17417,7 @@ def set_global_title(gtit='', fontsize='!'):
   Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
   H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
   Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, Nsum, \
-  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  TpdS, Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
   H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
   FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman,TnpFloat64,Tnpcmpl128
 #+KEEP,plotglobind,T=PYTHON.
@@ -17353,7 +17427,7 @@ def set_global_title(gtit='', fontsize='!'):
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -17422,7 +17496,7 @@ def txyz(pltit='Title',xtit='', ytit='', ztit='', tfs=-9., xyzfs=-9,
   Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
   H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
   Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, Nsum, \
-  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  TpdS, Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
   H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
   FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman,TnpFloat64,Tnpcmpl128
 #+KEEP,plotglobind,T=PYTHON.
@@ -17432,7 +17506,7 @@ def txyz(pltit='Title',xtit='', ytit='', ztit='', tfs=-9., xyzfs=-9,
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -17579,7 +17653,7 @@ def txyz(pltit='Title',xtit='', ytit='', ztit='', tfs=-9., xyzfs=-9,
 
   plt.show(block=False)
 
-#enddef set_txyz(pltit='Title',xtit='xTit', ytit='yTit', ztit='')
+#enddef txyz(pltit='Title',xtit='xTit', ytit='yTit', ztit='')
 
 def null3d(xmin=-10., xmax=10., ymin=-10., ymax=10., zmin=-10., zmax=10.,elev=30,azim=-60,roll=0):
 #+KEEP,plotglobind,T=PYTHON.
@@ -17589,7 +17663,7 @@ def null3d(xmin=-10., xmax=10., ymin=-10., ymax=10., zmin=-10., zmax=10.,elev=30
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -17643,7 +17717,7 @@ def null(xmin=-10., xmax=10., ymin=-10., ymax=10.):
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -17833,7 +17907,7 @@ def run_on_figure(x=0.03,y=0.95,fontsize='!',ishow=1, iforce=0):
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -17956,7 +18030,7 @@ def date_on_figure(x=0.04,y=0.02,fontsize='!',ishow=1):
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -18057,7 +18131,7 @@ def optnrun(krun=False):
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -18097,7 +18171,7 @@ def optrun(krun=True):
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -18137,7 +18211,7 @@ def optndate(kdate=False):
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -18177,7 +18251,7 @@ def optdate(kdate=True):
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -18227,7 +18301,7 @@ def set_author(author=''):
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -18270,7 +18344,7 @@ def hcopy1d(idh,idnew,tit='',scalex=1.,scaley=1., reset=0, overwrite=True):
   Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
   H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
   Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, Nsum, \
-  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  TpdS, Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
   H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
   FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman,TnpFloat64,Tnpcmpl128
 #+KEEP,plotglobind,T=PYTHON.
@@ -18280,7 +18354,7 @@ def hcopy1d(idh,idnew,tit='',scalex=1.,scaley=1., reset=0, overwrite=True):
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -18384,7 +18458,7 @@ def hcopy2d(idh,idnew,tit='',scalex=1.,scaley=1., scalez=1., reset=0, overwrite=
   Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
   H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
   Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, Nsum, \
-  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  TpdS, Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
   H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
   FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman,TnpFloat64,Tnpcmpl128
 #+KEEP,plotglobind,T=PYTHON.
@@ -18394,7 +18468,7 @@ def hcopy2d(idh,idnew,tit='',scalex=1.,scaley=1., scalez=1., reset=0, overwrite=
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -18932,7 +19006,7 @@ def nplot(nt='?',varlis='',select='',weights='',plopt='', legend='',
   Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
   H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
   Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, Nsum, \
-  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  TpdS, Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
   H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
   FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman,TnpFloat64,Tnpcmpl128
 #+KEEP,plotglobind,T=PYTHON.
@@ -18942,7 +19016,7 @@ def nplot(nt='?',varlis='',select='',weights='',plopt='', legend='',
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -18981,6 +19055,8 @@ def nplot(nt='?',varlis='',select='',weights='',plopt='', legend='',
 #*CMZ :          29/09/2019  11.11.01  by  Michael Scheer
   global N1, N2, N3, N4, N5, N6, N7,N8,N9,Nv, Nx, Nxy, Nxyz
 
+
+  #reakpoint()
 
   NxBinMax = 0
   nto = nt
@@ -19173,8 +19249,11 @@ def nplot(nt='?',varlis='',select='',weights='',plopt='', legend='',
           sopt = ", c='" + lcol + "',ls='" + Linestyle + "',lw=" + str(Linewidth)
 
           if isort:
-
-            scom = "global VsortX, VsortY; VsortX, VsortY = vsortxy(" + sx + "," + sy + ")"
+            if type(sx) == str: sx = eval(sx)
+            if type(sy) == str: sy = eval(sy)
+            scom = "global VsortX, VsortY; VsortX, VsortY = vsortxy(sx,sy)"
+#            Quit(scom)
+#            scom = "global VsortX, VsortY; VsortX, VsortY = vsortxy(" + sx + "," + sy + ")"
             exec(scom)
             if Iclosed:
               sx = list(VsortX)
@@ -19232,33 +19311,38 @@ def nplot(nt='?',varlis='',select='',weights='',plopt='', legend='',
         Ndump += 1
         fout = WaveFilePrefix + str(Ndump) + ".dat"
         #eval("vwritexy(" + sx + "," + sy + ",'" + fout + "')")
-        eval("vwritexy(sx,sy,'" + fout + "')")
+        if type(sx) == str: sx = eval(sx)
+        if type(sy) == str: sy = eval(sy)
+        exec("vwritexy(sx,sy,'" + fout + "')")
         print("\nData written to ",fout)
         WaveDump = fout
       #endif
 
       if Kstat:
 
-        try:
+        #try:
 
-          xmin,xmax,xmean,xrms,xopt,yopt = nstat(nt,varlis[0]+":"+varlis[1],"",
-                                                 iretval=1,isilent=1)
+        xmin,xmax,xmean,xrms,xopt,yopt = nstat(nt,varlis[0]+":"+varlis[1],"",
+                                               iretval=1,isilent=1)
 
-          tex = "Mean: " + '{:.4g}'.format(xmean) + \
-          "\nRMS: " + '{:.4g}'.format(xrms)
+        tex = "Mean: " + '{:.4g}'.format(xmean) + \
+        "\nRMS: " + '{:.4g}'.format(xrms)
 
-          if yopt != None:
-            tex += \
-            "\nxOpt: " + '{:.4g}'.format(xopt) + \
-            "\nyOpt: " + '{:.4g}'.format(yopt)
-          else:
-            scom = "yopt = nt." + varlis[1] + ".max()"
-            exec(scom)
-          #endif
+        if yopt != None:
+          tex += \
+          "\nxOpt: " + '{:.4g}'.format(xopt) + \
+          "\nyOpt: " + '{:.4g}'.format(yopt)
+        else:
+          scom = "global globyopt; globyopt = (nt." + varlis[1] + ").max()"
+          exec(scom)
+          yopt = globyopt
+          tex += \
+          "\nyOpt: " + '{:.4g}'.format(yopt)
+        #endif
 
-          text(Xstat,Ystat,tex,halign='left')
-        except:
-          pass
+        text(Xstat,Ystat,tex,halign='left')
+        #except:
+        #  pass
         #endtry
 
       #endif
@@ -19348,7 +19432,11 @@ def nplot(nt='?',varlis='',select='',weights='',plopt='', legend='',
     if Kdump:
       Ndump += 1
       fout = WaveFilePrefix + str(Ndump) + ".dat"
-      eval("vwritexyz(" + sx + "," + sy + "," + sz + ",'" + fout + "')")
+      if type(sx) == str: sx = eval(sx)
+      if type(sy) == str: sy = eval(sy)
+      if type(sz) == str: sz = eval(sz)
+#      eval("vwritexyz(" + sx + "," + sy + "," + sz + ",'" + fout + "')")
+      eval("vwritexyz(sx,sy,sz,'" + fout + "')")
       print("\nData written to ",fout)
       WaveDump = fout
     #endif Kdump
@@ -19487,7 +19575,7 @@ def vprint(v):
   Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
   H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
   Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, Nsum, \
-  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  TpdS, Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
   H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
   FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman,TnpFloat64,Tnpcmpl128
 #+KEEP,plotglobind,T=PYTHON.
@@ -19497,7 +19585,7 @@ def vprint(v):
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -19553,7 +19641,7 @@ def vprintxy(x,y):
   Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
   H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
   Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, Nsum, \
-  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  TpdS, Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
   H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
   FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman,TnpFloat64,Tnpcmpl128
 #+KEEP,plotglobind,T=PYTHON.
@@ -19563,7 +19651,7 @@ def vprintxy(x,y):
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -19631,7 +19719,7 @@ def vplxy(x='!',y='!',plopt='',label='',color='!',fillcolor='none'):
   Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
   H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
   Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, Nsum, \
-  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  TpdS, Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
   H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
   FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman,TnpFloat64,Tnpcmpl128
 #+KEEP,plotglobind,T=PYTHON.
@@ -19641,7 +19729,7 @@ def vplxy(x='!',y='!',plopt='',label='',color='!',fillcolor='none'):
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -19806,12 +19894,12 @@ def vplxy(x='!',y='!',plopt='',label='',color='!',fillcolor='none'):
 
     tex = \
     "N, Sum: " + str(int(len(x))) + ", " + '{:.4g}'.format(y.sum()) + \
-    "\nMean: " + '{:.4g}'.format(xmean) + \
-    "\nRMS: " + '{:.4g}'.format(xrms)
+    "\n \n Mean: " + '{:.4g}'.format(xmean) + \
+    "\n \n RMS: " + '{:.4g}'.format(xrms)
 
     if xopt != None and yopt != None:
-      tex += "\nxOpt: " + '{:.4g}'.format(xopt) + \
-      "\nyOpt: " + '{:.4g}'.format(yopt)
+      tex += " \n \n xOpt: " + '{:.4g}'.format(xopt) + \
+      "\n\nyOpt: " + '{:.4g}'.format(yopt)
     #endif
 
     text(Xstat,Ystat,tex,halign='left')
@@ -19878,7 +19966,7 @@ def vplxyey(x,y,ey='',plopt='o',label='',
   Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
   H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
   Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, Nsum, \
-  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  TpdS, Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
   H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
   FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman,TnpFloat64,Tnpcmpl128
 #+KEEP,plotglobind,T=PYTHON.
@@ -19888,7 +19976,7 @@ def vplxyey(x,y,ey='',plopt='o',label='',
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -19958,7 +20046,7 @@ def vplxyerr(x,y,ey='',ex='',plopt='o',label='',
   Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
   H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
   Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, Nsum, \
-  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  TpdS, Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
   H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
   FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman,TnpFloat64,Tnpcmpl128
 #+KEEP,plotglobind,T=PYTHON.
@@ -19968,7 +20056,7 @@ def vplxyerr(x,y,ey='',ex='',plopt='o',label='',
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -20040,7 +20128,7 @@ def vinter(x,y,xint='!'):
   Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
   H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
   Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, Nsum, \
-  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  TpdS, Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
   H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
   FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman,TnpFloat64,Tnpcmpl128
 #+KEEP,plotglobind,T=PYTHON.
@@ -20050,7 +20138,7 @@ def vinter(x,y,xint='!'):
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -20147,7 +20235,7 @@ def vintern(x,y,xint='!'):
   Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
   H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
   Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, Nsum, \
-  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  TpdS, Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
   H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
   FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman,TnpFloat64,Tnpcmpl128
 #+KEEP,plotglobind,T=PYTHON.
@@ -20157,7 +20245,7 @@ def vintern(x,y,xint='!'):
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -20320,7 +20408,7 @@ def vspline_index(x,y,nspl=1001, periodic=False, ypp1=0.0, yppn=0.0):
   Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
   H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
   Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, Nsum, \
-  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  TpdS, Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
   H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
   FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman,TnpFloat64,Tnpcmpl128
 #+KEEP,plotglobind,T=PYTHON.
@@ -20330,7 +20418,7 @@ def vspline_index(x,y,nspl=1001, periodic=False, ypp1=0.0, yppn=0.0):
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -20439,7 +20527,7 @@ def vspline(x,y,xspl='!', periodic=False, ypp1=0.0, yppn=0.0):
   Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
   H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
   Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, Nsum, \
-  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  TpdS, Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
   H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
   FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman,TnpFloat64,Tnpcmpl128
 #+KEEP,plotglobind,T=PYTHON.
@@ -20449,7 +20537,7 @@ def vspline(x,y,xspl='!', periodic=False, ypp1=0.0, yppn=0.0):
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -20500,7 +20588,6 @@ def vspline(x,y,xspl='!', periodic=False, ypp1=0.0, yppn=0.0):
 
   import numpy as np
 
-  #nreakpoint()
   n = len(x)
 
   if n < 2:
@@ -20610,7 +20697,7 @@ def vspline_old(x,y,xspl='!', periodic=False):
   Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
   H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
   Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, Nsum, \
-  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  TpdS, Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
   H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
   FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman,TnpFloat64,Tnpcmpl128
 #+KEEP,plotglobind,T=PYTHON.
@@ -20620,7 +20707,7 @@ def vspline_old(x,y,xspl='!', periodic=False):
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -20770,21 +20857,12 @@ def vspline_old(x,y,xspl='!', periodic=False):
 
 def vcopn(nt,varlis='x',x='',y='',z='',s='', t='',bx='',by='',bz=''):
 
-  idn = GetIndexN(nt,1)
   varlis = nlistcolon(varlis)
-
-  if idn == -1:
-    if type(nt) != str:
-      print("*** Error in vcopn: nt must be Ntuple or Ntuple name ***")
-      return -1
-    else:
-      nt = ncre(nt,nt,varlis)
-    #endif type(nt) != str
-  #if type(nt) != str
+  nt = ncre(nt,nt,varlis,ioverwrite=1)
 
   nvar = len(varlis)
-
   nt[varlis[0]] = x
+
   if nvar > 1: nt[varlis[1]] = y
   if nvar > 2: nt[varlis[2]] = z
   if nvar > 3: nt[varlis[3]] = s
@@ -20815,6 +20893,11 @@ def vcopn(nt,varlis='x',x='',y='',z='',s='', t='',bx='',by='',bz=''):
   return nt
 #def vcopn(nt,varlis='x:y:z:bx:by:bz',x,y='',z='',bx='',by='',bz='')
 
+def vplx(x,plopt='!'):
+  nv = vcopn('nv','x',x)
+  npl(nv,"x",plopt=plopt)
+#enddef vplx
+
 def nupdate_header(nt,reindex=1):
 #+seq,mshimportsind.
 # +PATCH,//WAVES/PYTHON
@@ -20826,7 +20909,7 @@ def nupdate_header(nt,reindex=1):
   Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
   H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
   Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, Nsum, \
-  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  TpdS, Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
   H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
   FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman,TnpFloat64,Tnpcmpl128
 #+KEEP,plotglobind,T=PYTHON.
@@ -20836,7 +20919,7 @@ def nupdate_header(nt,reindex=1):
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -20982,7 +21065,7 @@ def vsolve(x,y,val=0.0,xmin=-1.0e30,xmax=1.0e30):
   Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
   H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
   Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, Nsum, \
-  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  TpdS, Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
   H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
   FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman,TnpFloat64,Tnpcmpl128
 #+KEEP,plotglobind,T=PYTHON.
@@ -20992,7 +21075,7 @@ def vsolve(x,y,val=0.0,xmin=-1.0e30,xmax=1.0e30):
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -21107,7 +21190,7 @@ def vsolvelin(x,y,val=0.0):
   Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
   H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
   Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, Nsum, \
-  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  TpdS, Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
   H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
   FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman,TnpFloat64,Tnpcmpl128
 #+KEEP,plotglobind,T=PYTHON.
@@ -21117,7 +21200,7 @@ def vsolvelin(x,y,val=0.0):
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -21176,7 +21259,7 @@ def voptspl(x,y):
   Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
   H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
   Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, Nsum, \
-  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  TpdS, Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
   H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
   FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman,TnpFloat64,Tnpcmpl128
 #+KEEP,plotglobind,T=PYTHON.
@@ -21186,7 +21269,7 @@ def voptspl(x,y):
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -21280,7 +21363,7 @@ def ncopn(nt,ncnam,varlis='',select='',ioverwrite=0):
   Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
   H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
   Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, Nsum, \
-  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  TpdS, Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
   H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
   FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman,TnpFloat64,Tnpcmpl128
 #+KEEP,plotglobind,T=PYTHON.
@@ -21290,7 +21373,7 @@ def ncopn(nt,ncnam,varlis='',select='',ioverwrite=0):
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -21386,7 +21469,7 @@ def ncopv(nt,varlis,select=''):
   Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
   H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
   Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, Nsum, \
-  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  TpdS, Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
   H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
   FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman,TnpFloat64,Tnpcmpl128
 #+KEEP,plotglobind,T=PYTHON.
@@ -21396,7 +21479,7 @@ def ncopv(nt,varlis,select=''):
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -21516,7 +21599,7 @@ def nclone(nt,ncnam,nctit='',ioverwrite=0):
   Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
   H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
   Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, Nsum, \
-  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  TpdS, Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
   H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
   FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman,TnpFloat64,Tnpcmpl128
 #+KEEP,plotglobind,T=PYTHON.
@@ -21526,7 +21609,7 @@ def nclone(nt,ncnam,nctit='',ioverwrite=0):
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -21646,6 +21729,7 @@ def vsortxy(x,y):
 
   nt = make_dataframe('x:y',x,y)
   nt = nt.sort_values(by='x')
+  nt = nt.drop_duplicates()
   nt.index = range(len(nt))
 
   return nt.x, nt.y
@@ -22428,7 +22512,7 @@ def getzone(projection=''):
   Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
   H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
   Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, Nsum, \
-  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  TpdS, Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
   H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
   FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman,TnpFloat64,Tnpcmpl128
 #+KEEP,plotglobind,T=PYTHON.
@@ -22438,7 +22522,7 @@ def getzone(projection=''):
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -22477,6 +22561,9 @@ def getzone(projection=''):
 #*CMZ :          29/09/2019  11.11.01  by  Michael Scheer
   global N1, N2, N3, N4, N5, N6, N7,N8,N9,Nv, Nx, Nxy, Nxyz
 
+
+  global ClearCanvas
+  if ClearCanvas: _clearCanvas(1)
 
   Fig = plt.gcf()
   Axes = Fig.get_axes()
@@ -22582,7 +22669,7 @@ def set_console_title(console='Python'):
   Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
   H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
   Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, Nsum, \
-  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  TpdS, Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
   H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
   FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman,TnpFloat64,Tnpcmpl128
 #+KEEP,plotglobind,T=PYTHON.
@@ -22592,7 +22679,7 @@ def set_console_title(console='Python'):
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -22654,7 +22741,7 @@ def get_console(console=''):
   Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
   H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
   Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, Nsum, \
-  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  TpdS, Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
   H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
   FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman,TnpFloat64,Tnpcmpl128
 #+KEEP,plotglobind,T=PYTHON.
@@ -22664,7 +22751,7 @@ def get_console(console=''):
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -22717,6 +22804,7 @@ def get_console(console=''):
 
     stat = os.system(com)
     if stat: print('... Could not raise console, wmctrl is not installed ...')
+
   #endif
 
 #enddef get_console()
@@ -22732,7 +22820,7 @@ def getax(visible=True):
   Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
   H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
   Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, Nsum, \
-  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  TpdS, Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
   H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
   FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman,TnpFloat64,Tnpcmpl128
 #+KEEP,plotglobind,T=PYTHON.
@@ -22742,7 +22830,7 @@ def getax(visible=True):
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -22804,7 +22892,7 @@ def vplbxy(x,y,u,v,scale=-9999.0,plopt='',tit='',xtit='',ytit='',ztit='',label='
   Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
   H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
   Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, Nsum, \
-  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  TpdS, Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
   H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
   FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman,TnpFloat64,Tnpcmpl128
 #+KEEP,plotglobind,T=PYTHON.
@@ -22814,7 +22902,7 @@ def vplbxy(x,y,u,v,scale=-9999.0,plopt='',tit='',xtit='',ytit='',ztit='',label='
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -22903,7 +22991,7 @@ def vplbxyz(x,y,z,u,v,w,scale,plopt='',tit='',xtit='',ytit='',ztit='',label='',
   Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
   H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
   Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, Nsum, \
-  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  TpdS, Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
   H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
   FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman,TnpFloat64,Tnpcmpl128
 #+KEEP,plotglobind,T=PYTHON.
@@ -22913,7 +23001,7 @@ def vplbxyz(x,y,z,u,v,w,scale,plopt='',tit='',xtit='',ytit='',ztit='',label='',
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -22983,7 +23071,7 @@ def vplxyz(x,y,z,plopt='',tit='',xtit='',ytit='',ztit='',label='',
   Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
   H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
   Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, Nsum, \
-  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  TpdS, Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
   H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
   FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman,TnpFloat64,Tnpcmpl128
 #+KEEP,plotglobind,T=PYTHON.
@@ -22993,7 +23081,7 @@ def vplxyz(x,y,z,plopt='',tit='',xtit='',ytit='',ztit='',label='',
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -23130,7 +23218,7 @@ def vplxyzt(x,y,z,t,plopt='',tit='',xtit='',ytit='',ztit='', label='',
   Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
   H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
   Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, Nsum, \
-  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  TpdS, Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
   H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
   FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman,TnpFloat64,Tnpcmpl128
 #+KEEP,plotglobind,T=PYTHON.
@@ -23140,7 +23228,7 @@ def vplxyzt(x,y,z,t,plopt='',tit='',xtit='',ytit='',ztit='', label='',
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -23213,7 +23301,7 @@ def textbox(text,x=0.05, y=0.95, tcolor=None, bgcolor='white', alpha=0.9,
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -23259,6 +23347,13 @@ def seed(iseed=0, plopt=''):
   from pickle import dump
   import numpy as np
 
+  if type(iseed) == str:
+    os.system("shuf -i 0-100000 -n1 > .iseed")
+    F = open(".iseed",'r')
+    iseed = int(F.readline().strip())
+    F.close()
+  #endif
+
   if iseed >= 0: np.random.seed(iseed)
 
   if plopt == 'w':
@@ -23285,7 +23380,7 @@ def vfitpoly(nord,x,y, ey='', cov='default', isilent=0, ninter=101, iretval=1,
   Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
   H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
   Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, Nsum, \
-  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  TpdS, Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
   H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
   FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman,TnpFloat64,Tnpcmpl128
 #+KEEP,plotglobind,T=PYTHON.
@@ -23295,7 +23390,7 @@ def vfitpoly(nord,x,y, ey='', cov='default', isilent=0, ninter=101, iretval=1,
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -23454,7 +23549,7 @@ def b_to_K(bv='?',lam=None,bh=0.0):
   grarad1,hbar1,hbarev1,hplanck1,pol1con1,pol2con1,\
   radgra1,rmu01,rmu04pi1,twopi1,pi1,halfpi1,wtoe1,gaussn1,ck934,\
   ecdipev,ecdipkev,fwhmgauss1,fwhmsinxx21,rmssinxx21,g1max,h2max, \
-  g1const,h2const
+  g1const,h2const,specnor_si
 
   global complex_0,complex_i
 
@@ -23481,7 +23576,7 @@ def K_to_b(K='?',lam=None):
   grarad1,hbar1,hbarev1,hplanck1,pol1con1,pol2con1,\
   radgra1,rmu01,rmu04pi1,twopi1,pi1,halfpi1,wtoe1,gaussn1,ck934,\
   ecdipev,ecdipkev,fwhmgauss1,fwhmsinxx21,rmssinxx21,g1max,h2max, \
-  g1const,h2const
+  g1const,h2const,specnor_si
 
   global complex_0,complex_i
 
@@ -23504,7 +23599,7 @@ def K_to_harm(K='?',lam=None,ebeam=None):
   grarad1,hbar1,hbarev1,hplanck1,pol1con1,pol2con1,\
   radgra1,rmu01,rmu04pi1,twopi1,pi1,halfpi1,wtoe1,gaussn1,ck934,\
   ecdipev,ecdipkev,fwhmgauss1,fwhmsinxx21,rmssinxx21,g1max,h2max, \
-  g1const,h2const
+  g1const,h2const,specnor_si
 
   global complex_0,complex_i
 
@@ -23529,7 +23624,7 @@ def b_to_harm(b='?',lam=None,ebeam=None):
   grarad1,hbar1,hbarev1,hplanck1,pol1con1,pol2con1,\
   radgra1,rmu01,rmu04pi1,twopi1,pi1,halfpi1,wtoe1,gaussn1,ck934,\
   ecdipev,ecdipkev,fwhmgauss1,fwhmsinxx21,rmssinxx21,g1max,h2max, \
-  g1const,h2const
+  g1const,h2const,specnor_si
 
   global complex_0,complex_i
 
@@ -23546,7 +23641,7 @@ def harm_to_K(ebeam='?',lam=None,nharm=None,harm=None):
   grarad1,hbar1,hbarev1,hplanck1,pol1con1,pol2con1,\
   radgra1,rmu01,rmu04pi1,twopi1,pi1,halfpi1,wtoe1,gaussn1,ck934,\
   ecdipev,ecdipkev,fwhmgauss1,fwhmsinxx21,rmssinxx21,g1max,h2max, \
-  g1const,h2const
+  g1const,h2const,specnor_si
 
   global complex_0,complex_i
 
@@ -23621,7 +23716,7 @@ def hfit(idh, fitfun, select='',absolute_sigma='default', parstart=None,
   Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
   H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
   Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, Nsum, \
-  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  TpdS, Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
   H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
   FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman,TnpFloat64,Tnpcmpl128
 #+KEEP,plotglobind,T=PYTHON.
@@ -23631,7 +23726,7 @@ def hfit(idh, fitfun, select='',absolute_sigma='default', parstart=None,
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -23675,7 +23770,7 @@ def hfit(idh, fitfun, select='',absolute_sigma='default', parstart=None,
   Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
   H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
   Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, Nsum, \
-  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  TpdS, Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
   H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
   FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman,TnpFloat64,Tnpcmpl128
 
@@ -23708,6 +23803,7 @@ def hfit(idh, fitfun, select='',absolute_sigma='default', parstart=None,
     Kstat = Kold
 
     if Kstat:
+
       if StatFontSize < 0:
         dpi = Fig.dpi
         nxy = max(Nxzone,Nyzone)
@@ -23731,8 +23827,8 @@ def hfit(idh, fitfun, select='',absolute_sigma='default', parstart=None,
         #endfor
       #endif
 
-      tex += Tex_chi2ndf + " = " + '{:.4g}'.format(chi2ndf) + "\n"
-      tex += Tex_chi2prob + " = " + '{:.4g}'.format(FitChi2Prob) + "\n"
+      tex += TeX_chi2ndf + " = " + '{:.4g}'.format(chi2ndf) + "\n"
+      tex += TeX_chi2prob + " = " + '{:.4g}'.format(FitChi2Prob) + "\n"
       text(Xfit,Yfit,tex,halign='left')
 
     #endif Kstat
@@ -23769,7 +23865,7 @@ def vfit(fitfun, x, y, ey = '', absolute_sigma='default', parstart=None,
   Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
   H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
   Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, Nsum, \
-  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  TpdS, Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
   H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
   FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman,TnpFloat64,Tnpcmpl128
 #+KEEP,plotglobind,T=PYTHON.
@@ -23779,7 +23875,7 @@ def vfit(fitfun, x, y, ey = '', absolute_sigma='default', parstart=None,
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -23823,13 +23919,15 @@ def vfit(fitfun, x, y, ey = '', absolute_sigma='default', parstart=None,
   Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
   H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
   Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, Nsum, \
-  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  TpdS, Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
   H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
   FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman,TnpFloat64,Tnpcmpl128
 
   from scipy.optimize import curve_fit
 
   if not bounds: bounds = (-np.inf,np.inf)
+
+  #reakpoint()
 
   iey = 1
 
@@ -23964,6 +24062,172 @@ def vfit(fitfun, x, y, ey = '', absolute_sigma='default', parstart=None,
 
 #enddef vfit(fitfun,x,y, ey = None, parstart=None, bounds=None, method=None,isilent=0)
 
+#def fringefun(xin,fint,gap,xcen):
+def fringefun(xin,fint,gap):
+
+  global dipstrength,fringemod
+
+  try:
+    len(xin)
+    x = xin
+  except:
+    x = []
+    x.append(xin)
+    x = np.array(x)
+  #endif
+
+  byout = deepcopy(x)
+
+  xcen = 0.0
+
+  if fringemod == 'quintic-spline':
+
+    fringe=231.0*fint*gap/25.0
+    fringe2=fringe*fringe
+    fringe3=fringe2*fringe
+    fringe4=fringe2*fringe2
+    fringe5=fringe3*fringe2
+
+    fa=10.0/fringe3
+    fb=-15.0/fringe4
+    fc=6.0/fringe5
+
+  elif fringemod == 'linear':
+
+    fringe=6.0*fint*gap
+    fa=1.0/fringe
+
+  #endif
+
+  xc=x-xcen
+  xmin = xc.min()
+  xmax = xc.max()
+
+  for i in range(len(x)):
+
+    xc=x[i]-xcen
+
+    if xc > xmin + fringe and xc < xmax - fringe:
+      byout[i] = dipstrength
+      continue
+    #endif
+
+    if xc < xmin + fint:xc -= xmin
+    else: xc = xmax - xc
+
+    if fringemod == 'quintic-spline':
+
+      x2=xc*xc
+      x3=x2*xc
+      x4=x3*xc
+      x5=x4*xc
+
+      #  y2=y*y
+      #  y3=y2*y
+      #bxout=y*(3.00*Fa*x2+4.00*fb*x3+5.00*fc*x4)
+      #&      +y3*(-fa-4.00*fb*xc-10.00*fc*x2) !This term is not Maxwell conform
+      #byout=(fa*x3+fb*x4+fc*x5)+y2*xc*(3.00*fa+6.00*fb*xc+10.00*fc*x2) ! The sign seems to be wrong in the manual
+
+      # y=0, byout=(fa*x3+fb*x4+fc*x5)-y2*xc*(3.00*fa+6.00*fb*xc+10.00*fc*x2)
+      byout[i] = (fa*x3+fb*x4+fc*x5)*dipstrength
+
+    elif fringemod == 'linear':
+
+      #bxout=y*fa
+      byout[i] = xc*fa*dipstrength
+    #endif
+
+  #endfor x
+
+  return byout
+
+#enddef fringefun(x,fint,gap)
+
+def vfitdipole(x,y, ey = '', fringemodel='quintic-spline',absolute_sigma='default', parstart=None,
+            bounds=None, method=None,isilent=0,ninter=101, iretval=1,
+            kweedzero=1):
+  # See also vfit(...)
+#+seq,mshimportsind.
+# +PATCH,//WAVES/PYTHON
+# +KEEP,statusglobind,T=PYTHON.
+  global Istatus, WarningText, ErrorText, Gdebug
+
+  # Histograms and Ntuples
+  global H1h, H1hh, H2h, H2hh, H1, H2, H1head, H2head, H1HLast, Nhead, Ntup, \
+  Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
+  H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
+  Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, Nsum, \
+  TpdS, Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
+  FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman,TnpFloat64,Tnpcmpl128
+#+KEEP,plotglobind,T=PYTHON.
+#*CMZ :          28/09/2019  14.39.13  by  Michael Scheer
+  global MPLmain, MPLmaster, Nfigs,Figgeom, Figgeom2, FiggeomR, FiggeomL, XtermGeo, Figs,Fig,Ax,\
+  Fig1,Ax1,Fig6,Ax6,Fig2,Ax2,Fig7,Ax7,Fig3,Ax3,Fig8,Ax8, Figgeoms, \
+  Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
+  Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
+  FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
+  Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
+  Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
+  MarkerSize, MarkerType, MarkerColor, \
+  Markersize, Markertype, Markercolor, \
+  Fillstyle, FillStyle, \
+  Textcolor, WaveFilePrefix,WaveDump, \
+  LineStyle, LineWidth, LineColor, \
+  Linestyle, Linewidth, Linecolor, \
+  Author, \
+  Tightpad, Xtightpad,Ytightpad, ColorbarPad,\
+  LeftMargin,RightMargin,TopMargin,BottomMargin, Xspace, Yspace, \
+  Histcolor, Histedgecolor, Histbarwidth, Kdate, Kfit, Kstat, YTitle, YGTitle,x_of_xlab,y_of_xlab,x_of_ylab,y_of_ylab, Ygtitle, \
+  Icont3d, Iboxes, Inoempty, Iclosed,Itrisurf, Iscatter, Iscat3d, Ifill1d, TitPad, Xtitle, Ytitle, \
+  Gtit,Xtit,Ytit,Ztit,Ttit,Ptit,Colors, Surfcolors,Linestyles, Markertypes, \
+  LexpX,LexpY,LexpRot,LexpPow,\
+  GtitFontSize,Titfontsize,Atitfontsize,Axislabelsize,Textfontsize,Datefontsize,\
+  Statfontsize, Axislabeldist, Axislabeldist3d, Axisdist, Axisdist3d, \
+  XFit, YFit, Xfit, Yfit,Ystat, YStat, \
+  GtitFontSize,TitFontSize,AtitFontSize,AxisLabelSize,TextFontSize,DateFontSize,\
+  StatFontSize, AxisLabelDist, AxisLabelDist3d, AxisTitleDist, AxisTitleDist3d, \
+  AtitFontSize3d, Atitfontsize3d, NXtick,NXtick3d, Nxtick,Nxtick3d, Ktitles,  Dummy,\
+  ZoomXmin,ZoomXmax, ZoomYmin, ZoomYmax,ZoomZmin,ZoomZmax,\
+  Tdate, TdateOv, Trun, TrunOv, Icallfromoverview,\
+  LogX,LogY, LogZ, NxBinMax, Khdeleted, Waveplot, \
+  Mrun, Mcomment, Mdate, ROFx, Rofy, Hull2D,Hull3DList,THull3D,Hull3D, Kgrid, KxAxis,KyAxis,KzAxis,Kbox, \
+  FillColor,WisLinux,Ishow,Sepp,Backslash
+#+PATCH,//WAVES/PYTHON
+#+KEEP,vecglobind,T=PYTHON.
+
+  global VsortX, VsortY, VoptX, VoptY, VsplX, VsplY, Vspl1, Vspl2, VsplI, \
+  VsplCoef, Nspline,Ninter, Nfitxy, Nfitint, Vxint, Vyint, SplineMode, \
+  VxyzX,VxyzY,VxyzZ,Tnpa,Tnone,VxyzE
+
+#+KEEP,nxyzglobind,T=PYTHON.
+#*CMZ :          29/09/2019  11.11.01  by  Michael Scheer
+  global N1, N2, N3, N4, N5, N6, N7,N8,N9,Nv, Nx, Nxy, Nxyz
+
+  from scipy.optimize import curve_fit
+
+  global dipstrength,fringemod
+
+  if not fringemodel in ['linear','quintic-spline']:
+    print("\n","*** Error in vfitdipole: Unknown fringe model",fringemodel,"***\n")
+    print("*** Asuming quintic-spline!\n")
+    fringemodel='quintic-spline'
+  #endif
+
+  dipstrength = y.max()
+  fringemod = fringemodel
+
+  par, sigma, chi2ndf, f = vfit(fringefun,x,y,ey,'default',parstart, bounds,                                  method,isilent,ninter,kweedzero)
+
+#  if not isilent: print("\nfint, gap, xcen:",par[0],par[1],par[2],"\n")
+  if not isilent: print("\nfint, gap:",par[0],par[1],"\n")
+
+  return  par, sigma, chi2ndf, f
+
+#enddef vfitdipole(x,y, ey = '', absolute_sigma='default', parstart=None, bounds=None, method=None,isilent=0)
+
 def vfitexp(x,y, ey = '', absolute_sigma='default', parstart=None,
             bounds=None, method=None,isilent=0,ninter=101, iretval=1,
             kweedzero=1):
@@ -23978,7 +24242,7 @@ def vfitexp(x,y, ey = '', absolute_sigma='default', parstart=None,
   Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
   H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
   Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, Nsum, \
-  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  TpdS, Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
   H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
   FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman,TnpFloat64,Tnpcmpl128
 #+KEEP,plotglobind,T=PYTHON.
@@ -23988,7 +24252,7 @@ def vfitexp(x,y, ey = '', absolute_sigma='default', parstart=None,
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -24051,7 +24315,7 @@ def vfitexp2(x,y, ey = '', absolute_sigma='default', parstart=None,
   Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
   H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
   Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, Nsum, \
-  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  TpdS, Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
   H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
   FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman,TnpFloat64,Tnpcmpl128
 #+KEEP,plotglobind,T=PYTHON.
@@ -24061,7 +24325,7 @@ def vfitexp2(x,y, ey = '', absolute_sigma='default', parstart=None,
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -24130,7 +24394,7 @@ def vfitgauss(x,y, ey = '', absolute_sigma='default',
   Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
   H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
   Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, Nsum, \
-  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  TpdS, Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
   H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
   FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman,TnpFloat64,Tnpcmpl128
 #+KEEP,plotglobind,T=PYTHON.
@@ -24140,7 +24404,7 @@ def vfitgauss(x,y, ey = '', absolute_sigma='default',
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -24201,7 +24465,7 @@ def vfitcosh(x,y, ey = '', absolute_sigma='default',
   Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
   H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
   Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, Nsum, \
-  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  TpdS, Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
   H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
   FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman,TnpFloat64,Tnpcmpl128
 #+KEEP,plotglobind,T=PYTHON.
@@ -24211,7 +24475,7 @@ def vfitcosh(x,y, ey = '', absolute_sigma='default',
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -24272,7 +24536,7 @@ def vfitcos(x,y, ey = '', absolute_sigma='default',
   Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
   H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
   Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, Nsum, \
-  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  TpdS, Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
   H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
   FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman,TnpFloat64,Tnpcmpl128
 #+KEEP,plotglobind,T=PYTHON.
@@ -24282,7 +24546,7 @@ def vfitcos(x,y, ey = '', absolute_sigma='default',
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -24340,7 +24604,7 @@ def hget(idh=''):
   Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
   H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
   Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, Nsum, \
-  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  TpdS, Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
   H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
   FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman,TnpFloat64,Tnpcmpl128
 #+KEEP,plotglobind,T=PYTHON.
@@ -24350,7 +24614,7 @@ def hget(idh=''):
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -24417,7 +24681,7 @@ def nget(idn=''):
   Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
   H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
   Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, Nsum, \
-  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  TpdS, Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
   H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
   FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman,TnpFloat64,Tnpcmpl128
 #+KEEP,plotglobind,T=PYTHON.
@@ -24427,7 +24691,7 @@ def nget(idn=''):
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -24912,10 +25176,17 @@ def settextcolor(tc='black'):
   global Textcolor
   Textcolor = tc
 
+def tred(): settextcolor('green')
+def tblue(): settextcolor('blue')
+def tgreen(): settextcolor('green')
+def tcyan(): settextcolor('cyan')
+def tmagenta(): settextcolor('magenta')
+
 def gettextcolor(): return Textcolor
 
 def setlinecolor(lc='red'):
-  global Linecolor
+  global Linecolor,Colors
+  if type(lc) == int: lc = Colors[lc-1]
   mpl.rcParams['lines.color'] = lc
   Linecolor = lc
 
@@ -25347,7 +25618,7 @@ def set_y_title_abs(ytit='yTit', pos=0.5):
   Nctup, Nh1, Nh2, Nntup, Nnctup, Hdir, Ndir, Kdir, Cdir, Fdir, \
   H1Last, H2Last, NLast, H1h, H2h, N, Nct, Ind, IndLast, \
   Nmin, Nmax, Nmean, Nrms, Nxopt, Nyopt, Nlook, Nsum, \
-  Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
+  TpdS, Tdf, Tfig, Tax, Tax3d, Tax2d , H1ind, H2ind, Ncind, \
   H1ILast, NiLast, H1I, H2I, H2ILast, Ni, NctI, Nind, Nsel, Nlines, Ncolon, \
   FitPar, FitFit, FitSig, FitChi2ndf, FitNdf, FitChi2Prob,Figman,TnpFloat64,Tnpcmpl128
 #+KEEP,plotglobind,T=PYTHON.
@@ -25357,7 +25628,7 @@ def set_y_title_abs(ytit='yTit', pos=0.5):
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -25440,6 +25711,7 @@ def setcolormap(cmap='jet'):
   global CMap, Cmap
   if cmap == '!': CMap = cmap
   Cmap = CMap
+  mpl.rc('image', cmap=cmap)
 #enddef
 
 def setcolorbarpad(pad='!'):
@@ -25821,6 +26093,18 @@ read_facets = read_faces
 nex = nextzone
 gtit = set_global_title
 setgeo = window_geometry
+setfit = optfit
+
+tgruen = tgreen
+trot = tred
+tblau = tblue
+tlila = tmagenta
+thellblau = tcyan
+#wvars = list_wave_input_parameters
+
+ryst = rystat
+pyst = pystat
+myst = mystat
 #end of aliases in m_hbook
 
 #end of m_hbook
@@ -25832,7 +26116,7 @@ def plotoptions_unklar(plopt=''):
   Fig4,Ax4,Fig9,Ax9,Fig5,Ax5,Fig10,Ax10,\
   Screewidth, Screenheight, ScaleSizeX, ScaleSizeY, \
   FirstConsole, Console, Igetconsole,Klegend, Fwidth, Fheight, Fxoff, Fyoff, \
-  Kfig, Kax, Ihist,Iprof, Imarker, Ierr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
+  Kfig, Kax, Ihist,Iprof, Imarker, Ierr,Inoerr, Isurf, Iinter, Isame, Itight, IsameGlobal, Iline, CMap, Cmap, Tcmap, Surfcolor, Cmaps, \
   Iplotopt, Ispline, Kecho, Kdump,Kpdf, Ndump,Npdf, Legend, \
   Kplots,Nwins, Zones, Kzone, Nxzone, Nyzone, Zone, Axes, Icmap, \
   Mode3d,Mode3D, Mode2d,Mode2D, CanButId, CanButIds, \
@@ -26220,10 +26504,10 @@ def vshiftphase(vreal,vimag,ishift=-9999,shift=9999.):
   for i in range(n):
     vcn[i] = complex(vr[i],vi[i])/vc00
     vc[i] = vcn[i]*vc00a
-    vr[i] = real(vc[i])
-    vi[i] = imag(vc[i])
-    vrn[i] = real(vcn[i])
-    vin[i] = imag(vcn[i])
+    vr[i] = np.real(vc[i])
+    vi[i] = np.imag(vc[i])
+    vrn[i] = np.real(vcn[i])
+    vin[i] = np.imag(vcn[i])
   #endfor
 
   return vr,vi,vrn,vin,vc00
@@ -26257,3 +26541,80 @@ def set_Imarker(i):
 def set_Iline(i):
   global Iline
   Iline = i
+
+def print_cmap(cnam='',m=-1,cfile='',ifortran=1):
+
+# Write colormap to file
+
+  global Cmaps,CMap
+
+  if cnam != '':
+    mpl.rc('image', cmap=cnam)
+  elif m >= 0:
+    mpl.rc('image', cmap=Cmaps[m])
+  elif cnam == '':
+    cnam = plt.get_cmap().name
+  #endif
+
+  cma = plt.get_cmap()
+  cfile = 'colormap_' + cma.name + '.dat'
+
+  F = open(cfile,'w')
+
+  if ifortran:
+    F.write('      real :: cmap(3,256), cmap256(768) = [\n')
+  #endif
+
+  for i in range(256):
+    c = cma(i/255.)
+    print(i,i/255.,c)
+    if ifortran:
+      if i == 255: break
+      F.write('     & ' + str(c[0]) + ', ' + str(c[1]) + ' ,' + str(c[2]) + ',\n')
+    else:
+      F.write(str(c[0]) + ' ' + str(c[1]) + ' ' + str(c[2]) + '\n')
+    #endif
+  #endfor
+
+  if ifortran:
+    F.write('     & ' + str(c[0]) + ', ' + str(c[1]) + ' ,' + str(c[2]) + ']\n')
+    F.write('      equivalence(cmap,cmap256) \n')
+  #endif
+
+  F.close()
+
+#enddef print_cmap
+
+def set_statfontsize(s):
+  global StatFontSize
+  StatFontSize = s
+#enddef set_statfontsize(s):
+
+def nphasespace_ellip(emit,beta0,s,npoi=1000):
+
+  sig = sqrt(emit*beta0)
+  sigp = sqrt(emit/beta0)
+
+  neli0 = nellipse("neli0",0.0,0.0,sig,sigp,0.0,npoi)
+  neli = nellipse("neli",0.0,0.0,sig,sigp,0.0,npoi)
+
+  neli0.columns=['x','xp','phi','area','path']
+  nupdate_header(neli0)
+
+  neli.columns=['x','xp','phi','area','path']
+
+  x=neli0.x+neli0.xp*s
+  xp=neli0.xp
+  neli.x=x
+  neli.xp=xp
+
+  nupdate_header(neli)
+
+  return neli
+#enddef
+
+def nl(): print('\n')
+def xstp(): set_x_stat('+')
+def xstm(): set_x_stat('-')
+def ystp(): set_y_stat('+')
+def ystm(): set_y_stat('-')

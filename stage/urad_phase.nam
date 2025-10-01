@@ -1,0 +1,155 @@
+ $uradphasen
+
+  Mthreads=-1        !Number of threads (<0: Use all cores)
+
+  Ebeam=1.7          !Beam energy [GeV]
+  Curr=0.1           !Current [A]
+  Step=0.1           !Tracking step size [mm]
+
+  Nelec=1            !Nelec
+  Noranone=1         !No random change for first e-
+  IfixPhase=0        !Random phase for e-
+
+  Icohere=0          ! to be tested
+  Ihbunch=1          ! Each Ihbunch_th bunch is recorded
+  Bunchlen=0.0
+  BunchCharge=0.0
+  Modebunch=0        ! Not yet
+
+  PinX=2000000.0      !X of PinHole [mm]
+  PinY=0.0            !Y of PinHole [mm]
+  PinZ=0.0            !Z of PinHole [mm]
+  PinW=150.0          !Width of PinHole [mm]
+  PinH=150.0          !Height of PinHole [mm]
+  NpinY=101           !Number of vert. points
+  NpinZ=101           !Number of hori. points
+
+  Modepin=0           !Monte-Carlo mode [0,1]
+
+  ModeSphere=0        !Arrange grid points on sphere [0,1]
+
+  Perlen=50.0         !Period-length [mm]
+  Shift=0.0           !Shift [mm] (for spectra only)
+
+  Nper=50             !Number of periods
+  Nharm=1             !Nharm (>0: overwrites Beff)
+
+  harm=200.0          !Harm [eV]
+  Beffv=1.0          !B0 vert. [T]
+  Beffh=0.0          !B0 hori.. [T]
+
+  Nepho=3            !Number of Photon Energies
+  EphMin=1390.0      !Min. Photon Energy [eV]
+  EphMax=1410.0       !Max. Photon Energy [eV]
+
+  Espread=0.001          !Rel. energy spread
+
+  BetaH=1.0          !Hori. Beta function
+  BetaV=1.0          !Vert. Beta function
+  EmitH=1.0          !Hor. Emit. [nm-rad]
+  EmitV=0.0          !Ver. Emit. [nm-rad]
+  Disph=0.0          !Hori. Dispersion [mm]
+  Dispph=0.0         !Derivative of Hori. Dispersion [mrad]
+  Dispv=0.0          !Vert. Dispersion [mm]
+  Disppv=0.0         !Derivative of Vert. Dispersion [mrad]
+
+  Modeph=0            !Mode for phase-error, only for inanalytic = 0
+  Pherror=0.0         !Phase errors
+
+  IFieldProp=0        !Propagate radiation field back to origin
+  PinXprop=0.0        !Long. Position of Plane [mm]
+  PinWprop=0.05       !Width of PinHole in Origin[mm]
+  PinHprop=0.05       !Height of PinHole in Origin [mm]
+  NpinYprop=51        !Number of vert. points in Origin
+  NpinZprop=51        !Number of hori. points in Origin
+  IfixPhase=0         !Random phase for e-
+  PhGshift=9999.0     !Global phase shift. 9999.: Hori. amplitude is zero for (PinX,PinY,PinZ))
+
+  IWigner=-1          !Calculate Wigner Distributions [-4,-3,-2,-1,0,1], triggers ifieldprop
+                      ! -1: Wzz only
+                      ! -2: Wyy only
+                      ! -3: Wzy only
+                      ! -4: Wyz only
+                      !  1: all
+		
+  NyTheWig=1          !Number of vert. angle steps
+  NzTheWig=31         !Number of hori.. angle steps
+
+  TheYWig=0.05        !Vert. angle range
+  TheZWig=0.05        !Hori. angle range
+
+  nEfold=15           !Number of E-spread steps
+
+  NoSplineEfold=0     !Suppress splines for E-spread folding, use simple summation
+
+ $end
+
+ $seedn
+
+  Ifixseed=0         !Fix Seeds [0,1]
+  irnseed(1)=376577121
+  irnseed(2)=52147852
+  irnseed(3)=-1273034815
+  irnseed(4)=-1963249100
+  irnseed(5)=1195262240
+  irnseed(6)=-1718716574
+  irnseed(7)=-224354675
+  irnseed(8)=432587481
+  irnseed(9)=1692325775
+  irnseed(10)=1934175653
+  irnseed(11)=-107106772
+  irnseed(12)=648589804
+  irnseed(13)=-1919014861
+  irnseed(14)=-1763988460
+  irnseed(15)=-1039845022
+  irnseed(16)=1414926465
+  irnseed(17)=-1214705659
+  irnseed(18)=560082688
+  irnseed(19)=527470902
+  irnseed(20)=-1078636718
+  irnseed(21)=272932485
+  irnseed(22)=-356992740
+  irnseed(23)=-2013991490
+  irnseed(24)=-588501795
+  irnseed(25)=-1010120436
+  irnseed(26)=-1558306344
+  irnseed(27)=-1116776222
+  irnseed(28)=794926823
+  irnseed(29)=-1157173406
+  irnseed(30)=63711032
+  irnseed(31)=-1870802148
+  irnseed(32)=-674825931
+  irnseed(33)=-690546468
+  irnseed(34)=1671737514
+  irnseed(35)=-224394481
+  irnseed(36)=2026233226
+  irnseed(37)=-1141752469
+  irnseed(38)=2061158685
+  irnseed(39)=-1225625467
+  irnseed(40)=-147464566
+  irnseed(41)=1692325775
+  irnseed(42)=1934175653
+  irnseed(43)=-107106772
+  irnseed(44)=648589804
+  irnseed(45)=-1919014861
+  irnseed(46)=-1763988460
+  irnseed(47)=-1039845022
+  irnseed(48)=1414926465
+  irnseed(49)=-1214705659
+  irnseed(50)=560082688
+  irnseed(51)=527470902
+  irnseed(52)=-1078636718
+  irnseed(53)=272932485
+  irnseed(54)=-356992740
+  irnseed(55)=-2013991490
+  irnseed(56)=-588501795
+  irnseed(57)=-1010120436
+  irnseed(58)=-1558306344
+  irnseed(59)=-1116776222
+  irnseed(60)=794926823
+  irnseed(61)=-1157173406
+  irnseed(62)=63711032
+  irnseed(63)=-1870802148
+  irnseed(64)=-674825931
+
+ $end
