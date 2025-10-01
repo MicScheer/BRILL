@@ -12,7 +12,7 @@ rm -f $BRILL/urad_phase.exe
 
 # mshcern.f is created by cat $WAVE_INCL/mshcern/*.f > $BRILL/for/mshcern.f
 
-gfortran -c -O3 -cpp -w \
+gfortran -c -g -cpp -w \
 -ffpe-summary=invalid,zero,overflow \
 -fopenmp \
 -fdec -fd-lines-as-comments \
@@ -21,7 +21,7 @@ gfortran -c -O3 -cpp -w \
 -finit-local-zero -funroll-loops \
 mshcern.f
 
-gfortran -c -O3 -cpp \
+gfortran -c -g -cpp \
 -ffpe-summary=invalid,zero,overflow \
 -fopenmp \
 -fdec -fd-lines-as-comments \
@@ -30,7 +30,7 @@ gfortran -c -O3 -cpp \
 -finit-local-zero -funroll-loops \
 urad_modules.f
 
-gfortran -c -O3 -cpp \
+gfortran -c -g -cpp \
 -ffpe-summary=invalid,zero,overflow \
 -fopenmp \
 -fdec -fd-lines-as-comments \
@@ -39,7 +39,7 @@ gfortran -c -O3 -cpp \
 -finit-local-zero -funroll-loops \
 urad_util.f
 
-gfortran -O3 -cpp \
+gfortran -g -cpp \
 -ffpe-summary=invalid,zero,overflow \
 -fopenmp \
 -fdec -fd-lines-as-comments \
@@ -48,7 +48,7 @@ gfortran -O3 -cpp \
 -finit-local-zero -funroll-loops \
 urad_modules.o urad_util.o \
 mshcern.o \
--o $BRILL/bin/urad_phase.exe \
-urad_phase_main.f
+-o $BRILL/bin/urad_phase_debug.exe \
+urad_phase_main_debug.f
 
 cd $OWD

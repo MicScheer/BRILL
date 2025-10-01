@@ -40,6 +40,1634 @@
 #
 ##############################################################################
 
+# +PATCH,//NTUPPLOT/PYTHON
+# +KEEP,ntupplot,T=PYTHON.
+
+# Begin of NtupPlot
+
+def _exit(): Quit()
+
+def ngui_key_press(ev):
+  if ev.key in ['q', 'Q']: Quit()
+#enddef ngui_key_press(ev)
+
+def startup(sfile='ntupplot_startup.py'):
+#---------------------------------------------------------------------------
+
+  global NPLmain, NPLmaster, MyFont,Myfont, Nmenu, NNmenu, CanBut, CanKey, Toolbar, Fontsize, \
+  WError, WnCreate, S_nName, S_nTit, S_nVars, WnList, WnInfo, WnStat, \
+  WnRead, S_nFile, S_nHeader, S_nIndex, S_nPlotInd, S_nPlotHead,S_nDumpInd, S_nDumpHead, \
+  S_nSkipHead, S_nSkipFoot, S_nComment, S_nSep, \
+  WnPlot,WnDump,WnDelete,WnTitle, S_nSelect, S_nWeight, S_nScaleX, S_nScaleY, \
+  S_nScaleZ, S_nScaleT,S_nLegend, S_nHisto, S_nLine, S_nMark,S_nColor, S_nPlopt,S_nIsort, S_nIsame, \
+  S_nLineColor, S_nLineStyle, S_nMarkerColor, S_nMarkerStyle, S_nIsame, \
+  WnNull, S_nXmin,S_nYmin,S_nZmin,S_nXmax,S_nYmax,S_nZmax, S_nLastCom, \
+  S_nTitT,S_nTitX,S_nTitY,S_nTitZ,S_n3d,Omenu,NOmenu,Wmaster, \
+  KmenuPosted,KplotPosted,KoptPosted, \
+  WnText,S_nText,S_nAngle,S_nTcolor,S_nTsize,S_nTndc,S_nTextX,S_nTextY, \
+  DictText,DictTextO, S_nHalign,S_nValign, WnFillColor, S_nFillColor, \
+  WnMerge,S_nName2,S_nVars2,S_nName1,S_nVars1,S_nName12,S_nVars12,Merge,MergeO, \
+  WavesMode
+
+  global Nplot, NNplot
+
+#---------------------------------------------------------------------------
+
+
+  global WaveFilePrefix, WavesMode
+
+  if get_mshwelcome() == False:
+    mshwelcome("Ntup-Plot",2021)
+  if WavesMode == 'WAVES' or WavesMode == 'WPLOT' or WavesMode == 'WSHOP':
+    fcfg = 'waveplot.cfg'
+  elif WavesMode == 'UNDUMAG':
+    fcfg = 'undugui.cfg'
+  else:
+    fcfg = 'ntupplot.cfg'
+  #endif
+
+  print("\n")
+  print("\nHints:\n------")
+  print("If a file " + sfile + " exists, it will be executed at start.")
+  print("If a file " + fcfg + " exists, it will used to set window parameters\nof the first windows.")
+  print("To spline data, plot them with the spline option; \na N-tuple 'Nspline' will be created then.")
+  print("To leave, use the 'Exit' button, or enter 'q' in the canvas,\nor enter 'quit()' or 'Ctrl+q' in the terminal.\n")
+
+  if os.path.exists(sfile):
+    Fst = open(sfile,'r')
+    print('\nEvaluating ' + sfile+ ":\n")
+    lines = Fst.readlines()
+    l = 0
+    for line in lines:
+      l += 1
+      line = line.strip()
+      if line.upper() == 'EOF': break
+      if len(line) and line[0] == '#': continue
+      elif len(line) > 6 and line[:6] != 'print(':
+        print(line)
+      #print(str(l)+": "+line)
+      exec(line)
+    Fst.close()
+  #endif not os.path.exists(sfile)
+
+  WaveFilePrefix = 'NtupPlot_'
+#enddef startup()
+
+def _showMenu(menu):
+#---------------------------------------------------------------------------
+
+  global NPLmain, NPLmaster, MyFont,Myfont, Nmenu, NNmenu, CanBut, CanKey, Toolbar, Fontsize, \
+  WError, WnCreate, S_nName, S_nTit, S_nVars, WnList, WnInfo, WnStat, \
+  WnRead, S_nFile, S_nHeader, S_nIndex, S_nPlotInd, S_nPlotHead,S_nDumpInd, S_nDumpHead, \
+  S_nSkipHead, S_nSkipFoot, S_nComment, S_nSep, \
+  WnPlot,WnDump,WnDelete,WnTitle, S_nSelect, S_nWeight, S_nScaleX, S_nScaleY, \
+  S_nScaleZ, S_nScaleT,S_nLegend, S_nHisto, S_nLine, S_nMark,S_nColor, S_nPlopt,S_nIsort, S_nIsame, \
+  S_nLineColor, S_nLineStyle, S_nMarkerColor, S_nMarkerStyle, S_nIsame, \
+  WnNull, S_nXmin,S_nYmin,S_nZmin,S_nXmax,S_nYmax,S_nZmax, S_nLastCom, \
+  S_nTitT,S_nTitX,S_nTitY,S_nTitZ,S_n3d,Omenu,NOmenu,Wmaster, \
+  KmenuPosted,KplotPosted,KoptPosted, \
+  WnText,S_nText,S_nAngle,S_nTcolor,S_nTsize,S_nTndc,S_nTextX,S_nTextY, \
+  DictText,DictTextO, S_nHalign,S_nValign, WnFillColor, S_nFillColor, \
+  WnMerge,S_nName2,S_nVars2,S_nName1,S_nVars1,S_nName12,S_nVars12,Merge,MergeO, \
+  WavesMode
+
+  global Nplot, NNplot
+
+#---------------------------------------------------------------------------
+
+
+  if WavesMode == 'WAVES' or WavesMode == 'WPLOT'  or WavesMode == 'WSHOP':
+    _showMenuWave(menu)
+    return
+  #endif WavesMode
+
+  x,y = NPLmaster.winfo_pointerxy()
+
+  KmenuPosted = Nmenu.winfo_ismapped()
+  KplotPosted = Nplot.winfo_ismapped()
+  KoptPosted = Omenu.winfo_ismapped()
+
+  if menu == Nmenu:
+    if KoptPosted:
+      Omenu.unpost()
+      KoptPosted = 0
+    #endif
+    if KplotPosted:
+      Nplot.unpost()
+      KplotPosted = 0
+    #endif KplotPosted
+
+    if KmenuPosted:
+      Nmenu.unpost()
+      KmenuPosted = 0
+    else:
+      Nplot.unpost()
+      #    Omenu.unpost()
+      Nmenu.post(x-50,y-50-NNmenu*2*Fontsize)
+      KmenuPosted = 1
+    #endif
+
+  elif menu == Nplot:
+
+    if KmenuPosted:
+      Nmenu.unpost()
+      KmenuPosted = 0
+    #endif
+
+    if KoptPosted:
+      Omenu.unpost()
+      KoptPosted = 0
+    #endif KplotPosted
+
+    if KplotPosted:
+      Nplot.unpost()
+      KplotPosted = 0
+    else:
+      Nmenu.unpost()
+      #    Omenu.unpost()
+      Nplot.post(x-50,y-50-NNplot*2*Fontsize)
+      KplotPosted = 1
+    #endif
+
+  elif menu == Omenu:
+
+    if KmenuPosted:
+      Nmenu.unpost()
+      KmenuPosted = 0
+    #endif
+    if KplotPosted:
+      Nplot.unpost()
+      KplotPosted = 0
+    #endif KplotPosted
+
+    if KoptPosted:
+      Omenu.unpost()
+      KoptPosted = 0
+    else:
+      Omenu.post(x-50,y-50-NOmenu*2*Fontsize)
+      KoptPosted = 1
+    #endif
+  #endif menu == Nmenu
+
+#enddef _showMenu(menu)
+
+def framelabentry(win,text,var,stvar,font,widlab,wident):
+  stvar.set(var)
+  f = Frame(win)
+  l = Label(f,text=text,font=font, width=widlab)
+  l.pack(side=LEFT)
+  e = Entry(f,text=stvar,width=wident,justify=CENTER,font=font)
+  e.pack(side=LEFT)
+  f.pack(fill='x')
+#enddef framelabentry()
+
+def _nTopLevel(title='TopLevel',att='-topmost',attn=1):
+  tl = Toplevel()
+  tl.title(title)
+  tl.attributes(att,attn)
+  return tl
+#enddef _nTopLevel
+
+def _clFillColor():
+#---------------------------------------------------------------------------
+
+  global NPLmain, NPLmaster, MyFont,Myfont, Nmenu, NNmenu, CanBut, CanKey, Toolbar, Fontsize, \
+  WError, WnCreate, S_nName, S_nTit, S_nVars, WnList, WnInfo, WnStat, \
+  WnRead, S_nFile, S_nHeader, S_nIndex, S_nPlotInd, S_nPlotHead,S_nDumpInd, S_nDumpHead, \
+  S_nSkipHead, S_nSkipFoot, S_nComment, S_nSep, \
+  WnPlot,WnDump,WnDelete,WnTitle, S_nSelect, S_nWeight, S_nScaleX, S_nScaleY, \
+  S_nScaleZ, S_nScaleT,S_nLegend, S_nHisto, S_nLine, S_nMark,S_nColor, S_nPlopt,S_nIsort, S_nIsame, \
+  S_nLineColor, S_nLineStyle, S_nMarkerColor, S_nMarkerStyle, S_nIsame, \
+  WnNull, S_nXmin,S_nYmin,S_nZmin,S_nXmax,S_nYmax,S_nZmax, S_nLastCom, \
+  S_nTitT,S_nTitX,S_nTitY,S_nTitZ,S_n3d,Omenu,NOmenu,Wmaster, \
+  KmenuPosted,KplotPosted,KoptPosted, \
+  WnText,S_nText,S_nAngle,S_nTcolor,S_nTsize,S_nTndc,S_nTextX,S_nTextY, \
+  DictText,DictTextO, S_nHalign,S_nValign, WnFillColor, S_nFillColor, \
+  WnMerge,S_nName2,S_nVars2,S_nName1,S_nVars1,S_nName12,S_nVars12,Merge,MergeO, \
+  WavesMode
+
+  global Nplot, NNplot
+
+#---------------------------------------------------------------------------
+
+  setfillcolor(S_nFillColor.get())
+  WnFillColor.destroy()
+#enddef _clRead()
+
+def _cnFillColor():
+  global WnFillColor
+  WnFillColor.destroy()
+#enddef _cnFillColor()
+
+def _nFillColor():
+#---------------------------------------------------------------------------
+
+  global NPLmain, NPLmaster, MyFont,Myfont, Nmenu, NNmenu, CanBut, CanKey, Toolbar, Fontsize, \
+  WError, WnCreate, S_nName, S_nTit, S_nVars, WnList, WnInfo, WnStat, \
+  WnRead, S_nFile, S_nHeader, S_nIndex, S_nPlotInd, S_nPlotHead,S_nDumpInd, S_nDumpHead, \
+  S_nSkipHead, S_nSkipFoot, S_nComment, S_nSep, \
+  WnPlot,WnDump,WnDelete,WnTitle, S_nSelect, S_nWeight, S_nScaleX, S_nScaleY, \
+  S_nScaleZ, S_nScaleT,S_nLegend, S_nHisto, S_nLine, S_nMark,S_nColor, S_nPlopt,S_nIsort, S_nIsame, \
+  S_nLineColor, S_nLineStyle, S_nMarkerColor, S_nMarkerStyle, S_nIsame, \
+  WnNull, S_nXmin,S_nYmin,S_nZmin,S_nXmax,S_nYmax,S_nZmax, S_nLastCom, \
+  S_nTitT,S_nTitX,S_nTitY,S_nTitZ,S_n3d,Omenu,NOmenu,Wmaster, \
+  KmenuPosted,KplotPosted,KoptPosted, \
+  WnText,S_nText,S_nAngle,S_nTcolor,S_nTsize,S_nTndc,S_nTextX,S_nTextY, \
+  DictText,DictTextO, S_nHalign,S_nValign, WnFillColor, S_nFillColor, \
+  WnMerge,S_nName2,S_nVars2,S_nName1,S_nVars1,S_nName12,S_nVars12,Merge,MergeO, \
+  WavesMode
+
+  global Nplot, NNplot
+
+#---------------------------------------------------------------------------
+
+
+  S_nFillColor.set(getfillcolor())
+
+  WnFillColor = _nTopLevel('Fillcolor')
+
+  x,y = NPLmaster.winfo_pointerxy()
+  sgeo = '+' + str(x-300) + '+' + str(y)
+  WnFillColor.geometry(sgeo)
+
+  widlab = 18
+  wident = 18
+
+  framelabentry(WnFillColor,'Color',S_nFillColor.get(),S_nFillColor,MyFont,widlab,wident)
+
+  fbot = Frame(WnFillColor)
+  bCancel = Button(fbot,text='Cancel',font=MyFont,command=_cnFillColor,width=widlab-2)
+  bCancel.pack(side=LEFT)
+  bClose = Button(fbot,text='Ok',command=_clFillColor)
+  bClose.pack(side=LEFT,expand=TRUE,fill=X)
+  fbot.pack(expand=TRUE,fill=X)
+
+#enddef _nFillColor()
+
+def _clText():
+#---------------------------------------------------------------------------
+
+  global NPLmain, NPLmaster, MyFont,Myfont, Nmenu, NNmenu, CanBut, CanKey, Toolbar, Fontsize, \
+  WError, WnCreate, S_nName, S_nTit, S_nVars, WnList, WnInfo, WnStat, \
+  WnRead, S_nFile, S_nHeader, S_nIndex, S_nPlotInd, S_nPlotHead,S_nDumpInd, S_nDumpHead, \
+  S_nSkipHead, S_nSkipFoot, S_nComment, S_nSep, \
+  WnPlot,WnDump,WnDelete,WnTitle, S_nSelect, S_nWeight, S_nScaleX, S_nScaleY, \
+  S_nScaleZ, S_nScaleT,S_nLegend, S_nHisto, S_nLine, S_nMark,S_nColor, S_nPlopt,S_nIsort, S_nIsame, \
+  S_nLineColor, S_nLineStyle, S_nMarkerColor, S_nMarkerStyle, S_nIsame, \
+  WnNull, S_nXmin,S_nYmin,S_nZmin,S_nXmax,S_nYmax,S_nZmax, S_nLastCom, \
+  S_nTitT,S_nTitX,S_nTitY,S_nTitZ,S_n3d,Omenu,NOmenu,Wmaster, \
+  KmenuPosted,KplotPosted,KoptPosted, \
+  WnText,S_nText,S_nAngle,S_nTcolor,S_nTsize,S_nTndc,S_nTextX,S_nTextY, \
+  DictText,DictTextO, S_nHalign,S_nValign, WnFillColor, S_nFillColor, \
+  WnMerge,S_nName2,S_nVars2,S_nName1,S_nVars1,S_nName12,S_nVars12,Merge,MergeO, \
+  WavesMode
+
+  global Nplot, NNplot
+
+#---------------------------------------------------------------------------
+
+
+  DictText['Text'] = S_nText.get()
+  DictText['X'] = S_nTextX.get()
+  DictText['Y'] = S_nTextY.get()
+  DictText['NDC'] = S_nTndc.get().upper()
+  DictText['Angle'] = S_nAngle.get()
+  DictText['Color'] = S_nTcolor.get().lower()
+  DictText['Halign'] = S_nHalign.get().upper()
+  DictText['Valign'] = S_nValign.get().upper()
+  DictText['Size'] = S_nTsize.get()
+
+  if  DictText['NDC'] == 'Y' or DictText['NDC'] == 'J' or \
+  DictText['NDC'] == 'YES' or  \
+  DictText['NDC'] == '1' or DictText['NDC'] == 'JA' or  \
+  DictText['NDC'] == 'TRUE':
+    DictText['NDC'] = 'yes'
+  elif  DictText['NDC'] == 'N' or DictText['NDC'] == 'NO' or  \
+  DictText['NDC'] == '0' or DictText['NDC'] == 'NEIN' or  \
+  DictText['NDC'] == 'FALSE':
+    DictText['NDC'] = 'no'
+  #endif
+
+  if  DictText['Halign'] == 'L' or DictText['Halign'] == 'LEFT':
+    DictText['Halign'] = 'left'
+  if  DictText['Halign'] == 'R' or DictText['Halign'] == 'RIGHT':
+    DictText['Halign'] = 'right'
+  if  DictText['Halign'] == 'C' or DictText['Halign'] == 'CENTER':
+    DictText['Halign'] = 'center'
+
+  if  DictText['Valign'] == 'C' or DictText['Valign'] == 'CENTER':
+    DictText['Valign'] = 'center'
+  if  DictText['Valign'] == 'T' or DictText['Valign'] == 'TOP':
+    DictText['Valign'] = 'top'
+  if  DictText['Valign'] == 'B' or DictText['Valign'] == 'BOTTOM':
+    DictText['Valign'] = 'bottom'
+
+  x = float(DictText['X'])
+  y = float(DictText['Y'])
+  siz =int(DictText['Size'])
+  ang = float(DictText['Angle'])
+
+  if DictText['NDC'] == 'yes':
+    text(x,y,DictText['Text'],fontsize=siz,color=DictText['Color'],
+         halign=DictText['Halign'], valign=DictText['Valign'],angle=ang)
+  else:
+    textWC(x,y,DictText['Text'],fontsize=siz,color=DictText['Color'],
+         halign=DictText['Halign'], valign=DictText['Valign'],angle=ang)
+  #endif DictText['NDC'] = 'yes'
+
+  WnText.destroy()
+#enddef _clText()
+
+def _cnText():
+#---------------------------------------------------------------------------
+
+  global NPLmain, NPLmaster, MyFont,Myfont, Nmenu, NNmenu, CanBut, CanKey, Toolbar, Fontsize, \
+  WError, WnCreate, S_nName, S_nTit, S_nVars, WnList, WnInfo, WnStat, \
+  WnRead, S_nFile, S_nHeader, S_nIndex, S_nPlotInd, S_nPlotHead,S_nDumpInd, S_nDumpHead, \
+  S_nSkipHead, S_nSkipFoot, S_nComment, S_nSep, \
+  WnPlot,WnDump,WnDelete,WnTitle, S_nSelect, S_nWeight, S_nScaleX, S_nScaleY, \
+  S_nScaleZ, S_nScaleT,S_nLegend, S_nHisto, S_nLine, S_nMark,S_nColor, S_nPlopt,S_nIsort, S_nIsame, \
+  S_nLineColor, S_nLineStyle, S_nMarkerColor, S_nMarkerStyle, S_nIsame, \
+  WnNull, S_nXmin,S_nYmin,S_nZmin,S_nXmax,S_nYmax,S_nZmax, S_nLastCom, \
+  S_nTitT,S_nTitX,S_nTitY,S_nTitZ,S_n3d,Omenu,NOmenu,Wmaster, \
+  KmenuPosted,KplotPosted,KoptPosted, \
+  WnText,S_nText,S_nAngle,S_nTcolor,S_nTsize,S_nTndc,S_nTextX,S_nTextY, \
+  DictText,DictTextO, S_nHalign,S_nValign, WnFillColor, S_nFillColor, \
+  WnMerge,S_nName2,S_nVars2,S_nName1,S_nVars1,S_nName12,S_nVars12,Merge,MergeO, \
+  WavesMode
+
+  global Nplot, NNplot
+
+#---------------------------------------------------------------------------
+
+  DictText = deepcopy(DictTextO)
+  WnText.destroy()
+#enddef _cnText()
+
+def _nText():
+#---------------------------------------------------------------------------
+
+  global NPLmain, NPLmaster, MyFont,Myfont, Nmenu, NNmenu, CanBut, CanKey, Toolbar, Fontsize, \
+  WError, WnCreate, S_nName, S_nTit, S_nVars, WnList, WnInfo, WnStat, \
+  WnRead, S_nFile, S_nHeader, S_nIndex, S_nPlotInd, S_nPlotHead,S_nDumpInd, S_nDumpHead, \
+  S_nSkipHead, S_nSkipFoot, S_nComment, S_nSep, \
+  WnPlot,WnDump,WnDelete,WnTitle, S_nSelect, S_nWeight, S_nScaleX, S_nScaleY, \
+  S_nScaleZ, S_nScaleT,S_nLegend, S_nHisto, S_nLine, S_nMark,S_nColor, S_nPlopt,S_nIsort, S_nIsame, \
+  S_nLineColor, S_nLineStyle, S_nMarkerColor, S_nMarkerStyle, S_nIsame, \
+  WnNull, S_nXmin,S_nYmin,S_nZmin,S_nXmax,S_nYmax,S_nZmax, S_nLastCom, \
+  S_nTitT,S_nTitX,S_nTitY,S_nTitZ,S_n3d,Omenu,NOmenu,Wmaster, \
+  KmenuPosted,KplotPosted,KoptPosted, \
+  WnText,S_nText,S_nAngle,S_nTcolor,S_nTsize,S_nTndc,S_nTextX,S_nTextY, \
+  DictText,DictTextO, S_nHalign,S_nValign, WnFillColor, S_nFillColor, \
+  WnMerge,S_nName2,S_nVars2,S_nName1,S_nVars1,S_nName12,S_nVars12,Merge,MergeO, \
+  WavesMode
+
+  global Nplot, NNplot
+
+#---------------------------------------------------------------------------
+
+
+  if not len(Nhead):
+    nError("  No Ntuple defined so far!  ")
+    return
+  #endif not len(Nhead)
+
+  DictTextO = deepcopy(DictText)
+
+  WnText = _nTopLevel('Text')
+
+  x,y = NPLmaster.winfo_pointerxy()
+  sgeo = '+' + str(x-250) + '+' + str(y-300)
+  WnText.geometry(sgeo)
+
+  widlab = 12
+  wident = 32
+
+  framelabentry(WnText,'Text',S_nText.get(),S_nText,MyFont,widlab,wident)
+  framelabentry(WnText,'X',S_nTextX.get(),S_nTextX,MyFont,widlab,wident)
+  framelabentry(WnText,'Y',S_nTextY.get(),S_nTextY,MyFont,widlab,wident)
+  framelabentry(WnText,'Norm. X,Y',S_nTndc.get(),S_nTndc,MyFont,widlab,wident)
+  framelabentry(WnText,'Angle',S_nAngle.get(),S_nAngle,MyFont,widlab,wident)
+  framelabentry(WnText,'Hori. align.',S_nHalign.get(),S_nHalign,MyFont,widlab,wident)
+  framelabentry(WnText,'Vert. align.',S_nValign.get(),S_nValign,MyFont,widlab,wident)
+  framelabentry(WnText,'Size',S_nTsize.get(),S_nTsize,MyFont,widlab,wident)
+  framelabentry(WnText,'Color',S_nTcolor.get(),S_nTcolor,MyFont,widlab,wident)
+
+  fbot = Frame(WnText)
+  #bCancel = Button(fbot,text='Cancel',font=MyFont,command=_cnText,width=widlab-2)
+  bCancel = Button(fbot,text='Cancel',font=MyFont,command=_cnText)
+  #bCancel.pack(side=LEFT)
+  bCancel.pack(side=LEFT,expand=TRUE,fill=X)
+  bClose = Button(fbot,text='Ok',command=_clText)
+  bClose.pack(side=LEFT,expand=TRUE,fill=X)
+  fbot.pack(expand=TRUE,fill=X)
+
+#enddef _nText()
+
+def _clDump():
+#---------------------------------------------------------------------------
+
+  global NPLmain, NPLmaster, MyFont,Myfont, Nmenu, NNmenu, CanBut, CanKey, Toolbar, Fontsize, \
+  WError, WnCreate, S_nName, S_nTit, S_nVars, WnList, WnInfo, WnStat, \
+  WnRead, S_nFile, S_nHeader, S_nIndex, S_nPlotInd, S_nPlotHead,S_nDumpInd, S_nDumpHead, \
+  S_nSkipHead, S_nSkipFoot, S_nComment, S_nSep, \
+  WnPlot,WnDump,WnDelete,WnTitle, S_nSelect, S_nWeight, S_nScaleX, S_nScaleY, \
+  S_nScaleZ, S_nScaleT,S_nLegend, S_nHisto, S_nLine, S_nMark,S_nColor, S_nPlopt,S_nIsort, S_nIsame, \
+  S_nLineColor, S_nLineStyle, S_nMarkerColor, S_nMarkerStyle, S_nIsame, \
+  WnNull, S_nXmin,S_nYmin,S_nZmin,S_nXmax,S_nYmax,S_nZmax, S_nLastCom, \
+  S_nTitT,S_nTitX,S_nTitY,S_nTitZ,S_n3d,Omenu,NOmenu,Wmaster, \
+  KmenuPosted,KplotPosted,KoptPosted, \
+  WnText,S_nText,S_nAngle,S_nTcolor,S_nTsize,S_nTndc,S_nTextX,S_nTextY, \
+  DictText,DictTextO, S_nHalign,S_nValign, WnFillColor, S_nFillColor, \
+  WnMerge,S_nName2,S_nVars2,S_nName1,S_nVars1,S_nName12,S_nVars12,Merge,MergeO, \
+  WavesMode
+
+  global Nplot, NNplot
+
+#---------------------------------------------------------------------------
+
+
+  sfile = S_nFile.get()
+  snam = S_nName.get()
+
+  if nexists(snam) == 0:
+    nError(snam + " not existing!")
+    return
+  #endif
+
+  svar = S_nVars.get()
+
+  S_nLastCom.set('ndump')
+
+  ssel = S_nSelect.get().lower()
+  if ssel[0] == 'n': ssel = ''
+
+  sind = 'no'
+  try:
+    sind = str(S_nDumpInd.get()).lower()
+  except: pass
+  if sind == 'none' or sind == 'False' or sind == '0' or sind == 'n': sind = 'no'
+  elif sind == 'True' or sind == '1' or sind == 'y': sind = 'yes'
+
+  shead = 'no'
+  try:
+    shead = str(S_nDumpHead.get()).lower()
+  except: pass
+  if shead == 'none' or shead == 'False' or shead == '0' or shead == 'n': shead = 'no'
+  elif shead == 'True' or shead == '1' or shead == 'y': shead = 'yes'
+
+  nFile = S_nFile.get()
+  if nFile == '': nFile = 'ntuple.dat'
+
+  ndump(snam,svar,ssel,sfile,shead,sind)
+
+  WnDump.destroy()
+#enddef _clDump()
+
+def _cnDump():
+  global WnDump
+  WnDump.destroy()
+#enddef _cnDump()
+
+def _nDump():
+#---------------------------------------------------------------------------
+
+  global NPLmain, NPLmaster, MyFont,Myfont, Nmenu, NNmenu, CanBut, CanKey, Toolbar, Fontsize, \
+  WError, WnCreate, S_nName, S_nTit, S_nVars, WnList, WnInfo, WnStat, \
+  WnRead, S_nFile, S_nHeader, S_nIndex, S_nPlotInd, S_nPlotHead,S_nDumpInd, S_nDumpHead, \
+  S_nSkipHead, S_nSkipFoot, S_nComment, S_nSep, \
+  WnPlot,WnDump,WnDelete,WnTitle, S_nSelect, S_nWeight, S_nScaleX, S_nScaleY, \
+  S_nScaleZ, S_nScaleT,S_nLegend, S_nHisto, S_nLine, S_nMark,S_nColor, S_nPlopt,S_nIsort, S_nIsame, \
+  S_nLineColor, S_nLineStyle, S_nMarkerColor, S_nMarkerStyle, S_nIsame, \
+  WnNull, S_nXmin,S_nYmin,S_nZmin,S_nXmax,S_nYmax,S_nZmax, S_nLastCom, \
+  S_nTitT,S_nTitX,S_nTitY,S_nTitZ,S_n3d,Omenu,NOmenu,Wmaster, \
+  KmenuPosted,KplotPosted,KoptPosted, \
+  WnText,S_nText,S_nAngle,S_nTcolor,S_nTsize,S_nTndc,S_nTextX,S_nTextY, \
+  DictText,DictTextO, S_nHalign,S_nValign, WnFillColor, S_nFillColor, \
+  WnMerge,S_nName2,S_nVars2,S_nName1,S_nVars1,S_nName12,S_nVars12,Merge,MergeO, \
+  WavesMode
+
+  global Nplot, NNplot
+
+#---------------------------------------------------------------------------
+
+
+  if not len(Nhead):
+    nError("  No Ntuple defined so far!  ")
+    return
+  #endif not len(Nhead)
+
+  WnDump = _nTopLevel('Dump')
+
+  x,y = NPLmaster.winfo_pointerxy()
+  sgeo = '+' + str(x-250) + '+' + str(y-220)
+  WnDump.geometry(sgeo)
+
+  widlab = 24
+  wident = 32
+
+  nNam = Nhead[-1][1]
+  nid = GetIndexN(nNam)
+
+  varlis = list(Ntup[nid].columns)
+  slis = nlistcolon(varlis)
+  svar =''
+  for s in slis:
+    svar += ":" + s
+  #endfor
+  svar = svar[1:]
+
+  ssel = S_nSelect.get()
+  if ssel == '': ssel = 'none'
+
+  sind = 'no'
+  try:
+    sind = str(S_nDumpInd.get()).lower()
+  except: pass
+  if sind == 'none' or sind == 'False' or sind == '0' or sind == 'n': sind = 'no'
+  elif sind == 'True' or sind == '1' or sind == 'y': sind = 'yes'
+
+  shead = 'no'
+  try:
+    shead = str(S_nDumpHead.get()).lower()
+  except: pass
+  if shead == 'none' or shead == 'False' or shead == '0' or shead == 'n': shead = 'no'
+  elif shead == 'True' or shead == '1' or shead == 'y': shead = 'yes'
+
+  framelabentry(WnDump,'Ntuple',nNam,S_nName,MyFont,widlab,wident)
+  nFile = S_nFile.get()
+  if nFile == '': nFile = 'ntuple.dat'
+  framelabentry(WnDump,'Variables',svar,S_nVars,MyFont,widlab,wident)
+  framelabentry(WnDump,'File',nFile,S_nFile,MyFont,widlab,wident)
+  framelabentry(WnDump,'Selection',ssel,S_nSelect,MyFont,widlab,wident)
+  framelabentry(WnDump,'Header',shead,S_nDumpHead,MyFont,widlab,wident)
+  framelabentry(WnDump,'Index',sind,S_nDumpInd,MyFont,widlab,wident)
+
+  fbot = Frame(WnDump)
+  bCancel = Button(fbot,text='Cancel',font=MyFont,command=_cnDump)
+  bCancel.pack(side=LEFT,expand=TRUE,fill=X)
+  bClose = Button(fbot,text='Ok',command=_clDump)
+  bClose.pack(side=LEFT,expand=TRUE,fill=X)
+  fbot.pack(expand=TRUE,fill=X)
+
+#enddef _nDump()
+
+def nError(errtxt='Error',mode='widget'):
+
+  global NPLmaster, WError
+
+  if mode == 'widget':
+
+    WError = Toplevel()
+    WError.title('Error')
+
+    x,y = NPLmaster.winfo_pointerxy()
+    sgeo = '+' + str(x) + '+' + str(y)
+
+    WError.geometry(sgeo)
+    WError.attributes('-topmost', 1)
+
+    lerr = Label(WError,text=errtxt,font=MyFont)
+    lerr.pack(fill=X)
+
+    bClose = Button(WError,text='Ok',command=WError.destroy)
+    bClose.pack(fill=X)
+
+    NPLmaster.wait_window(WError)
+
+  else:
+    print("\n",errtxt,"\n")
+  #endif mode == 'widget'
+
+#enddef nError(errtxt='Error')
+
+def _clRead():
+#---------------------------------------------------------------------------
+
+  global NPLmain, NPLmaster, MyFont,Myfont, Nmenu, NNmenu, CanBut, CanKey, Toolbar, Fontsize, \
+  WError, WnCreate, S_nName, S_nTit, S_nVars, WnList, WnInfo, WnStat, \
+  WnRead, S_nFile, S_nHeader, S_nIndex, S_nPlotInd, S_nPlotHead,S_nDumpInd, S_nDumpHead, \
+  S_nSkipHead, S_nSkipFoot, S_nComment, S_nSep, \
+  WnPlot,WnDump,WnDelete,WnTitle, S_nSelect, S_nWeight, S_nScaleX, S_nScaleY, \
+  S_nScaleZ, S_nScaleT,S_nLegend, S_nHisto, S_nLine, S_nMark,S_nColor, S_nPlopt,S_nIsort, S_nIsame, \
+  S_nLineColor, S_nLineStyle, S_nMarkerColor, S_nMarkerStyle, S_nIsame, \
+  WnNull, S_nXmin,S_nYmin,S_nZmin,S_nXmax,S_nYmax,S_nZmax, S_nLastCom, \
+  S_nTitT,S_nTitX,S_nTitY,S_nTitZ,S_n3d,Omenu,NOmenu,Wmaster, \
+  KmenuPosted,KplotPosted,KoptPosted, \
+  WnText,S_nText,S_nAngle,S_nTcolor,S_nTsize,S_nTndc,S_nTextX,S_nTextY, \
+  DictText,DictTextO, S_nHalign,S_nValign, WnFillColor, S_nFillColor, \
+  WnMerge,S_nName2,S_nVars2,S_nName1,S_nVars1,S_nName12,S_nVars12,Merge,MergeO, \
+  WavesMode
+
+  global Nplot, NNplot
+
+#---------------------------------------------------------------------------
+
+
+  sfile = S_nFile.get()
+  snam = S_nName.get()
+
+  if not os.path.exists(sfile):
+    nError(sfile + " not found!")
+    return
+  #endif not os.path.exists(sfile)
+
+  if nexists(snam) == 0:
+    nError(snam + " not existing!")
+    return
+  #endif
+
+  try:
+    head = int(S_nHeader.get())
+  except:
+    head = None
+  #endtry
+
+  snsep = S_nSep.get()
+  if snsep == "none": snsep = ''
+
+  nread(snam,S_nFile.get(),head,int(S_nSkipHead.get()), \
+  int(S_nSkipFoot.get()),0,S_nComment.get(),snsep)
+
+  S_nLastCom.set('nread')
+
+  print(NL)
+  ninfo(snam)
+
+  WnRead.destroy()
+#enddef _clRead()
+
+def _cnRead():
+  global WnRead
+  WnRead.destroy()
+#enddef _cnRead()
+
+def _nRead():
+#---------------------------------------------------------------------------
+
+  global NPLmain, NPLmaster, MyFont,Myfont, Nmenu, NNmenu, CanBut, CanKey, Toolbar, Fontsize, \
+  WError, WnCreate, S_nName, S_nTit, S_nVars, WnList, WnInfo, WnStat, \
+  WnRead, S_nFile, S_nHeader, S_nIndex, S_nPlotInd, S_nPlotHead,S_nDumpInd, S_nDumpHead, \
+  S_nSkipHead, S_nSkipFoot, S_nComment, S_nSep, \
+  WnPlot,WnDump,WnDelete,WnTitle, S_nSelect, S_nWeight, S_nScaleX, S_nScaleY, \
+  S_nScaleZ, S_nScaleT,S_nLegend, S_nHisto, S_nLine, S_nMark,S_nColor, S_nPlopt,S_nIsort, S_nIsame, \
+  S_nLineColor, S_nLineStyle, S_nMarkerColor, S_nMarkerStyle, S_nIsame, \
+  WnNull, S_nXmin,S_nYmin,S_nZmin,S_nXmax,S_nYmax,S_nZmax, S_nLastCom, \
+  S_nTitT,S_nTitX,S_nTitY,S_nTitZ,S_n3d,Omenu,NOmenu,Wmaster, \
+  KmenuPosted,KplotPosted,KoptPosted, \
+  WnText,S_nText,S_nAngle,S_nTcolor,S_nTsize,S_nTndc,S_nTextX,S_nTextY, \
+  DictText,DictTextO, S_nHalign,S_nValign, WnFillColor, S_nFillColor, \
+  WnMerge,S_nName2,S_nVars2,S_nName1,S_nVars1,S_nName12,S_nVars12,Merge,MergeO, \
+  WavesMode
+
+  global Nplot, NNplot
+
+#---------------------------------------------------------------------------
+
+
+  if not len(Nhead):
+    nError("  No Ntuple defined so far!  ")
+    return
+  #endif not len(Nhead)
+
+  WnRead = _nTopLevel('Read')
+
+  x,y = NPLmaster.winfo_pointerxy()
+  sgeo = '+' + str(x-250) + '+' + str(y-220)
+  WnRead.geometry(sgeo)
+
+  widlab = 24
+  wident = 32
+
+  snsep = S_nSep.get()
+  if snsep == '': snsep = 'none'
+
+  nNam = Nhead[-1][1]
+  framelabentry(WnRead,'Ntuple',nNam,S_nName,MyFont,widlab,wident)
+  nFile = 'ntuple.dat'
+  framelabentry(WnRead,'File',nFile,S_nFile,MyFont,widlab,wident)
+  skiphead = 0
+  framelabentry(WnRead,'N of header lines to skip',skiphead,S_nSkipHead,MyFont,widlab,wident)
+  skipfoot = 0
+  framelabentry(WnRead,'N of footer lines to skip',skipfoot,S_nSkipFoot,MyFont,widlab,wident)
+  scom = '*'
+  framelabentry(WnRead,'Comment character',scom,S_nComment,MyFont,widlab,wident)
+  sep = ' '
+  framelabentry(WnRead,'Column seperator',ssep,S_nSep,MyFont,widlab,wident)
+
+  fbot = Frame(WnRead)
+  bCancel = Button(fbot,text='Cancel',font=MyFont,command=_cnRead)
+  bCancel.pack(side=LEFT,expand=TRUE,fill=X)
+  bClose = Button(fbot,text='Ok',command=_clRead)
+  bClose.pack(side=LEFT,expand=TRUE,fill=X)
+  fbot.pack(expand=TRUE,fill=X)
+
+#enddef _nRead()
+
+def _clMerge():
+#---------------------------------------------------------------------------
+
+  global NPLmain, NPLmaster, MyFont,Myfont, Nmenu, NNmenu, CanBut, CanKey, Toolbar, Fontsize, \
+  WError, WnCreate, S_nName, S_nTit, S_nVars, WnList, WnInfo, WnStat, \
+  WnRead, S_nFile, S_nHeader, S_nIndex, S_nPlotInd, S_nPlotHead,S_nDumpInd, S_nDumpHead, \
+  S_nSkipHead, S_nSkipFoot, S_nComment, S_nSep, \
+  WnPlot,WnDump,WnDelete,WnTitle, S_nSelect, S_nWeight, S_nScaleX, S_nScaleY, \
+  S_nScaleZ, S_nScaleT,S_nLegend, S_nHisto, S_nLine, S_nMark,S_nColor, S_nPlopt,S_nIsort, S_nIsame, \
+  S_nLineColor, S_nLineStyle, S_nMarkerColor, S_nMarkerStyle, S_nIsame, \
+  WnNull, S_nXmin,S_nYmin,S_nZmin,S_nXmax,S_nYmax,S_nZmax, S_nLastCom, \
+  S_nTitT,S_nTitX,S_nTitY,S_nTitZ,S_n3d,Omenu,NOmenu,Wmaster, \
+  KmenuPosted,KplotPosted,KoptPosted, \
+  WnText,S_nText,S_nAngle,S_nTcolor,S_nTsize,S_nTndc,S_nTextX,S_nTextY, \
+  DictText,DictTextO, S_nHalign,S_nValign, WnFillColor, S_nFillColor, \
+  WnMerge,S_nName2,S_nVars2,S_nName1,S_nVars1,S_nName12,S_nVars12,Merge,MergeO, \
+  WavesMode
+
+  global Nplot, NNplot
+
+#---------------------------------------------------------------------------
+
+
+  if nexists(S_nName12.get()) == 1:
+    nError(S_nName.get() + " already existing!")
+    return
+  #endif
+
+  S_nLastCom.set('nmerge')
+
+  WnMerge.destroy()
+
+#enddef _clMerge()
+
+def _cnMerge():
+  global WnMerge
+  Merge = deepcopy(MergeO)
+  WnMerge.destroy()
+#enddef _cnMerge()
+
+def _nMerge():
+#---------------------------------------------------------------------------
+
+  global NPLmain, NPLmaster, MyFont,Myfont, Nmenu, NNmenu, CanBut, CanKey, Toolbar, Fontsize, \
+  WError, WnCreate, S_nName, S_nTit, S_nVars, WnList, WnInfo, WnStat, \
+  WnRead, S_nFile, S_nHeader, S_nIndex, S_nPlotInd, S_nPlotHead,S_nDumpInd, S_nDumpHead, \
+  S_nSkipHead, S_nSkipFoot, S_nComment, S_nSep, \
+  WnPlot,WnDump,WnDelete,WnTitle, S_nSelect, S_nWeight, S_nScaleX, S_nScaleY, \
+  S_nScaleZ, S_nScaleT,S_nLegend, S_nHisto, S_nLine, S_nMark,S_nColor, S_nPlopt,S_nIsort, S_nIsame, \
+  S_nLineColor, S_nLineStyle, S_nMarkerColor, S_nMarkerStyle, S_nIsame, \
+  WnNull, S_nXmin,S_nYmin,S_nZmin,S_nXmax,S_nYmax,S_nZmax, S_nLastCom, \
+  S_nTitT,S_nTitX,S_nTitY,S_nTitZ,S_n3d,Omenu,NOmenu,Wmaster, \
+  KmenuPosted,KplotPosted,KoptPosted, \
+  WnText,S_nText,S_nAngle,S_nTcolor,S_nTsize,S_nTndc,S_nTextX,S_nTextY, \
+  DictText,DictTextO, S_nHalign,S_nValign, WnFillColor, S_nFillColor, \
+  WnMerge,S_nName2,S_nVars2,S_nName1,S_nVars1,S_nName12,S_nVars12,Merge,MergeO, \
+  WavesMode
+
+  global Nplot, NNplot
+
+#---------------------------------------------------------------------------
+
+
+  MergeO = deepcopy(Merge)
+
+  WnMerge = _nTopLevel('Merge')
+
+  x,y = NPLmaster.winfo_pointerxy()
+  sgeo = '+' + str(x-200) + '+' + str(y-120)
+  WnMerge.geometry(sgeo)
+
+  widlab = 14
+  wident = 30
+
+  nNam = 'ntup' + str(Nntup)
+  framelabentry(WnMerge,'Name 1',nNam,S_nName,MyFont,widlab,wident)
+  nVars = 'x:y'
+  framelabentry(WnMerge,'Variables',nVars,S_nVars,MyFont,widlab,wident)
+
+  fbot = Frame(WnMerge)
+  bCancel = Button(fbot,text='Cancel',font=MyFont,command=_cnMerge)
+  bCancel.pack(side=LEFT,expand=TRUE,fill=X)
+  bClose = Button(fbot,text='Ok',command=_clMerge)
+  bClose.pack(side=LEFT,expand=TRUE,fill=X)
+  fbot.pack(expand=TRUE,fill=X)
+
+#enddef _nMerge()
+
+def _clCreate():
+#---------------------------------------------------------------------------
+
+  global NPLmain, NPLmaster, MyFont,Myfont, Nmenu, NNmenu, CanBut, CanKey, Toolbar, Fontsize, \
+  WError, WnCreate, S_nName, S_nTit, S_nVars, WnList, WnInfo, WnStat, \
+  WnRead, S_nFile, S_nHeader, S_nIndex, S_nPlotInd, S_nPlotHead,S_nDumpInd, S_nDumpHead, \
+  S_nSkipHead, S_nSkipFoot, S_nComment, S_nSep, \
+  WnPlot,WnDump,WnDelete,WnTitle, S_nSelect, S_nWeight, S_nScaleX, S_nScaleY, \
+  S_nScaleZ, S_nScaleT,S_nLegend, S_nHisto, S_nLine, S_nMark,S_nColor, S_nPlopt,S_nIsort, S_nIsame, \
+  S_nLineColor, S_nLineStyle, S_nMarkerColor, S_nMarkerStyle, S_nIsame, \
+  WnNull, S_nXmin,S_nYmin,S_nZmin,S_nXmax,S_nYmax,S_nZmax, S_nLastCom, \
+  S_nTitT,S_nTitX,S_nTitY,S_nTitZ,S_n3d,Omenu,NOmenu,Wmaster, \
+  KmenuPosted,KplotPosted,KoptPosted, \
+  WnText,S_nText,S_nAngle,S_nTcolor,S_nTsize,S_nTndc,S_nTextX,S_nTextY, \
+  DictText,DictTextO, S_nHalign,S_nValign, WnFillColor, S_nFillColor, \
+  WnMerge,S_nName2,S_nVars2,S_nName1,S_nVars1,S_nName12,S_nVars12,Merge,MergeO, \
+  WavesMode
+
+  global Nplot, NNplot
+
+#---------------------------------------------------------------------------
+
+
+  if nexists(S_nName.get()) == 1:
+    nError(S_nName.get() + " already existing!")
+    return
+  #endif
+
+  nt = ncre(S_nName.get(),S_nTit.get(),S_nVars.get())
+  S_nLastCom.set('ncre')
+
+  WnCreate.destroy()
+
+#enddef _clCreate()
+
+def _cnCreate():
+  global WnCreate
+  WnCreate.destroy()
+#enddef _cnCreate()
+
+def _nCreate():
+#---------------------------------------------------------------------------
+
+  global NPLmain, NPLmaster, MyFont,Myfont, Nmenu, NNmenu, CanBut, CanKey, Toolbar, Fontsize, \
+  WError, WnCreate, S_nName, S_nTit, S_nVars, WnList, WnInfo, WnStat, \
+  WnRead, S_nFile, S_nHeader, S_nIndex, S_nPlotInd, S_nPlotHead,S_nDumpInd, S_nDumpHead, \
+  S_nSkipHead, S_nSkipFoot, S_nComment, S_nSep, \
+  WnPlot,WnDump,WnDelete,WnTitle, S_nSelect, S_nWeight, S_nScaleX, S_nScaleY, \
+  S_nScaleZ, S_nScaleT,S_nLegend, S_nHisto, S_nLine, S_nMark,S_nColor, S_nPlopt,S_nIsort, S_nIsame, \
+  S_nLineColor, S_nLineStyle, S_nMarkerColor, S_nMarkerStyle, S_nIsame, \
+  WnNull, S_nXmin,S_nYmin,S_nZmin,S_nXmax,S_nYmax,S_nZmax, S_nLastCom, \
+  S_nTitT,S_nTitX,S_nTitY,S_nTitZ,S_n3d,Omenu,NOmenu,Wmaster, \
+  KmenuPosted,KplotPosted,KoptPosted, \
+  WnText,S_nText,S_nAngle,S_nTcolor,S_nTsize,S_nTndc,S_nTextX,S_nTextY, \
+  DictText,DictTextO, S_nHalign,S_nValign, WnFillColor, S_nFillColor, \
+  WnMerge,S_nName2,S_nVars2,S_nName1,S_nVars1,S_nName12,S_nVars12,Merge,MergeO, \
+  WavesMode
+
+  global Nplot, NNplot
+
+#---------------------------------------------------------------------------
+
+
+  WnCreate = _nTopLevel('Create')
+
+  x,y = NPLmaster.winfo_pointerxy()
+  sgeo = '+' + str(x-200) + '+' + str(y-120)
+  WnCreate.geometry(sgeo)
+
+  widlab = 14
+  wident = 30
+
+  nNam = 'ntup' + str(Nntup)
+  framelabentry(WnCreate,'Name',nNam,S_nName,MyFont,widlab,wident)
+
+  nTit = 'ntup' + str(Nntup)
+  framelabentry(WnCreate,'Title',nTit,S_nTit,MyFont,widlab,wident)
+
+  nVars = 'x:y'
+  framelabentry(WnCreate,'Variables',nVars,S_nVars,MyFont,widlab,wident)
+
+  fbot = Frame(WnCreate)
+  bCancel = Button(fbot,text='Cancel',font=MyFont,command=_cnCreate)
+  bCancel.pack(side=LEFT,expand=TRUE,fill=X)
+  bClose = Button(fbot,text='Ok',command=_clCreate)
+  bClose.pack(side=LEFT,expand=TRUE,fill=X)
+  fbot.pack(expand=TRUE,fill=X)
+
+#enddef _nCreate()
+
+def _clNull():
+#---------------------------------------------------------------------------
+
+  global NPLmain, NPLmaster, MyFont,Myfont, Nmenu, NNmenu, CanBut, CanKey, Toolbar, Fontsize, \
+  WError, WnCreate, S_nName, S_nTit, S_nVars, WnList, WnInfo, WnStat, \
+  WnRead, S_nFile, S_nHeader, S_nIndex, S_nPlotInd, S_nPlotHead,S_nDumpInd, S_nDumpHead, \
+  S_nSkipHead, S_nSkipFoot, S_nComment, S_nSep, \
+  WnPlot,WnDump,WnDelete,WnTitle, S_nSelect, S_nWeight, S_nScaleX, S_nScaleY, \
+  S_nScaleZ, S_nScaleT,S_nLegend, S_nHisto, S_nLine, S_nMark,S_nColor, S_nPlopt,S_nIsort, S_nIsame, \
+  S_nLineColor, S_nLineStyle, S_nMarkerColor, S_nMarkerStyle, S_nIsame, \
+  WnNull, S_nXmin,S_nYmin,S_nZmin,S_nXmax,S_nYmax,S_nZmax, S_nLastCom, \
+  S_nTitT,S_nTitX,S_nTitY,S_nTitZ,S_n3d,Omenu,NOmenu,Wmaster, \
+  KmenuPosted,KplotPosted,KoptPosted, \
+  WnText,S_nText,S_nAngle,S_nTcolor,S_nTsize,S_nTndc,S_nTextX,S_nTextY, \
+  DictText,DictTextO, S_nHalign,S_nValign, WnFillColor, S_nFillColor, \
+  WnMerge,S_nName2,S_nVars2,S_nName1,S_nVars1,S_nName12,S_nVars12,Merge,MergeO, \
+  WavesMode
+
+  global Nplot, NNplot
+
+#---------------------------------------------------------------------------
+
+
+  widlab = 10
+  wident = 10
+
+  xmin = float(S_nXmin.get())
+  xmax = float(S_nXmax.get())
+
+  ymin = float(S_nYmin.get())
+  ymax = float(S_nYmax.get())
+
+  zmin = float(S_nZmin.get())
+  zmax = float(S_nZmax.get())
+
+  if zmax > zmin:
+    null3d(xmin,xmax,ymin,ymax,zmin,zmax)
+    S_nLastCom.set('null3d')
+  else:
+    null(xmin,xmax,ymin,ymax)
+    S_nLastCom.set('null')
+  #endif
+
+  WnNull.destroy()
+
+#enddef _clNull()
+
+def _cnNull():
+  global WnNull
+  WnNull.destroy()
+#enddef _cnNull()
+
+def _nNull():
+#---------------------------------------------------------------------------
+
+  global NPLmain, NPLmaster, MyFont,Myfont, Nmenu, NNmenu, CanBut, CanKey, Toolbar, Fontsize, \
+  WError, WnCreate, S_nName, S_nTit, S_nVars, WnList, WnInfo, WnStat, \
+  WnRead, S_nFile, S_nHeader, S_nIndex, S_nPlotInd, S_nPlotHead,S_nDumpInd, S_nDumpHead, \
+  S_nSkipHead, S_nSkipFoot, S_nComment, S_nSep, \
+  WnPlot,WnDump,WnDelete,WnTitle, S_nSelect, S_nWeight, S_nScaleX, S_nScaleY, \
+  S_nScaleZ, S_nScaleT,S_nLegend, S_nHisto, S_nLine, S_nMark,S_nColor, S_nPlopt,S_nIsort, S_nIsame, \
+  S_nLineColor, S_nLineStyle, S_nMarkerColor, S_nMarkerStyle, S_nIsame, \
+  WnNull, S_nXmin,S_nYmin,S_nZmin,S_nXmax,S_nYmax,S_nZmax, S_nLastCom, \
+  S_nTitT,S_nTitX,S_nTitY,S_nTitZ,S_n3d,Omenu,NOmenu,Wmaster, \
+  KmenuPosted,KplotPosted,KoptPosted, \
+  WnText,S_nText,S_nAngle,S_nTcolor,S_nTsize,S_nTndc,S_nTextX,S_nTextY, \
+  DictText,DictTextO, S_nHalign,S_nValign, WnFillColor, S_nFillColor, \
+  WnMerge,S_nName2,S_nVars2,S_nName1,S_nVars1,S_nName12,S_nVars12,Merge,MergeO, \
+  WavesMode
+
+  global Nplot, NNplot
+
+#---------------------------------------------------------------------------
+
+
+  WnNull = _nTopLevel('Frame')
+
+  x,y = NPLmaster.winfo_pointerxy()
+  sgeo = '+' + str(x-200) + '+' + str(y-150)
+  WnNull.geometry(sgeo)
+
+  widlab = 14
+  wident = 30
+
+  xmin = float(S_nXmin.get())
+  framelabentry(WnNull,'Xmin',xmin,S_nXmin,MyFont,widlab,wident)
+  xmax = float(S_nXmax.get())
+  framelabentry(WnNull,'Xmax',xmax,S_nXmax,MyFont,widlab,wident)
+
+  ymin = float(S_nYmin.get())
+  framelabentry(WnNull,'Ymin',ymin,S_nYmin,MyFont,widlab,wident)
+  ymax = float(S_nYmax.get())
+  framelabentry(WnNull,'Ymax',ymax,S_nYmax,MyFont,widlab,wident)
+
+  zmin = float(S_nZmin.get())
+  framelabentry(WnNull,'Zmin',zmin,S_nZmin,MyFont,widlab,wident)
+  zmax = float(S_nZmax.get())
+  framelabentry(WnNull,'Zmax',zmax,S_nZmax,MyFont,widlab,wident)
+
+  fbot = Frame(WnNull)
+  bCancel = Button(fbot,text='Cancel',font=MyFont,command=_cnNull)
+  bCancel.pack(side=LEFT,expand=TRUE,fill=X)
+  bClose = Button(fbot,text='Ok',command=_clNull)
+  bClose.pack(side=LEFT,expand=TRUE,fill=X)
+  fbot.pack(expand=TRUE,fill=X)
+
+  Nplot.unpost()
+
+#enddef _nNull()
+
+def _clTitle():
+#---------------------------------------------------------------------------
+
+  global NPLmain, NPLmaster, MyFont,Myfont, Nmenu, NNmenu, CanBut, CanKey, Toolbar, Fontsize, \
+  WError, WnCreate, S_nName, S_nTit, S_nVars, WnList, WnInfo, WnStat, \
+  WnRead, S_nFile, S_nHeader, S_nIndex, S_nPlotInd, S_nPlotHead,S_nDumpInd, S_nDumpHead, \
+  S_nSkipHead, S_nSkipFoot, S_nComment, S_nSep, \
+  WnPlot,WnDump,WnDelete,WnTitle, S_nSelect, S_nWeight, S_nScaleX, S_nScaleY, \
+  S_nScaleZ, S_nScaleT,S_nLegend, S_nHisto, S_nLine, S_nMark,S_nColor, S_nPlopt,S_nIsort, S_nIsame, \
+  S_nLineColor, S_nLineStyle, S_nMarkerColor, S_nMarkerStyle, S_nIsame, \
+  WnNull, S_nXmin,S_nYmin,S_nZmin,S_nXmax,S_nYmax,S_nZmax, S_nLastCom, \
+  S_nTitT,S_nTitX,S_nTitY,S_nTitZ,S_n3d,Omenu,NOmenu,Wmaster, \
+  KmenuPosted,KplotPosted,KoptPosted, \
+  WnText,S_nText,S_nAngle,S_nTcolor,S_nTsize,S_nTndc,S_nTextX,S_nTextY, \
+  DictText,DictTextO, S_nHalign,S_nValign, WnFillColor, S_nFillColor, \
+  WnMerge,S_nName2,S_nVars2,S_nName1,S_nVars1,S_nName12,S_nVars12,Merge,MergeO, \
+  WavesMode
+
+  global Nplot, NNplot
+
+#---------------------------------------------------------------------------
+
+
+  widlab = 10
+  wident = 20
+
+  ttit = S_nTitT.get()
+  xtit = S_nTitX.get()
+  ytit = S_nTitY.get()
+  ztit = S_nTitZ.get()
+
+  if hasattr(Ax,'zaxis'):
+    txyz(ttit,xtit,ytit,ztit)
+    S_n3d.set('yes')
+  else:
+    txyz(ttit,xtit,ytit)
+    S_n3d.set('no')
+  #endif
+
+  WnTitle.destroy()
+
+#enddef _clTitle()
+
+def _cnTitle():
+  global WnTitle
+  WnTitle.destroy()
+#enddef _cnTitle()
+
+def _nTitle():
+#---------------------------------------------------------------------------
+
+  global NPLmain, NPLmaster, MyFont,Myfont, Nmenu, NNmenu, CanBut, CanKey, Toolbar, Fontsize, \
+  WError, WnCreate, S_nName, S_nTit, S_nVars, WnList, WnInfo, WnStat, \
+  WnRead, S_nFile, S_nHeader, S_nIndex, S_nPlotInd, S_nPlotHead,S_nDumpInd, S_nDumpHead, \
+  S_nSkipHead, S_nSkipFoot, S_nComment, S_nSep, \
+  WnPlot,WnDump,WnDelete,WnTitle, S_nSelect, S_nWeight, S_nScaleX, S_nScaleY, \
+  S_nScaleZ, S_nScaleT,S_nLegend, S_nHisto, S_nLine, S_nMark,S_nColor, S_nPlopt,S_nIsort, S_nIsame, \
+  S_nLineColor, S_nLineStyle, S_nMarkerColor, S_nMarkerStyle, S_nIsame, \
+  WnNull, S_nXmin,S_nYmin,S_nZmin,S_nXmax,S_nYmax,S_nZmax, S_nLastCom, \
+  S_nTitT,S_nTitX,S_nTitY,S_nTitZ,S_n3d,Omenu,NOmenu,Wmaster, \
+  KmenuPosted,KplotPosted,KoptPosted, \
+  WnText,S_nText,S_nAngle,S_nTcolor,S_nTsize,S_nTndc,S_nTextX,S_nTextY, \
+  DictText,DictTextO, S_nHalign,S_nValign, WnFillColor, S_nFillColor, \
+  WnMerge,S_nName2,S_nVars2,S_nName1,S_nVars1,S_nName12,S_nVars12,Merge,MergeO, \
+  WavesMode
+
+  global Nplot, NNplot
+
+#---------------------------------------------------------------------------
+
+
+  WnTitle = _nTopLevel('Axis Titles')
+
+  x,y = NPLmaster.winfo_pointerxy()
+  sgeo = '+' + str(x-200) + '+' + str(y-150)
+  WnTitle.geometry(sgeo)
+
+  widlab = 14
+  wident = 30
+
+  ttit = S_nTitT.get()
+  xtit = S_nTitX.get()
+  ytit = S_nTitY.get()
+  ztit = S_nTitZ.get()
+
+  wident = max([wident,len(ttit),len(xtit),len(ytit),len(ztit)])
+
+  framelabentry(WnTitle,'Global title',ttit,S_nTitT,MyFont,widlab,wident)
+  framelabentry(WnTitle,'X title',ttit,S_nTitX,MyFont,widlab,wident)
+  framelabentry(WnTitle,'Y title',ttit,S_nTitY,MyFont,widlab,wident)
+  framelabentry(WnTitle,'Z title',ttit,S_nTitZ,MyFont,widlab,wident)
+
+  fbot = Frame(WnTitle)
+  bCancel = Button(fbot,text='Cancel',font=MyFont,command=_cnTitle)
+  bCancel.pack(side=LEFT,expand=TRUE,fill=X)
+  bClose = Button(fbot,text='Ok',command=_clTitle)
+  bClose.pack(side=LEFT,expand=TRUE,fill=X)
+  fbot.pack(expand=TRUE,fill=X)
+
+  Nplot.unpost()
+
+#enddef _nTitle()
+
+def _clInfo():
+#---------------------------------------------------------------------------
+
+  global NPLmain, NPLmaster, MyFont,Myfont, Nmenu, NNmenu, CanBut, CanKey, Toolbar, Fontsize, \
+  WError, WnCreate, S_nName, S_nTit, S_nVars, WnList, WnInfo, WnStat, \
+  WnRead, S_nFile, S_nHeader, S_nIndex, S_nPlotInd, S_nPlotHead,S_nDumpInd, S_nDumpHead, \
+  S_nSkipHead, S_nSkipFoot, S_nComment, S_nSep, \
+  WnPlot,WnDump,WnDelete,WnTitle, S_nSelect, S_nWeight, S_nScaleX, S_nScaleY, \
+  S_nScaleZ, S_nScaleT,S_nLegend, S_nHisto, S_nLine, S_nMark,S_nColor, S_nPlopt,S_nIsort, S_nIsame, \
+  S_nLineColor, S_nLineStyle, S_nMarkerColor, S_nMarkerStyle, S_nIsame, \
+  WnNull, S_nXmin,S_nYmin,S_nZmin,S_nXmax,S_nYmax,S_nZmax, S_nLastCom, \
+  S_nTitT,S_nTitX,S_nTitY,S_nTitZ,S_n3d,Omenu,NOmenu,Wmaster, \
+  KmenuPosted,KplotPosted,KoptPosted, \
+  WnText,S_nText,S_nAngle,S_nTcolor,S_nTsize,S_nTndc,S_nTextX,S_nTextY, \
+  DictText,DictTextO, S_nHalign,S_nValign, WnFillColor, S_nFillColor, \
+  WnMerge,S_nName2,S_nVars2,S_nName1,S_nVars1,S_nName12,S_nVars12,Merge,MergeO, \
+  WavesMode
+
+  global Nplot, NNplot
+
+#---------------------------------------------------------------------------
+
+
+  if nexists(S_nName.get()) == 0:
+    nError(snam + " not existing!")
+    return
+  #endif
+
+  ninfo(S_nName.get())
+  WnInfo.destroy()
+#enddef _clInfo()
+
+def _cnInfo():
+  global WnInfo
+  WnInfo.destroy()
+#enddef _cnInfo()
+
+def _nInfo():
+#---------------------------------------------------------------------------
+
+  global NPLmain, NPLmaster, MyFont,Myfont, Nmenu, NNmenu, CanBut, CanKey, Toolbar, Fontsize, \
+  WError, WnCreate, S_nName, S_nTit, S_nVars, WnList, WnInfo, WnStat, \
+  WnRead, S_nFile, S_nHeader, S_nIndex, S_nPlotInd, S_nPlotHead,S_nDumpInd, S_nDumpHead, \
+  S_nSkipHead, S_nSkipFoot, S_nComment, S_nSep, \
+  WnPlot,WnDump,WnDelete,WnTitle, S_nSelect, S_nWeight, S_nScaleX, S_nScaleY, \
+  S_nScaleZ, S_nScaleT,S_nLegend, S_nHisto, S_nLine, S_nMark,S_nColor, S_nPlopt,S_nIsort, S_nIsame, \
+  S_nLineColor, S_nLineStyle, S_nMarkerColor, S_nMarkerStyle, S_nIsame, \
+  WnNull, S_nXmin,S_nYmin,S_nZmin,S_nXmax,S_nYmax,S_nZmax, S_nLastCom, \
+  S_nTitT,S_nTitX,S_nTitY,S_nTitZ,S_n3d,Omenu,NOmenu,Wmaster, \
+  KmenuPosted,KplotPosted,KoptPosted, \
+  WnText,S_nText,S_nAngle,S_nTcolor,S_nTsize,S_nTndc,S_nTextX,S_nTextY, \
+  DictText,DictTextO, S_nHalign,S_nValign, WnFillColor, S_nFillColor, \
+  WnMerge,S_nName2,S_nVars2,S_nName1,S_nVars1,S_nName12,S_nVars12,Merge,MergeO, \
+  WavesMode
+
+  global Nplot, NNplot
+
+#---------------------------------------------------------------------------
+
+
+  if not len(Nhead):
+    nError("  No Ntuple defined so far!  ")
+    return
+  #endif not len(Nhead)
+
+  WnInfo = _nTopLevel('Info')
+
+  x,y = NPLmaster.winfo_pointerxy()
+  sgeo = '+' + str(x-200) + '+' + str(y-50)
+  WnInfo.geometry(sgeo)
+
+  widlab = 10
+  wident = 10
+
+  nNam = Nhead[-1][1]
+  framelabentry(WnInfo,'Name',nNam,S_nName,MyFont,widlab,wident)
+
+  fbot = Frame(WnInfo)
+  bCancel = Button(fbot,text='Cancel',font=MyFont,command=_cnInfo)
+  bCancel.pack(side=LEFT,expand=TRUE,fill=X)
+  bClose = Button(fbot,text='Ok',command=_clInfo)
+  bClose.pack(side=LEFT,expand=TRUE,fill=X)
+  fbot.pack(expand=TRUE,fill=X)
+
+#enddef _nInfo()
+
+def _clDelete():
+#---------------------------------------------------------------------------
+
+  global NPLmain, NPLmaster, MyFont,Myfont, Nmenu, NNmenu, CanBut, CanKey, Toolbar, Fontsize, \
+  WError, WnCreate, S_nName, S_nTit, S_nVars, WnList, WnInfo, WnStat, \
+  WnRead, S_nFile, S_nHeader, S_nIndex, S_nPlotInd, S_nPlotHead,S_nDumpInd, S_nDumpHead, \
+  S_nSkipHead, S_nSkipFoot, S_nComment, S_nSep, \
+  WnPlot,WnDump,WnDelete,WnTitle, S_nSelect, S_nWeight, S_nScaleX, S_nScaleY, \
+  S_nScaleZ, S_nScaleT,S_nLegend, S_nHisto, S_nLine, S_nMark,S_nColor, S_nPlopt,S_nIsort, S_nIsame, \
+  S_nLineColor, S_nLineStyle, S_nMarkerColor, S_nMarkerStyle, S_nIsame, \
+  WnNull, S_nXmin,S_nYmin,S_nZmin,S_nXmax,S_nYmax,S_nZmax, S_nLastCom, \
+  S_nTitT,S_nTitX,S_nTitY,S_nTitZ,S_n3d,Omenu,NOmenu,Wmaster, \
+  KmenuPosted,KplotPosted,KoptPosted, \
+  WnText,S_nText,S_nAngle,S_nTcolor,S_nTsize,S_nTndc,S_nTextX,S_nTextY, \
+  DictText,DictTextO, S_nHalign,S_nValign, WnFillColor, S_nFillColor, \
+  WnMerge,S_nName2,S_nVars2,S_nName1,S_nVars1,S_nName12,S_nVars12,Merge,MergeO, \
+  WavesMode
+
+  global Nplot, NNplot
+
+#---------------------------------------------------------------------------
+
+
+  if nexists(S_nName.get()) == 0:
+    nError(snam + " not existing!")
+    return
+  #endif
+
+  ndelete(S_nName.get())
+  WnDelete.destroy()
+#enddef _clDelete()
+
+def _cnDelete():
+  global WnDelete
+  WnDelete.destroy()
+#enddef _cnDelete()
+
+def _nDelete():
+#---------------------------------------------------------------------------
+
+  global NPLmain, NPLmaster, MyFont,Myfont, Nmenu, NNmenu, CanBut, CanKey, Toolbar, Fontsize, \
+  WError, WnCreate, S_nName, S_nTit, S_nVars, WnList, WnInfo, WnStat, \
+  WnRead, S_nFile, S_nHeader, S_nIndex, S_nPlotInd, S_nPlotHead,S_nDumpInd, S_nDumpHead, \
+  S_nSkipHead, S_nSkipFoot, S_nComment, S_nSep, \
+  WnPlot,WnDump,WnDelete,WnTitle, S_nSelect, S_nWeight, S_nScaleX, S_nScaleY, \
+  S_nScaleZ, S_nScaleT,S_nLegend, S_nHisto, S_nLine, S_nMark,S_nColor, S_nPlopt,S_nIsort, S_nIsame, \
+  S_nLineColor, S_nLineStyle, S_nMarkerColor, S_nMarkerStyle, S_nIsame, \
+  WnNull, S_nXmin,S_nYmin,S_nZmin,S_nXmax,S_nYmax,S_nZmax, S_nLastCom, \
+  S_nTitT,S_nTitX,S_nTitY,S_nTitZ,S_n3d,Omenu,NOmenu,Wmaster, \
+  KmenuPosted,KplotPosted,KoptPosted, \
+  WnText,S_nText,S_nAngle,S_nTcolor,S_nTsize,S_nTndc,S_nTextX,S_nTextY, \
+  DictText,DictTextO, S_nHalign,S_nValign, WnFillColor, S_nFillColor, \
+  WnMerge,S_nName2,S_nVars2,S_nName1,S_nVars1,S_nName12,S_nVars12,Merge,MergeO, \
+  WavesMode
+
+  global Nplot, NNplot
+
+#---------------------------------------------------------------------------
+
+
+  if not len(Nhead):
+    nError("  No Ntuple defined so far!  ")
+    return
+  #endif not len(Nhead)
+
+  WnDelete = _nTopLevel('Delete')
+
+  x,y = NPLmaster.winfo_pointerxy()
+  sgeo = '+' + str(x-200) + '+' + str(y-100)
+  WnDelete.geometry(sgeo)
+
+  widlab = 10
+  wident = 10
+
+  nNam = Nhead[-1][1]
+  framelabentry(WnDelete,'Name',nNam,S_nName,MyFont,widlab,wident)
+
+  fbot = Frame(WnDelete)
+  bCancel = Button(fbot,text='Cancel',font=MyFont,command=_cnDelete)
+  bCancel.pack(side=LEFT,expand=TRUE,fill=X)
+  bClose = Button(fbot,text='Ok',command=_clDelete)
+  bClose.pack(side=LEFT,expand=TRUE,fill=X)
+  fbot.pack(expand=TRUE,fill=X)
+
+#enddef _nDelete()
+
+def _clStat():
+#---------------------------------------------------------------------------
+
+  global NPLmain, NPLmaster, MyFont,Myfont, Nmenu, NNmenu, CanBut, CanKey, Toolbar, Fontsize, \
+  WError, WnCreate, S_nName, S_nTit, S_nVars, WnList, WnInfo, WnStat, \
+  WnRead, S_nFile, S_nHeader, S_nIndex, S_nPlotInd, S_nPlotHead,S_nDumpInd, S_nDumpHead, \
+  S_nSkipHead, S_nSkipFoot, S_nComment, S_nSep, \
+  WnPlot,WnDump,WnDelete,WnTitle, S_nSelect, S_nWeight, S_nScaleX, S_nScaleY, \
+  S_nScaleZ, S_nScaleT,S_nLegend, S_nHisto, S_nLine, S_nMark,S_nColor, S_nPlopt,S_nIsort, S_nIsame, \
+  S_nLineColor, S_nLineStyle, S_nMarkerColor, S_nMarkerStyle, S_nIsame, \
+  WnNull, S_nXmin,S_nYmin,S_nZmin,S_nXmax,S_nYmax,S_nZmax, S_nLastCom, \
+  S_nTitT,S_nTitX,S_nTitY,S_nTitZ,S_n3d,Omenu,NOmenu,Wmaster, \
+  KmenuPosted,KplotPosted,KoptPosted, \
+  WnText,S_nText,S_nAngle,S_nTcolor,S_nTsize,S_nTndc,S_nTextX,S_nTextY, \
+  DictText,DictTextO, S_nHalign,S_nValign, WnFillColor, S_nFillColor, \
+  WnMerge,S_nName2,S_nVars2,S_nName1,S_nVars1,S_nName12,S_nVars12,Merge,MergeO, \
+  WavesMode
+
+  global Nplot, NNplot
+
+#---------------------------------------------------------------------------
+
+
+  snam = S_nName.get()
+  svars = S_nVars.get()
+
+  ssel = S_nSelect.get()
+  if ssel == 'none': ssel = ''
+
+  if nexists(snam) == 0:
+    nError(snam + " not existing!")
+    return
+  #endif
+
+  nstat(snam,svars,ssel)
+
+  WnStat.destroy()
+#enddef _clStat()
+
+def _cnStat():
+  global WnStat
+  WnStat.destroy()
+#enddef _cnStat()
+
+def _nStat():
+#---------------------------------------------------------------------------
+
+  global NPLmain, NPLmaster, MyFont,Myfont, Nmenu, NNmenu, CanBut, CanKey, Toolbar, Fontsize, \
+  WError, WnCreate, S_nName, S_nTit, S_nVars, WnList, WnInfo, WnStat, \
+  WnRead, S_nFile, S_nHeader, S_nIndex, S_nPlotInd, S_nPlotHead,S_nDumpInd, S_nDumpHead, \
+  S_nSkipHead, S_nSkipFoot, S_nComment, S_nSep, \
+  WnPlot,WnDump,WnDelete,WnTitle, S_nSelect, S_nWeight, S_nScaleX, S_nScaleY, \
+  S_nScaleZ, S_nScaleT,S_nLegend, S_nHisto, S_nLine, S_nMark,S_nColor, S_nPlopt,S_nIsort, S_nIsame, \
+  S_nLineColor, S_nLineStyle, S_nMarkerColor, S_nMarkerStyle, S_nIsame, \
+  WnNull, S_nXmin,S_nYmin,S_nZmin,S_nXmax,S_nYmax,S_nZmax, S_nLastCom, \
+  S_nTitT,S_nTitX,S_nTitY,S_nTitZ,S_n3d,Omenu,NOmenu,Wmaster, \
+  KmenuPosted,KplotPosted,KoptPosted, \
+  WnText,S_nText,S_nAngle,S_nTcolor,S_nTsize,S_nTndc,S_nTextX,S_nTextY, \
+  DictText,DictTextO, S_nHalign,S_nValign, WnFillColor, S_nFillColor, \
+  WnMerge,S_nName2,S_nVars2,S_nName1,S_nVars1,S_nName12,S_nVars12,Merge,MergeO, \
+  WavesMode
+
+  global Nplot, NNplot
+
+#---------------------------------------------------------------------------
+
+
+  if not len(Nhead):
+    nError("  No Ntuple defined so far!  ")
+    return
+  #endif not len(Nhead)
+
+  WnStat = _nTopLevel('Stat')
+
+  x,y = NPLmaster.winfo_pointerxy()
+  sgeo = '+' + str(x-200) + '+' + str(y-320)
+  WnStat.geometry(sgeo)
+
+  widlab = 15
+  wident = 15
+
+  nNam = Nhead[-1][1]
+  nid = GetIndexN(nNam)
+  nhead = Nhead[nid]
+
+  nvar = nhead[3]
+  svar = nhead[4][0]
+  if nvar > 1: svar += ":" + nhead[5][0]
+
+  ssel = S_nSelect.get()
+  if ssel == '': ssel = 'none'
+
+  framelabentry(WnStat,'Name',nNam,S_nName,MyFont,widlab,wident)
+  framelabentry(WnStat,'Variables',svar,S_nVars,MyFont,widlab,wident)
+  framelabentry(WnStat,'Selection',ssel,S_nSelect,MyFont,widlab,wident)
+
+  fbot = Frame(WnStat)
+  bCancel = Button(fbot,text='Cancel',font=MyFont,command=_cnStat)
+  bCancel.pack(side=LEFT,expand=TRUE,fill=X)
+  bClose = Button(fbot,text='Ok',command=_clStat)
+  bClose.pack(side=LEFT,expand=TRUE,fill=X)
+  fbot.pack(expand=TRUE,fill=X)
+
+  Nmenu.unpost()
+
+#enddef _nStat()
+
+def _clPlot():
+#---------------------------------------------------------------------------
+
+  global NPLmain, NPLmaster, MyFont,Myfont, Nmenu, NNmenu, CanBut, CanKey, Toolbar, Fontsize, \
+  WError, WnCreate, S_nName, S_nTit, S_nVars, WnList, WnInfo, WnStat, \
+  WnRead, S_nFile, S_nHeader, S_nIndex, S_nPlotInd, S_nPlotHead,S_nDumpInd, S_nDumpHead, \
+  S_nSkipHead, S_nSkipFoot, S_nComment, S_nSep, \
+  WnPlot,WnDump,WnDelete,WnTitle, S_nSelect, S_nWeight, S_nScaleX, S_nScaleY, \
+  S_nScaleZ, S_nScaleT,S_nLegend, S_nHisto, S_nLine, S_nMark,S_nColor, S_nPlopt,S_nIsort, S_nIsame, \
+  S_nLineColor, S_nLineStyle, S_nMarkerColor, S_nMarkerStyle, S_nIsame, \
+  WnNull, S_nXmin,S_nYmin,S_nZmin,S_nXmax,S_nYmax,S_nZmax, S_nLastCom, \
+  S_nTitT,S_nTitX,S_nTitY,S_nTitZ,S_n3d,Omenu,NOmenu,Wmaster, \
+  KmenuPosted,KplotPosted,KoptPosted, \
+  WnText,S_nText,S_nAngle,S_nTcolor,S_nTsize,S_nTndc,S_nTextX,S_nTextY, \
+  DictText,DictTextO, S_nHalign,S_nValign, WnFillColor, S_nFillColor, \
+  WnMerge,S_nName2,S_nVars2,S_nName1,S_nVars1,S_nName12,S_nVars12,Merge,MergeO, \
+  WavesMode
+
+  global Nplot, NNplot
+
+#---------------------------------------------------------------------------
+
+  global Imarker,Iline
+
+  snam = S_nName.get()
+  svars = S_nVars.get()
+
+  ssel = S_nSelect.get()
+  if ssel == 'none': ssel = ''
+  swei = S_nWeight.get()
+  if swei == 'none': swei = ''
+
+  scx = float(S_nScaleX.get())
+  scy = float(S_nScaleY.get())
+  scz = float(S_nScaleZ.get())
+  sct = float(S_nScaleT.get())
+
+  splopt = S_nPlopt.get()
+  if splopt == '': splopt = Mode2d
+
+  plotoptions(splopt)
+
+  sisame = S_nIsame.get().lower()
+  if sisame == 'yes' or sisame == 'y': isame = 1
+  else: isame = 0
+
+  sisort = S_nIsort.get().lower()
+  if sisort == 'yes' or sisort == 'y': isort = 1
+  else: isort = 0
+
+  if Isame == 0 and isame == 1:
+    if splopt == '!':
+      splopt = 'same'
+    else:
+      splopt = 'same' + splopt
+    #endif
+  #endif
+
+  sleg = S_nLegend.get()
+
+  smarker = S_nMark.get()
+  imarker = 0
+  if yesno(smarker) == 'yes': imarker = 1
+
+  sline = S_nLine.get()
+  iline = 0
+  if yesno(sline) == 'yes': iline = 1
+  #endif
+
+  if iline == 1:
+    if splopt == '!':
+      splopt = 'line'
+    else:
+      splopt = 'line' + splopt
+    #endif
+  #endif
+
+  setfillcolor(S_nFillColor.get())
+
+  scol = S_nColor.get()
+
+  h = hget(snam)
+
+  if type(h) == int and h == -1:
+    if nexists(snam) == 0:
+      nError(snam + " not existing!")
+      return
+    #endif
+    nplot(snam,svars,ssel,swei,splopt,sleg,scx,scy,scz,sct,'','HnPlot',scol,isort)
+  else:
+    if scx == 1.0 and scy == 1.0 and scz == 1.0 and ssel == '' and swei == '':
+      hplot(snam,splopt,legend=sleg)
+    else:
+      snamN = snam + "_N"
+      nh = hcopn(snam,snamN,svars)
+      nplot(snamN,svars,ssel,swei,splopt,sleg,scx,scy,scz,sct,'','HnPlot',scol,isort)
+    #endif
+  #endif
+
+  WnPlot.destroy()
+#enddef _clPlot()
+
+def _cnPlot():
+  global WnPlot
+  WnPlot.destroy()
+#enddef _cnPlot()
+
+def _nPlot():
+#---------------------------------------------------------------------------
+
+  global NPLmain, NPLmaster, MyFont,Myfont, Nmenu, NNmenu, CanBut, CanKey, Toolbar, Fontsize, \
+  WError, WnCreate, S_nName, S_nTit, S_nVars, WnList, WnInfo, WnStat, \
+  WnRead, S_nFile, S_nHeader, S_nIndex, S_nPlotInd, S_nPlotHead,S_nDumpInd, S_nDumpHead, \
+  S_nSkipHead, S_nSkipFoot, S_nComment, S_nSep, \
+  WnPlot,WnDump,WnDelete,WnTitle, S_nSelect, S_nWeight, S_nScaleX, S_nScaleY, \
+  S_nScaleZ, S_nScaleT,S_nLegend, S_nHisto, S_nLine, S_nMark,S_nColor, S_nPlopt,S_nIsort, S_nIsame, \
+  S_nLineColor, S_nLineStyle, S_nMarkerColor, S_nMarkerStyle, S_nIsame, \
+  WnNull, S_nXmin,S_nYmin,S_nZmin,S_nXmax,S_nYmax,S_nZmax, S_nLastCom, \
+  S_nTitT,S_nTitX,S_nTitY,S_nTitZ,S_n3d,Omenu,NOmenu,Wmaster, \
+  KmenuPosted,KplotPosted,KoptPosted, \
+  WnText,S_nText,S_nAngle,S_nTcolor,S_nTsize,S_nTndc,S_nTextX,S_nTextY, \
+  DictText,DictTextO, S_nHalign,S_nValign, WnFillColor, S_nFillColor, \
+  WnMerge,S_nName2,S_nVars2,S_nName1,S_nVars1,S_nName12,S_nVars12,Merge,MergeO, \
+  WavesMode
+
+  global Nplot, NNplot
+
+#---------------------------------------------------------------------------
+
+
+  global FillColor
+
+  print(WavesMode)
+  if not len(Nhead):
+    nError("  No Ntuple defined so far!  ")
+    return
+  #endif not len(Nhead)
+
+  WnPlot = _nTopLevel('Plot')
+
+  x,y = NPLmaster.winfo_pointerxy()
+  sgeo = '+' + str(x-200) + '+' + str(y-320)
+  WnPlot.geometry(sgeo)
+
+  widlab = 15
+  wident = 15
+
+  nNam = Nhead[-1][1]
+  nid = GetIndexN(nNam)
+  nhead = Nhead[nid]
+
+  if hasattr(Ax,'zaxis'):
+    S_n3d.set('yes')
+  else:
+    S_n3d.set('no')
+  #endif
+
+  nvar = nhead[3]
+  svar = nhead[4][0]
+  if nvar > 1:
+    if nNam == 'n10':
+      svar += ":" + nhead[6][0]
+    else:
+      svar += ":" + nhead[5][0]
+    #endif
+  #endif
+
+  if S_n3d.get() == 'yes' and nvar > 2 : svar += ":" + nhead[6][0]
+
+  snsep = S_nSep.get()
+  if snsep == "none": snsep = 'blank'
+
+  ssel = S_nSelect.get()
+  if ssel == '': ssel = 'none'
+
+  swei = S_nWeight.get()
+  if swei == '': swei = 'none'
+
+  scx = 1.
+  scy = 1.
+  scz = 1.
+  sct = 1.
+
+  splopt = S_nPlopt.get()
+  plotoptions(splopt)
+
+  if Isame: same = 'yes'
+  else: same = 'no'
+
+  if S_nLastCom.get() == 'null' or S_nLastCom.get() == 'null3d': same = 'yes'
+
+  isort = S_nIsort.get().lower()
+  if isort == '': isort = 'no'
+
+  scol = S_nColor.get()
+  if scol == '': scol = 'default'
+
+  smarker = S_nMark.get()
+  if smarker == '': smark = 'no'
+  sline = S_nLine.get()
+  if sline == '': scol = 'yes'
+
+  framelabentry(WnPlot,'Name',nNam,S_nName,MyFont,widlab,wident)
+  framelabentry(WnPlot,'Variables',svar,S_nVars,MyFont,widlab,wident)
+  framelabentry(WnPlot,'Selection',ssel,S_nSelect,MyFont,widlab,wident)
+  framelabentry(WnPlot,'Weights',swei,S_nWeight,MyFont,widlab,wident)
+
+  framelabentry(WnPlot,'Scaling of 1st var.',scx,S_nScaleX,MyFont,widlab,wident)
+  framelabentry(WnPlot,'Scaling of 2sd var.',scy,S_nScaleY,MyFont,widlab,wident)
+  framelabentry(WnPlot,'Scaling of 3rd var.',scz,S_nScaleZ,MyFont,widlab,wident)
+  framelabentry(WnPlot,'Scaling of 4th var.',sct,S_nScaleT,MyFont,widlab,wident)
+
+  framelabentry(WnPlot,'Line',sline,S_nLine,MyFont,widlab,wident)
+  framelabentry(WnPlot,'Marker',smarker,S_nMark,MyFont,widlab,wident)
+  framelabentry(WnPlot,'Coler',scol,S_nColor,MyFont,widlab,wident)
+  framelabentry(WnPlot,'Fill Color',FillColor,S_nFillColor,MyFont,widlab,wident)
+
+  framelabentry(WnPlot,'Same picture',same,S_nIsame,MyFont,widlab,wident)
+  framelabentry(WnPlot,'Sort data',isort,S_nIsort,MyFont,widlab,wident)
+
+  fbot = Frame(WnPlot)
+  bCancel = Button(fbot,text='Cancel',font=MyFont,command=_cnPlot)
+  bCancel.pack(side=LEFT,expand=TRUE,fill=X)
+  bClose = Button(fbot,text='Ok',command=_clPlot)
+  bClose.pack(side=LEFT,expand=TRUE,fill=X)
+  fbot.pack(expand=TRUE,fill=X)
+
+  Nplot.unpost()
+
+#enddef _nPlot()
+
+# End of NtupPlot
+#=============================================================================
+
 #+PATCH,//BRILL/PYTHON
 #+DECK,pyBrill,T=PYTHON.
 
@@ -56,6 +1684,37 @@ import matplotlib.pyplot as plt
 
 import m_hbook as m
 from m_hbook import *
+
+global Kdebug
+# not zero: Debugging with debugbreak(...)
+# Kdebug = 2: Run urad_phase_debug.exe under gdb
+# Kdebug = 3: Run urad_phase_debug.exe under ddd + gdb
+if fexist('.pybrill.debug'):
+  f = open('.pybrill.debug')
+  Kdebug = int(f.readline().strip())
+else: Kdebug = 0
+#endif
+
+global ClearCanvas
+ClearCanvas = 0
+set_ClearCanvas(ClearCanvas)
+
+def _clear_Canvas(kclear=0):
+  global Dsetup, ClearCanvas
+  if kclear or Dsetup['ClearCanvas'][1]:
+    window_clear()
+    showplot(False)
+    ClearCanvas = 0
+    Dsetup['ClearCanvas'][1] = ClearCanvas
+    set_ClearCanvas(ClearCanvas)
+#enddef
+
+def debugbreak(s=''):
+  global Kdebug
+  if not Kdebug: return
+  if s: print("Debugbreak:",s)
+  breakpoint()
+#enddef debugbreak()
 
 
 global \
@@ -388,6 +2047,8 @@ global Esel
 global BeamPar,UnduPar,SpecPar,BrillPar,PlotPar
 
 
+global EbeamMin, EbeamMax, dEbeam, nEfold
+
 global Unamelist,Useed
 global LastPlot; LastPlot = ['','']
 
@@ -399,6 +2060,7 @@ def get_mshwelcome():
   return MShWelcome
 #enddef
 
+#reakpoint()
 def mshwelcome(program='pyBrill',year='2023'):
 
   global Kdate, Kbox, KxAxis, KyAxis, MShWelcome
@@ -445,7 +2107,7 @@ def mshwelcome(program='pyBrill',year='2023'):
 def _spec_key_press(ev):
 
   global LastPlot
-  global Esel,IEsel,S_Esel,S_IEsel
+  global Esel,IEsel,S_Esel,S_IEsel,dE
 
   if LastPlot[0] == 'FdPin':
 
@@ -482,12 +2144,14 @@ def _set_uname():
   global Unamelist,Useed,Dsetup
 
   Unamelist = [ \
-  'Mthreads','Ebeam','Curr','Step','Nelec','Noranone','Icohere','Ihbunch', \
+  'Mthreads','Ebeam','Curr','Step','Nelec','Noranone','IfixPhase','Icohere','Ihbunch', \
   'Bunchlen','BunchCharge','Modebunch','PinX','PinY','PinZ','PinW','PinH', \
   'NpinY','NpinZ','Modepin','ModeSphere','Perlen','Shift','Nper','Nharm', \
   'Harm','Beffv','Beffh','Nepho','EphMin','EphMax','Espread','BetaH', \
   'BetaV','EmitH','EmitV','Disph','Dispph','Dispv','Disppv','Modeph','Pherror', \
-  'IFieldProp','PinXprop','PinWprop','PinHprop','NpinYprop','NpinZprop']
+  'IFieldProp','PinXprop','PinWprop','PinHprop','NpinYprop','NpinZprop', \
+  'IfixPhase','PhGshift','IWigner','NyTheWig','TheYWig','NzTheWig','TheZWig', \
+  'nEfold','NoSplineEfold']
 
   Useed = [376577121, 52147852, -1273034815, -1963249100, 1195262240, \
   -1718716574, -224354675, 432587481, 1692325775, 1934175653, \
@@ -513,6 +2177,18 @@ def _set_uname():
   Dsetup['Modeph'] = ['Mode for phase-error',0]
   Dsetup['Noranone'] = ['No random change for first e-',1]
 
+  Dsetup['IfixPhase'] = ['Random phase for e-',0]
+  Dsetup['PhGshift'] = ['Global phase shift. 9999.: Hori. amplitude is zero for (PinX,PinY,PinZ)) ',9999.]
+  Dsetup['GlobPhaseProp'] = ['Global phase shift. of prop. fields. 9999.: Hori. amplitude is zero for (PinX,PinY,PinZ)) ',0.0]
+
+  Dsetup['IWigner'] = ['Calculate Wigner Distributions [-4,-3,-2,-1,0,1]',0]
+  Dsetup['NyTheWig'] = ['Number of vert. angle steps',51]
+  Dsetup['TheYWig'] = ['Vert. angle range',0.05]
+  Dsetup['NzTheWig'] = ['Number of hori.. angle steps',51]
+  Dsetup['TheZWig'] = ['Hori. angle range',0.05]
+  Dsetup['nEfold'] = ['Number of E-spread steps',0]
+  Dsetup['NoSplineEfold'] = ['Suppress splines for E-spread folding',0]
+
 #enddef _set_uname()
 
 global Fkn, F,FD, FC, FB, Qn, B, Harm, Lam, Sigr, Sigrp, KyxList
@@ -523,21 +2199,76 @@ Calculated_Brill, Fig, Ax, Grid, Calculated_Spec
 global MSetup,MBrill,MSpec
 global Kellip
 
+debugbreak('Main 1')
+
 BeamPar = ['Ebeam','Curr','EmitH','EmitV','BetaH','BetaV','SigE', \
 'Disph','Dispph','Dispv','Disppv']
+
 UnduPar = ['Perlen','Nper','Beffv','Beffh','Nharm','Harmonic','Shift']
+
 BrillPar = ['nKvals','Kmin','Kmax','Nmin','Nmax','Mode']
+
 SpecPar = ['Nelec','Modepin','Noranone','ModeSphere','Nepho','EphMin','EphMax','PinX', \
-'PinY','PinZ','PinW','PinH','NpinZ','NpinY','Step','Pherror', \
-'IFieldProp','PinXprop','PinWprop','PinHprop','NpinYprop','NpinZprop','Ifixseed']
-PlotPar = ['Mode3d','Markersize','Linewidth','Linecolor']
+'PinY','PinZ','PinW','PinH','NpinZ','NpinY','Step','Pherror', 'EbeamMin','EbeamMax', \
+'IFieldProp','PinXprop','PinWprop','PinHprop','NpinYprop','NpinZprop', \
+'IfixPhase','PhGshift','IWigner','NyTheWig','TheYWig','NzTheWig','TheZWig','nEfold','NoSplineEfold', \
+'Ifixseed']
+
+PlotPar = ['Mode3d','Markersize','Linewidth','Linecolor','NxZones','NyZones','ClearCanvas']
 
 global LastSetUp_Esel
 LastSetUp_Esel = 0
 
+def webeam(ev):
+
+  global Canbeam, Wbeam
+
+  global Ebeam,IEbeam,S_Ebeam,S_IEbeamsel,nEfold,dEbeam
+
+  nEfold = int(Dsetup['nEfold'][1])
+  EbeamMin = float(Dsetup['EbeamMin'][1])
+  EbeamMax = float(Dsetup['EbeamMax'][1])
+
+  Ebeam = ev.xdata
+
+  if nEfold > 1:
+    dEbeam = (EBeamMax-EBeamMin)/(nEfold-1)
+  else:
+    dEbeam = 0
+  #endif
+
+  if Ebeamsel <= 0.0:
+    IEbeamsel = 1
+    Ebeamsel = EphMin
+  elif Ebeamsel > EbeamMax:
+    IEbeamsel = nEfold
+    Ebeamsel = EbeamMax
+  #endif
+
+  if nEfold > 1:
+    IEbeamsel = int((Ebeamsel-EbeamMin)/dEbeam)+1
+    if IEbeamsel <=0:
+      IEbeamsel = 1
+    elif IEbeamsel > nEfold:
+      IEbeamsel = nEfold
+    #endif
+  else:
+    IEbeamsel = 1
+  #endif
+
+  Ebeamsel = EbeamMin + (IEbeamsel-1)*dEbeam
+
+  S_IEbeamsel.set(IEbeamsel)
+  S_Ebeamsel.set(Esbeamel)
+
+  Webeam.canvas.mpl_disconnect(CanWebeam)
+  window_close()
+
+#enddef webeam()
+
 def _wesel(ev):
 
-  global Wesel,CanWesel
+  global Wesel,CanWesel,Wbeam
 
   global Esel,IEsel,S_Esel,S_IEsel
 
@@ -606,7 +2337,7 @@ def _sel_Esel():
   global BeamPar,UnduPar,SpecPar,BrillPar,PlotPar
 
 
-  global CanWesel, Wesel
+  global CanWesel, Wesel,nEfold
 
   SetUp_Esel.destroy()
 
@@ -616,6 +2347,9 @@ def _sel_Esel():
   global Dsetup,Nepho,EphMax,EphMin,WmainMaster
 
   Nepho = int(Dsetup['Nepho'][1])
+  nEfold = int(Dsetup['nEfold'][1])
+  iefold = int(nEfold/2) + 1
+
   EphMin = float(Dsetup['EphMin'][1])
   EphMax = float(Dsetup['EphMax'][1])
 
@@ -662,6 +2396,7 @@ def _sel_Esel():
     txyz(titp,'',ytit)
     if Nepho < 100:
       npl(nfld,"egam:s0",selzy,plopt='samemarker')
+    #endif
     nextzone()
   #endif
 
@@ -871,6 +2606,7 @@ def _pFdProp(key='s0'):
 
   global nsto,nfld,nflx,nbun,Esel
   global BeamPar,UnduPar,SpecPar,BrillPar,PlotPar
+
 
 
   global Esel,IEsel,S_Esel,S_IEsel
@@ -1400,6 +3136,481 @@ def _pElec(key='zizpi'):
 
 #enddef _pElec()
 
+def _pWigner(key='WzzZ',select=''):
+
+
+  global Dsetup
+  global Vsetup_Beam, LastSetUp_Beam,  SetUp_Beam, \
+  Vsetup_Undu, LastSetUp_Undu, SetUp_Undu, \
+  Vsetup_Brill, LastSetUp_Brill, SetUp_Brill, Vsetup_Plot, \
+  Vsetup_Spec, LastSetUp_Spec, SetUp_Spec, ScreenWidth, ScreenHeight
+
+  global Mthreads,Step,Nelec,Noranone,Icohere,Ihbunch,Bunchlen, \
+  Bunchcharge,Modebunch,PinX,PinY,PinZ,PinW,PinH,NpinY,NpinZ,modepin,modesphere, \
+  Shift,Nper,Nharm,Harm,Beffv,Beffh,Nepho,EphMin,EphMax, \
+  Disph,Dispph,Dispv,Disppv,Pherror,Ifixseed
+
+  global nsto,nfld,nflx,nbun,Esel
+  global BeamPar,UnduPar,SpecPar,BrillPar,PlotPar
+
+
+
+  global LastPlot; LastPlot = ['Wigner',key]
+  global Esel,IEsel,S_Esel,S_IEsel,dE
+
+#  if Modepin != 0: return
+  debugbreak('_pWigner')
+
+  if Calculated_Spec == False or nexist("nwig") == 0: _calc_spec()
+
+  keyu = key.upper()
+  keyl = key.lower()
+
+  if keyu == 'WHHH': keyu = 'WZZZ'
+  elif keyu == 'WHHV': keyu = 'WZZY'
+  elif keyu == 'WVVV': keyu = 'WYYY'
+  elif keyu == 'WVVH': keyu = 'WYYZ'
+  elif keyu == 'WHVH': keyu = 'WZYZ'
+  elif keyu == 'WVHH': keyu = 'WYZZ'
+  elif keyu == 'WHVV': keyu = 'WZYY'
+  elif keyu == 'WVHV': keyu = 'WYZY'
+
+  selgam = "iegam==" + str(IEsel)
+
+  set_plot_params_3d()
+
+  kstat = getstat()
+  nxzones = Dsetup['NxZones'][1]
+  nyzones = Dsetup['NyZones'][1]
+
+  optnstat()
+
+  nz = int(Dsetup['NpinZprop'][1])
+  ny = int(Dsetup['NpinYprop'][1])
+  pinw = float(Dsetup['PinWprop'][1])
+  pinh = float(Dsetup['PinHprop'][1])
+  ymin = -pinh/2.0
+  ymax =  pinh/2.0
+  zmin = -pinw/2.0
+  zmax =  pinw/2.0
+  nty = int(Dsetup['NyTheWig'][1])
+  ntz = int(Dsetup['NzTheWig'][1])
+  tz = float(Dsetup['TheZWig'][1])
+  ty = float(Dsetup['TheYWig'][1])
+
+  if ny > 1: dy = pinh/(ny-1)
+  else: dy = pinh / 2.
+  if nz > 1: dz = pinw/(nz-1)
+  else: dz = pinw / 2.
+
+  if nty > 1: dty = ty/(nty-1)
+  else: dty = ty / 2.
+  if ntz > 1: dtz = tz/(ntz-1)
+  else: dtz = tz / 2.
+
+  tymin = -ty/2.0
+  tymax =  ty/2.0
+  tzmin = -tz/2.0
+  tzmax =  tz/2.0
+
+  a = ' and '
+  sizcut = "iz==" + str(int(nz/2)+1)
+  siycut = "iy==" + str(int(ny/2)+1)
+  sitzcut = "itz==" + str(int(ntz/2)+1)
+  sitycut = "ity==" + str(int(nty/2)+1)
+
+  debugbreak('_pWigner')
+  nwig = nget("nwig")
+
+  plopt = Vsetup_Plot[0][1][1]
+  lwo = float(Vsetup_Plot[2][1][1])
+  lco = Vsetup_Plot[3][1][1]
+  mso = getmarkersize()
+
+#  disttit3d = getaxistitledist3d()
+#  distlab3d = getaxislabeldist3d()
+  colorbarpad = getcolorbarpad()
+
+#  if select.strip() == '':
+#    if Esel < EphMin or Esel > EphMax or IEsel <= 0:
+#      if Nepho > 1:
+#        dE = (EphMax-EphMin)/(Nepho-1)
+#      else:
+#        dE = 0
+#      #endif
+#      IEsel = int((nwig.iegam.max()-nwig.iegam.min())/2+1)
+#      Esel = EphMin + (IEsel-1)*dE
+#      S_IEsel.set(IEsel)
+#      S_Esel.set(Esel)
+#      select = 'iegam == ' + str(IEsel)
+#    #endif select != ''
+#  #endif
+
+  if keyu == 'WZZZ':
+    hnam = 'HWIGzzZ'
+    htit = 'Wzz in Z-Theta_Z Plane'
+    if select.strip() == '': sel = siycut + a + sitycut
+    else: sel = select + a +siycut + a + sitycut
+    sel = sel + a + "kpola==1"
+  elif keyu == 'WZZY':
+    hnam = 'HWIGzzY'
+    htit = 'Wzz in Y-Theta_Y Plane'
+    if select.strip() == '': sel = sizcut + a + sitzcut
+    else: sel = select + a +sizcut + a + sitzcut
+    sel = sel + a + "kpola==1"
+  elif keyu == 'WYYZ':
+    hnam = 'HWIGyyZ'
+    htit = 'Wyy in Z-Theta_Z Plane'
+    if select.strip() == '': sel = siycut + a + sitycut
+    else: sel = select + a +siycut + a + sitycut
+    sel = sel + a + "kpola==2"
+  elif keyu == 'WYYY':
+    hnam = 'HWIGyyY'
+    htit = 'Wyy in Y-Theta_Y Plane'
+    if select.strip() == '': sel = sizcut + a + sitzcut
+    else: sel = select + a +sizcut + a + sitzcut
+    sel = sel + a + "kpola==2"
+  elif keyu == 'WZYZ':
+    hnam = 'HWIGzyZ'
+    htit = 'Wzy in Z-Theta_Z Plane'
+    if select.strip() == '': sel = siycut + a + sitycut
+    else: sel = select + a +siycut + a + sitycut
+    sel = sel + a + "kpola==3"
+  elif keyu == 'WZYY':
+    hnam = 'HWIGzyY'
+    htit = 'Wzy in Y-Theta_Y Plane'
+    if select.strip() == '': sel = sizcut + a + sitzcut
+    else: sel = select + a +sizcut + a + sitzcut
+    sel = sel + a + "kpola==3"
+  elif keyu == 'WYZZ':
+    hnam = 'HWIGyzZ'
+    htit = 'Wyz in Z-Theta_Z Plane'
+    if select.strip() == '': sel = siycut + a + sitycut
+    else: sel = select + a +siycut + a + sitycut
+    sel = sel + a + "kpola==4"
+  elif keyu == 'WZYY':
+    hnam = 'HWIGzyY'
+    htit = 'Wzy in Y-Theta_Y Plane'
+    if select.strip() == '': sel = sizcut + a + sitzcut
+    else: sel = select + a +sizcut + a + sitzcut
+    sel = sel + a + "kpola==4"
+  #endif keyu
+
+  wtit = TeX_gamma + '/s/0.1' + ' %BW/mm$^{2}$/mrad$^{2}$/' + str(int(Curr*1000.+0.5)) + "mA"
+
+  optstat(kstat)
+
+  sel += ' and ' + selgam
+  htit += htit + '  (' + str(Esel) + ' eV)'
+
+  if keyu[3] == 'Z':
+
+    h = hbook2(hnam,htit,
+                 nz,zmin-dz/2.,zmax+dz/2.,
+                 ntz,tzmin-dtz/2.,tzmax+dtz/2.,
+                 overwrite=True)
+
+    istat = nproj2(nwig,'z:tz','wig*1.0e-12',sel,1.0,1.0,1.0,nz,ntz,hnam)
+
+    xtit = 'z [mm]'
+    ytit = 'Theta_Z [mrad]'
+
+    if h.y.min() < h.y.max():
+      hplot2d(hnam,plopt,tit=htit,xtit=xtit,ytit=ytit,ztit='')
+    else:
+      npl(nwig,'z:tz',sel,'wig*1.0e-12')
+      txyz(htit,xtit,ytit,' ')
+    #endif
+
+
+  else:
+
+    h = hbook2(hnam,htit,
+               ny,ymin-dy/2.,ymax+dy/2.,
+               nty,tymin-dty/2.,tymax+dty/2.,
+               overwrite=True)
+
+    istat = nproj2(nwig,'y:ty','wig*1.0e-12',sel,1.0,1.0,1.0,ny,nty,hnam)
+
+    xtit = 'y [mm]'
+    ytit = 'Theta_Y [mrad]'
+
+    if h.y.min() < h.y.max():
+      iyty = 1
+      hplot2d(h,plopt,tit=htit,xtit=xtit,ytit=ytit,ztit='')
+    else:
+      npl(nwig,'y:ty',sel,'wig*1.0e-12')
+      txyz(htit,xtit,ytit,' ')
+    #endif
+
+  #endif keyu
+
+  Dsetup['NxZones'][1] = nxzones
+  Dsetup['NyZones'][1] = nyzones
+
+#  setaxistitledist3d(disttit3d)
+#  setaxislabeldist3d(distlab3d)
+  setcolorbarpad(colorbarpad)
+
+  global ClearCanvas
+  ClearCanvas = 1
+  Dsetup['ClearCanvas'][1] = ClearCanvas
+  set_ClearCanvas(ClearCanvas)
+
+#enddef _pWigner()
+
+def _pWignerE(key='WzzZ',select=''):
+
+
+  global Dsetup
+  global Vsetup_Beam, LastSetUp_Beam,  SetUp_Beam, \
+  Vsetup_Undu, LastSetUp_Undu, SetUp_Undu, \
+  Vsetup_Brill, LastSetUp_Brill, SetUp_Brill, Vsetup_Plot, \
+  Vsetup_Spec, LastSetUp_Spec, SetUp_Spec, ScreenWidth, ScreenHeight
+
+  global Mthreads,Step,Nelec,Noranone,Icohere,Ihbunch,Bunchlen, \
+  Bunchcharge,Modebunch,PinX,PinY,PinZ,PinW,PinH,NpinY,NpinZ,modepin,modesphere, \
+  Shift,Nper,Nharm,Harm,Beffv,Beffh,Nepho,EphMin,EphMax, \
+  Disph,Dispph,Dispv,Disppv,Pherror,Ifixseed
+
+  global nsto,nfld,nflx,nbun,Esel
+  global BeamPar,UnduPar,SpecPar,BrillPar,PlotPar
+
+
+
+  global LastPlot; LastPlot = ['Wigner',key]
+  global Esel,IEsel,S_Esel,S_IEsel,dE,nEfold
+
+  debugbreak('_pWignerE')
+  iwigner = Dsetup['IWigner'][1]
+
+  if Calculated_Spec == False or nexist("nwge") == 0: _calc_spec()
+
+  keyu = key.upper()
+  keyl = key.lower()
+
+  if keyu == 'WHHH': keyu = 'WZZZ'
+  elif keyu == 'WHHV': keyu = 'WZZY'
+  elif keyu == 'WVVV': keyu = 'WYYY'
+  elif keyu == 'WVVH': keyu = 'WYYZ'
+  elif keyu == 'WHVH': keyu = 'WZYZ'
+  elif keyu == 'WVHH': keyu = 'WYZZ'
+  elif keyu == 'WHVV': keyu = 'WZYY'
+  elif keyu == 'WVHV': keyu = 'WYZY'
+
+  kstat = getstat()
+  nxzones = Dsetup['NxZones'][1]
+  nyzones = Dsetup['NyZones'][1]
+
+  optnstat()
+
+  nz = int(Dsetup['NpinZprop'][1])
+  ny = int(Dsetup['NpinYprop'][1])
+  pinw = float(Dsetup['PinWprop'][1])
+  pinh = float(Dsetup['PinHprop'][1])
+  ymin = -pinh/2.0
+  ymax =  pinh/2.0
+  zmin = -pinw/2.0
+  zmax =  pinw/2.0
+  nty = int(Dsetup['NyTheWig'][1])
+  ntz = int(Dsetup['NzTheWig'][1])
+  tz = float(Dsetup['TheZWig'][1])
+  ty = float(Dsetup['TheYWig'][1])
+
+  if ny > 1: dy = pinh/(ny-1)
+  else: dy = pinh / 2.
+  if nz > 1: dz = pinw/(nz-1)
+  else: dz = pinw / 2.
+
+  if nty > 1: dty = ty/(nty-1)
+  else: dty = ty / 2.
+  if ntz > 1: dtz = tz/(ntz-1)
+  else: dtz = tz / 2.
+
+  tymin = -ty/2.0
+  tymax =  ty/2.0
+  tzmin = -tz/2.0
+  tzmax =  tz/2.0
+
+  a = ' and '
+  sizcut = "iz==" + str(int(nz/2)+1)
+  siycut = "iy==" + str(int(ny/2)+1)
+  sitzcut = "itz==" + str(int(ntz/2)+1)
+  sitycut = "ity==" + str(int(nty/2)+1)
+
+  debugbreak('_pWignerE')
+  nwge = nget("nwge")
+
+#  print("\nninfo('nwge'):\n")
+#  ninfo('nwge')
+
+  plopt = Vsetup_Plot[0][1][1]
+  lwo = float(Vsetup_Plot[2][1][1])
+  lco = Vsetup_Plot[3][1][1]
+  mso = getmarkersize()
+
+#  disttit3d = getaxistitledist3d()
+#  distlab3d = getaxislabeldist3d()
+  colorbarpad = getcolorbarpad()
+
+  #reakpoint()
+  nEfold = Dsetup['nEfold'][1]
+
+  if nEfold < 2:
+    if select.strip() == '':
+      if Esel < EphMin or Esel > EphMax or IEsel <= 0:
+        if Nepho > 1:
+          dE = (EphMax-EphMin)/(Nepho-1)
+        else:
+          dE = 0
+        #endif
+        IEsel = int((nwge.iegam.max()-nwge.iegam.min())/2+1)
+        Esel = EphMin + (IEsel-1)*dE
+        S_IEsel.set(IEsel)
+        S_Esel.set(Esel)
+        select = 'iegam == ' + str(IEsel)
+    #endif select != ''
+  #endif
+
+  if keyu == 'WZZZ':
+    hnam = 'HWIGzzZE'
+    htit = 'Wzz (E-folded) in Z-Theta_Z Plane'
+    if select.strip() == '': sel = siycut + a + sitycut
+    else: sel = select + a +siycut + a + sitycut
+    sel = sel + a + "kpola==1"
+  elif keyu == 'WZZY':
+    hnam = 'HWIGzzYE'
+    htit = 'Wzz (E-folded) in Y-Theta_Y Plane'
+    if select.strip() == '': sel = sizcut + a + sitzcut
+    else: sel = select + a +sizcut + a + sitzcut
+    sel = sel + a + "kpola==1"
+  elif keyu == 'WYYZ':
+    hnam = 'HWIGyyZE'
+    htit = 'Wyy (E-folded) in Z-Theta_Z Plane'
+    if select.strip() == '': sel = siycut + a + sitycut
+    else: sel = select + a +siycut + a + sitycut
+    sel = sel + a + "kpola==2"
+  elif keyu == 'WYYY':
+    hnam = 'HWIGyyYE'
+    htit = 'Wyy (E-folded) in Y-Theta_Y Plane'
+    if select.strip() == '': sel = sizcut + a + sitzcut
+    else: sel = select + a +sizcut + a + sitzcut
+    sel = sel + a + "kpola==2"
+  elif keyu == 'WZYZ':
+    hnam = 'HWIGzyZE'
+    htit = 'Wzy (E-folded) in Z-Theta_Z Plane'
+    if select.strip() == '': sel = siycut + a + sitycut
+    else: sel = select + a +siycut + a + sitycut
+    sel = sel + a + "kpola==3"
+  elif keyu == 'WZYY':
+    hnam = 'HWIGzyYE'
+    htit = 'Wzy (E-folded) in Y-Theta_Y Plane'
+    if select.strip() == '': sel = sizcut + a + sitzcut
+    else: sel = select + a +sizcut + a + sitzcut
+    sel = sel + a + "kpola==3"
+  elif keyu == 'WYZZ':
+    hnam = 'HWIGyzZE'
+    htit = 'Wyz (E-folded) in Z-Theta_Z Plane'
+    if select.strip() == '': sel = siycut + a + sitycut
+    else: sel = select + a +siycut + a + sitycut
+    sel = sel + a + "kpola==4"
+  elif keyu == 'WZYY':
+    hnam = 'HWIGzyYE'
+    htit = 'Wzy (E-folded) in Y-Theta_Y Plane'
+    if select.strip() == '': sel = sizcut + a + sitzcut
+    else: sel = select + a +sizcut + a + sitzcut
+    sel = sel + a + "kpola==4"
+  #endif keyu
+
+  wtit = TeX_gamma + '/s/0.1' + ' %BW/mm$^{2}$/mrad$^{2}$/' + str(int(Curr*1000.+0.5)) + "mA"
+
+  optstat(kstat)
+
+  zone(2,1)
+
+  if keyu[3] == 'Z':
+
+    h = hbook2(hnam,htit,
+                 nz,zmin-dz/2.,zmax+dz/2.,
+                 ntz,tzmin-dtz/2.,tzmax+dtz/2.,
+                 overwrite=True)
+
+    istat = nproj2(nwge,'z:tz','wig*1.0e-12',sel,1.0,1.0,1.0,nz,ntz,hnam)
+
+    xtit = 'z [mm]'
+    ytit = 'Theta_Z [mrad]'
+
+    if h.y.min() < h.y.max():
+      hplot2d(hnam,plopt,tit=htit,xtit=xtit,ytit=ytit,ztit='')
+    else:
+#      setaxistitledist3d(disttit3d*2)
+      setcolorbarpad(colorbarpad*2)
+      npl(nwge,'z:tz:wig*1.0e-12:wig*1.0e-12',sel)
+      txyz(htit,'  '+xtit,'\n\n'+ytit,' ')
+    #endif
+
+    zone(2,2,2,'same')
+    npl(nwge,'z:wig*1.0e-12',sel + a + sitzcut)
+    tit = 'Theta_Z = 0'
+    xtit = 'z [mm]'
+    txyz(tit,xtit,wtit)
+
+    zone(2,2,4,'same')
+    npl(nwge,'tz:wig*1.0e-12',sel + a + sizcut)
+    tit = 'Z = 0'
+    xtit = 'Theta_Z [mrad]'
+    txyz(tit,xtit,wtit)
+
+  else:
+    h = hbook2(hnam,htit,
+               ny,ymin-dy/2.,ymax+dy/2.,
+               nty,tymin-dty/2.,tymax+dty/2.,
+               overwrite=True)
+
+    istat = nproj2(nwge,'y:ty','wig*1.0e-12',sel,1.0,1.0,1.0,ny,nty,hnam)
+
+    xtit = 'y [mm]'
+    ytit = 'Theta_Y [mrad]'
+
+    if h.y.min() < h.y.max():
+      iyty = 1
+      hplot2d(h,plopt,tit=htit,xtit=xtit,ytit=ytit,ztit='')
+    else:
+#      setaxistitledist3d(disttit3d*2)
+#      setaxislabeldist3d(1)
+      setcolorbarpad(colorbarpad*2)
+      npl(nwge,'y:ty:wig*1.0e-12:wig*1.0e-12',sel)
+      txyz(htit,'  '+xtit,'\n\n'+ytit,' ')
+    #endif
+
+    zone(2,2,2,'same')
+    npl(nwge,'y:wig*1.0e-12',sel + a + sitycut)
+    tit = 'Theta_Y = 0'
+    xtit = 'y [mm]'
+    txyz(htit,xtit,wtit)
+
+    zone(2,2,4,'same')
+    npl(nwge,'ty:wig*1.0e-12',sel + a + siycut)
+    tit = 'Y = 0'
+    xtit = 'Theta_Y [mrad]'
+    txyz(tit,xtit,wtit)
+
+  #endif keyu
+
+  Dsetup['NxZones'][1] = nxzones
+  Dsetup['NyZones'][1] = nyzones
+
+#  setaxistitledist3d(disttit3d)
+#  setaxislabeldist3d(distlab3d)
+  setcolorbarpad(colorbarpad)
+
+  global ClearCanvas
+  ClearCanvas = 1
+  Dsetup['ClearCanvas'][1] = ClearCanvas
+  set_ClearCanvas(ClearCanvas)
+
+#enddef _pWignerE()
+
 def _pFdSpec(key='s0'):
 
   global Dsetup
@@ -1436,6 +3647,8 @@ def _pFdSpec(key='s0'):
   setlinecolor(Vsetup_Plot[3][1][1])
 
   selzy = "abs(z-" + str(PinZ) + ") < 1.0e-10 and abs(y-" + str(PinY) + ") < 1.e-10"
+
+  nEfold = int(Dsetup['nEfold'][1])
 
   if keyl[0] == 's':
     npl(nfld,"egam:"+keyl,selzy,plopt='line')
@@ -1533,6 +3746,8 @@ def _write_urad_phase_nam():
 
 
   global Unamelist,Useed
+
+  debugbreak('_write_urad_nam')
 
   try:
     shutil.copyfile("urad_phase.nam","urad_phase.nam.bck")
@@ -1642,6 +3857,7 @@ def _dvsetup():
   Harm,Shift,nKvals,Kmin,Kmax,Nmin,Nmax,Mode,Nelec,modepin,modesphere,Nepho, \
   EphMin,EphMax,PinX,PinY,PinZ,PinW,PinH,NpinZ,NpinY,Step,Pherror, \
   Ifixseed,Kellip
+  global Ebeam, EbeamMin, EbeamMax, Espread
 
   Vsetup_Beam = []
   for key in BeamPar:
@@ -1703,15 +3919,101 @@ def debug(s=''):
 #enddef debug()
 
 def _get_spec():
-  global Calculated_Spec, NcalcSpec
-  global nsto,nflx,nfld,nbun,nfdp
 
-  #nsto = ncread("nsto","x:y:z:iegam:egam:s0:s1:s2:s3","urad_phase.sto")
-  nflx = ncread("nflx","iegam:egam:s0:s1:s2:s3","urad_phase.flx")
-  if fexist("urad_phase.fdp"):
-    nfdp = ncread("nfdp","x:y:z:iegam:egam:s0:s1:s2:s3:exr:exi:eyr:eyi:ezr:ezi:bxr:bxi:byr:byi:bzr:bzi:nx:ny:nz","urad_phase.fdp")
-  nfld = ncread("nfld","x:y:z:iegam:egam:s0:s1:s2:s3:p:exr:exi:eyr:eyi:ezr:ezi:bxr:bxi:byr:byi:bzr:bzi:nx:ny:nz","urad_phase.fld")
-  nbun = ncread("nbun","jbun:isub:ibu:bunchx:rxi1:ryi1:rzi1:ypi1:zpi1:rxin:ryin:rzin:ypin:zpin:eel:deel:x:y:z:iegam:egam:spec:s0:s1:s2:s3:p:fb28:dt","urad_phase.bun")
+  global Calculated_Spec, NcalcSpec, SpecPar
+  global nsto,nflx,nfld,nbun,nfdp,nwig,nwge
+  global IWigner,nEfold,Esel,IEsel
+
+#  debugbreak('_get_spec')
+
+  if fexist("urad_phase_espread.flx"):
+    nflx = ncread("nflx","iegam:iebeam:egam:ebeam:s0:s1:s2:s3","urad_phase_espread.flx")
+  elif fexist("urad_phase.flx"):
+      nflx = ncread("nflx","iegam:iebeam:egam:ebeam:s0:s1:s2:s3","urad_phase.flx")
+  #endif
+
+  if fexist("urad_phase_espread.fdp"):
+    nfdp = ncread("nfdp","x:y:z:iegam:iebeam:egam:ebeam:s0:s1:s2:s3:exr:exi:eyr:eyi:ezr:ezi:bxr:bxi:byr:byi:bzr:bzi:nx:ny:nz:g","urad_phase_espread.fdp")
+  elif fexist("urad_phase.fdp"):
+    nfdp = ncread("nfdp","x:y:z:iegam:iebeam:egam:ebeam:s0:s1:s2:s3:exr:exi:eyr:eyi:ezr:ezi:bxr:bxi:byr:byi:bzr:bzi:nx:ny:nz:g","urad_phase.fdp")
+  #endif
+
+  if fexist("urad_phase_espread.fld"):
+    nfld = ncread("nfld","x:y:z:iegam:iebeam:egam:ebeam:s0:s1:s2:s3:p:exr:exi:eyr:eyi:ezr:ezi:bxr:bxi:byr:byi:bzr:bzi:nx:ny:nz:g","urad_phase_espread.fld")
+  elif fexist("urad_phase.fld"):
+    nfld = ncread("nfld","x:y:z:iegam:iebeam:egam:ebeam:s0:s1:s2:s3:p:exr:exi:eyr:eyi:ezr:ezi:bxr:bxi:byr:byi:bzr:bzi:nx:ny:nz:g","urad_phase.fld")
+  #endif
+
+  if fexist("urad_phase.bun"):
+    nbun = ncread("nbun","jbun:isub:ibu:bunchx:rxi1:ryi1:rzi1:ypi1:zpi1:rxin:ryin:rzin:ypin:zpin:eel:deel:x:y:z:iegam:egam:spec:s0:s1:s2:s3:p:fb28:dt:exr:exi:eyr:eyi:ezr:ezi:bxr:bxi:byr:byi:bzr:bzi:","urad_phase.bun")
+
+  iwig = 0
+
+  fwige = 'urad_phase_espread.wig'
+  fwig = 'urad_phase.wig'
+  if fexist(fwige):
+    nwig = ncread("nwig","kpola:iz:iy:itz:ity:x:y:z:ty:tz:iegam:egam:eyr:eyi:ezr:ezi:wig",fwige)
+  elif (fexist(fwig)):
+    nwig = ncread("nwig","kpola:iz:iy:itz:ity:x:y:z:ty:tz:iegam:iebeam:egam:ebeam:ezr:ezi:eyr:eyi:wig:g",fwig)
+  #endif
+
+  fpin = open("urad_phase.pin",'r')
+
+  pin = fpin.readline().strip().split()
+  npinz = int(pin[0])
+  npiny = int(pin[1])
+  pinw = float(pin[2])
+  pinh = float(pin[3])
+
+  pincen = fpin.readline().strip().split()
+  pinx = pincen[0]
+  piny = pincen[1]
+  pinz = pincen[2]
+
+  words = fpin.readline().strip().split()
+  modepin = int(words[0])
+  ifold = int(words[1])
+  ifixphase = int(words[2])
+  ifieldprop = int(words[3])
+  nelec = int(words[4])
+  ihbunch=int(words[5])
+  ianalytic = float(words[6])
+
+  words = fpin.readline().strip().split()
+  betah = float(words[0])
+  emith = float(words[1])
+  betav = float(words[2])
+  emitv = float(words[3])
+  espread = float(words[4])
+
+  words = fpin.readline().strip().split()
+
+  npinzprop = int(words[0])
+  npinyprop = int(words[1])
+  pinxprop = float(words[2])
+  pinwprop = float(words[3])
+  pinhprop = float(words[4])
+
+  dzprop = pinwprop/(npinzprop-1)
+  dyprop = pinhprop/(npinyprop-1)
+
+  words = fpin.readline().strip().split()
+  nzwig = int(words[0])
+  nywig = int(words[1])
+  tzwig = float(words[2])
+  tywig = float(words[3])
+
+  words = fpin.readline().strip().split()
+  IWigner = int(words[0])
+  nosplineefold = int(words[1])
+  nEfold = int(words[2])
+
+  fpin.close()
+
+  Dsetup['IWigner'][1] = IWigner
+  Dsetup['nEfold'][1] = nEfold
+
+  _reset_mwigner()
 
   Calculated_Spec = True
 
@@ -1719,6 +4021,16 @@ def _get_spec():
   line = Frun.readline().strip().split()
   Frun.close()
   Run_pyBrill = int(line[0])
+
+  if IEsel <= 0:
+    IEsel = int(nfld.iegam.max()/2) + 1
+    Esel = int(nfld.iegam.max()/2) + 1
+    S_IEsel.set(IEsel)
+    EphMin = nfld.egam.min()
+    EphMax = nfld.egam.max()
+    Esel = (EphMax+EphMin)/2.0
+    S_Esel.set(Esel)
+  #endif
 
   nlist()
   print('\n Spectra read from Run',Run_pyBrill,'\n')
@@ -1728,9 +4040,11 @@ def _get_spec():
 #enddef _get_spec()
 
 def _calc_spec():
-  global Calculated_Spec, NcalcSpec
-  global nsto,nflx,nfld,nbun,nfdp
 
+  global Calculated_Spec, NcalcSpec,SpecPar,Dsetup
+  global nsto,nflx,nfld,nbun,nfdp,nwig,nwge
+
+  debugbreak('calc_spec()')
   _UpdateVars()
 
   cwd = os.getcwd()
@@ -1739,16 +4053,31 @@ def _calc_spec():
 
   localtime = time.asctime( time.localtime(time.time()) )
 
+  debugbreak('_calc_spec')
+
+  furph = open('.urad_phase.cal','w')
+  furph.write('pyBrill\n')
+  furph.close()
+
   if platform.system() == 'Windows':
     print('\n',"Starting spectrum calculation with urad_phase_win32.exe")
     print(localtime)
     #os.system(cwd + '\\..\\bin\\urad_phase_win32.exe')
     os.system('%BRILL%\\bin\\urad_phase_win32.exe')
   else:
-    print('\n',"Starting spectrum calculation with urad_phase.exe")
-    print(localtime)
-    #os.system(cwd + "/../bin/urad_phase.exe")
-    os.system("$BRILL/bin/urad_phase.exe")
+    if Kdebug == 3:
+      print('\n',"Starting spectrum calculation with urad_phase_debug.exe")
+      print(localtime)
+      os.system("ddd -gdb -geometry +20+10 --command ./startup.ddd $BRILL/bin/urad_phase_debug.exe")
+    elif Kdebug == 2:
+      print('\n',"Starting spectrum calculation with urad_phase_debug.exe")
+      print(localtime)
+      os.system("gdb --command ./startup.ddd $BRILL/bin/urad_phase_debug.exe")
+    else:
+      print('\n',"Starting spectrum calculation with urad_phase.exe")
+      print(localtime)
+      os.system("$BRILL/bin/urad_phase.exe")
+    #endif
   #endif platform.system() == 'Windows'
 
   t1 = time.time()
@@ -1758,12 +4087,44 @@ def _calc_spec():
   print(' Loading N-tuples\n')
 
   #nsto = ncread("nsto","x:y:z:iegam:egam:s0:s1:s2:s3","urad_phase.sto")
-  nflx = ncread("nflx","iegam:egam:s0:s1:s2:s3","urad_phase.flx")
-  nfld = ncread("nfld","x:y:z:iegam:egam:s0:s1:s2:s3:p:exr:exi:eyr:eyi:ezr:ezi:bxr:bxi:byr:byi:bzr:bzi:nx:ny:nz","urad_phase.fld")
-  nbun = ncread("nbun","jbun:isub:ibu:bunchx:rxi1:ryi1:rzi1:ypi1:zpi1:rxin:ryin:rzin:ypin:zpin:eel:deel:x:y:z:iegam:egam:spec:s0:s1:s2:s3:p:fb28:dt","urad_phase.bun")
-  if fexist("urad_phase.fdp"):
-    nfdp = ncread("nfdp","x:y:z:iegam:egam:s0:s1:s2:s3:exr:exi:eyr:eyi:ezr:ezi:bxr:bxi:byr:byi:bzr:bzi:nx:ny:nz","urad_phase.fdp")
+
+  ifieldprop = Dsetup['IFieldProp'][1]
+  iwigner = Dsetup['IWigner'][1]
+  nEfold = Dsetup['nEfold'][1]
+
+
+  if fexist("urad_phase_espread.flx"):
+    nflx = ncread("nflx","iegam:iebeam:egam:ebeam:s0:s1:s2:s3","urad_phase_espread.flx")
+  elif fexist("urad_phase.flx"):
+      nflx = ncread("nflx","iegam:iebeam:egam:ebeam:s0:s1:s2:s3","urad_phase.flx")
+  #endif
+
+  if fexist("urad_phase_espread.fdp"):
+    nfdp = ncread("nfdp","x:y:z:iegam:iebeam:egam:ebeam:s0:s1:s2:s3:exr:exi:eyr:eyi:ezr:ezi:bxr:bxi:byr:byi:bzr:bzi:nx:ny:nz:g","urad_phase_espread.fdp")
+  elif fexist("urad_phase.fdp"):
+    nfdp = ncread("nfdp","x:y:z:iegam:iebeam:egam:ebeam:s0:s1:s2:s3:exr:exi:eyr:eyi:ezr:ezi:bxr:bxi:byr:byi:bzr:bzi:nx:ny:nz:g","urad_phase.fdp")
+  #endif
+
+  if fexist("urad_phase_espread.fld"):
+    nfld = ncread("nfld","x:y:z:iegam:iebeam:egam:ebeam:s0:s1:s2:s3:p:exr:exi:eyr:eyi:ezr:ezi:bxr:bxi:byr:byi:bzr:bzi:nx:ny:nz:g","urad_phase_espread.fld")
+  elif fexist("urad_phase.fld"):
+    nfld = ncread("nfld","x:y:z:iegam:iebeam:egam:ebeam:s0:s1:s2:s3:p:exr:exi:eyr:eyi:ezr:ezi:bxr:bxi:byr:byi:bzr:bzi:nx:ny:nz:g","urad_phase.fld")
+  #endif
+
+  if fexist("urad_phase.bun"):
+    nbun = ncread("nbun","jbun:isub:ibu:bunchx:rxi1:ryi1:rzi1:ypi1:zpi1:rxin:ryin:rzin:ypin:zpin:eel:deel:x:y:z:iegam:egam:spec:s0:s1:s2:s3:p:fb28:dt:g","urad_phase.bun")
+  #endif
+
+  fwige = 'urad_phase_espread.wig'
+  fwig = 'urad_phase.wig'
+  if fexist(fwige):
+    nwig = ncread("nwig","kpola:iz:iy:itz:ity:x:y:z:ty:tz:iegam:egam:eyr:eyi:ezr:ezi:wig",fwige)
+  elif (fexist(fwig)):
+    nwig = ncread("nwig","kpola:iz:iy:itz:ity:x:y:z:ty:tz:iegam:iebeam:egam:ebeam:ezr:ezi:eyr:eyi:wig:g",fwig)
+  #endif
+
   nlist()
+
   print("\nFinished")
 
   Calculated_Spec = True
@@ -1771,6 +4132,64 @@ def _calc_spec():
   Frun = open("pybrill_spec.run",'w')
   Frun.write(str(Run_pyBrill) + " " + str(time.time()) + '\n')
   Frun.close()
+
+  fpin = open("urad_phase.pin",'r')
+
+  pin = fpin.readline().strip().split()
+  npinz = int(pin[0])
+  npiny = int(pin[1])
+  pinw = float(pin[2])
+  pinh = float(pin[3])
+
+  pincen = fpin.readline().strip().split()
+  pinx = pincen[0]
+  piny = pincen[1]
+  pinz = pincen[2]
+
+  words = fpin.readline().strip().split()
+  modepin = int(words[0])
+  ifold = int(words[1])
+  ifixphase = int(words[2])
+  ifieldprop = int(words[3])
+  nelec = int(words[4])
+  ihbunch=int(words[5])
+  ianalytic = float(words[6])
+
+  words = fpin.readline().strip().split()
+  betah = float(words[0])
+  emith = float(words[1])
+  betav = float(words[2])
+  emitv = float(words[3])
+  espread = float(words[4])
+
+  words = fpin.readline().strip().split()
+
+  npinzprop = int(words[0])
+  npinyprop = int(words[1])
+  pinxprop = float(words[2])
+  pinwprop = float(words[3])
+  pinhprop = float(words[4])
+
+  dzprop = pinwprop/(npinzprop-1)
+  dyprop = pinhprop/(npinyprop-1)
+
+  words = fpin.readline().strip().split()
+  nzwig = int(words[0])
+  nywig = int(words[1])
+  tzwig = float(words[2])
+  tywig = float(words[3])
+
+  words = fpin.readline().strip().split()
+  IWigner = int(words[0])
+  nosplineefold = int(words[1])
+  nEfold = int(words[2])
+
+  fpin.close()
+
+  Dsetup['IWigner'][1] = IWigner
+  Dsetup['nEfold'][1] = nEfold
+
+  _reset_mwigner()
 
   NcalcSpec += 1
 #enddef _calc_spec()
@@ -1865,6 +4284,11 @@ def _vsetup_plot_ini():
   Dsetup['Markersize']= ["Markersize",5.]
   Dsetup['Linewidth']= ["Linewidth",2.]
   Dsetup['Linecolor'] = ["Linecolor",'b']
+  Dsetup['NxZones'] = ["NxZones",1]
+  Dsetup['NyZones'] = ["NyZones",1]
+  global ClearCanvas
+  Dsetup['ClearCanvas'] = ["Clear Canvas",ClearCanvas]
+  set_ClearCanvas(ClearCanvas)
 
   Vsetup_Plot = []
   for key in PlotPar:
@@ -2013,7 +4437,7 @@ def _setup_spec():
   wm = Wmaster.winfo_width()
   hm = Wmaster.winfo_height()
 
-  SetUp_Spec.geometry('+' + str(int(xm+wm/3)) + '+' + str(int(ym+hm*0.3)))
+  SetUp_Spec.geometry('+' + str(int(xm+wm/3)) + '+' + str(int(ym+hm*0.05)))
 
   LastSetUp_Spec = 0
 
@@ -2364,9 +4788,15 @@ def _writelastrun():
 
   global Dsetup
 
+  debugbreak('_writelastrun')
   _UpdateVars()
 
   fl = ".pybrill_last.dat"
+  flb = ".pybrill_last.dat.bck"
+
+  if fexist(fl):
+    copyfile(fl,flb)
+  #endif
 
   Fl = open(fl,"w")
   for key in list(Dsetup):
@@ -2385,6 +4815,7 @@ def _readlastrun():
   EphMin,EphMax,PinX,PinY,PinZ,PinW,PinH,NpinZ,NpinY,Step,Pherror, \
   Ifixseed,Kellip
 
+#  debugbreak('_readlastrun')
   fl = ".pybrill_last.dat"
 
   if os.path.exists(fl):
@@ -2394,6 +4825,7 @@ def _readlastrun():
     Fl.close()
 
     global Dummy
+
     for line in lines:
       words = line.strip().split(':',1)
       key = words[0]
@@ -2675,13 +5107,14 @@ def _UpdateVars():
 
   global Calculated_Brill, LastSetup, Kellip, Calculated_Spec, NcalcSpec
   global L, nKvals, Kvals, b0, Kmin, Kmax, Kellip, N, Ebeam, Curr, \
-  EmitH, EmitV, BetaH, BetaV, SigE, Mode, Espread
+  EmitH, EmitV, BetaH, BetaV, SigE, Mode, Espread, EbeamMin,EbeamMax, dEbeam
 
   dsetupold = deepcopy(Dsetup)
   _dvsetup()
 
   N = Dsetup['Nper'][1]
   L = Dsetup['Perlen'][1]
+
   Dsetup['Espread'] = Dsetup['SigE']
 
   Calculated_Brill = False
@@ -2712,6 +5145,7 @@ def _calc_brill():
     global L, nKvals, Kvals, b0, Kmin, Kmax, Kellip, N, Ebeam, Curr, \
     EmitH, EmitV, BetaH, BetaV, SigE, Mode
 
+    debugbreak('calc_brill()')
     _UpdateVars()
 
     calc_brill(\
@@ -2933,6 +5367,8 @@ def window_set_title(Title='',fig=-1):
 
 #######################################################
 
+debugbreak('Main 2')
+
 Perlen = 50.
 nKvals = 101
 Kmin = 0.5
@@ -2948,6 +5384,7 @@ EmitV = 0.066
 BetaH = 14. #m
 BetaV = 3.4
 SigE = 0.001
+Espread = SigE
 Disph = 0.0 #m
 Dispph = 0.0 #rad
 Dispv = 0.0 #m
@@ -2967,7 +5404,6 @@ Shift = 0.0
 #reakpoint()
 Dsetup = {}
 
-Dsetup['Ebeam'] =  ["Beam energy [GeV]",Ebeam]
 Dsetup['Curr'] =  ["Current [A]",Curr]
 Dsetup['EmitH'] =  ["Hor. Emit. [nm-rad]",EmitH]
 Dsetup['EmitV'] =  ["Ver. Emit. [nm-rad]",EmitV]
@@ -3017,6 +5453,27 @@ NpinZprop = 21
 NpinYprop = 21
 Ifixseed = 0
 
+IfixPhase = 0
+PhGshift = 9999.
+GlobPhaseProp = 9999.
+
+IWigner = 0
+NyTheWig = 31
+TheYWig = 0.05
+NzTheWig = 31
+TheZWig= 0.05
+nEfold = 0
+NoSplineEfold = 0
+
+EbeamMin = Ebeam*(1.0-3.0*Espread)
+EbeamMax = Ebeam*(1.0+3.0*Espread)
+
+if nEfold > 1:
+  dEbeam = (EbeamMax-EbeamMin)/(nEfold-1)
+else:
+  dEbeam = 0
+#endif
+
 Dsetup['Nelec'] = ["Nelec",Nelec]
 Dsetup['Modepin'] = ["Monte-Carlo mode [0,1]",Modepin]
 Dsetup['Noranone'] = ["No randomization of first e- [0,1]",Noranone]
@@ -3042,6 +5499,21 @@ Dsetup['NpinZprop'] = ["Number of hori. points in Plane",NpinZprop]
 Dsetup['NpinYprop'] = ["Number of vert. points in Plane",NpinYprop]
 
 Dsetup['Ifixseed'] = ["Fix Seeds [0,1]",Ifixseed]
+
+Dsetup['IfixPhase'] = ['Random phase for e-',IfixPhase]
+Dsetup['PhGshift'] = ['Global phase shift. 9999.: Hori. amplitude is zero for (PinX,PinY,PinZ)) ',PhGshift]
+Dsetup['GlobPhaseProp'] = ['Global phase shift. of prop. fields. 9999.: Hori. amplitude is zero for (PinX,PinY,PinZ)) ',GlobPhaseProp]
+Dsetup['IWigner'] = ['Calculate Wigner Distributions [-4,-3,-2,-1,0,1]',IWigner]
+Dsetup['NyTheWig'] = ['Number of vert. angle steps',NyTheWig]
+Dsetup['TheYWig'] = ['Vert. angle range',TheYWig]
+Dsetup['NzTheWig'] = ['Number of hori. angle steps',NzTheWig]
+Dsetup['TheZWig'] = ['Hori. angle range',51,TheZWig]
+Dsetup['Ebeam'] =  ["Beam energy [GeV]",Ebeam]
+Dsetup['EbeamMin'] =  ["Min. beam energy [GeV]",EbeamMin]
+Dsetup['EbeamMax'] =  ["Max. beam energy [GeV]",EbeamMax]
+Dsetup['dEbeam'] =  ["dEbeam",dEbeam]
+Dsetup['nEfold'] = ['Number of E-spread steps',0,nEfold]
+Dsetup['NoSplineEfold'] = ['Suppress splines for E-spread folding',NoSplineEfold]
 
 _vsetup_plot_ini()
 _dvsetup()
@@ -3086,6 +5558,8 @@ KyxList = 0
 Grid = True
 LastSetup = 0
 
+debugbreak('Main 3')
+
 global Run_pyBrill, Run_pyBrill_Time, NcalcBrill, NcalcSpec
 NcalcBrill = 0
 NcalcSpec = 0
@@ -3120,7 +5594,7 @@ Wmaster = WmainMaster
 #print(id(Wmaster))
 
 Toolbar = Wmain.canvas.toolbar
-Myfont = ('arial',13)
+Myfont = ('arial',15)
 
 CanButpyBrill = Wmain.canvas.mpl_connect('button_press_event',_canbutpybrill)
 CanKeySpec = plt.connect('key_press_event', _spec_key_press)
@@ -3187,6 +5661,11 @@ MFlux = Menu(MSpec,tearoff=0,font=Myfont)
 MDist = Menu(MSpec,tearoff=1,font=Myfont)
 MProp = Menu(MSpec,tearoff=1,font=Myfont)
 
+global MWigner, NWignerMentries
+NWignerMentries=0
+
+MWigner = Menu(MSpec,tearoff=1,font=Myfont)
+
 global MFd
 MFd = Menu(MSpec,tearoff=1,font=Myfont)
 
@@ -3197,6 +5676,7 @@ mPlotSpec.add_cascade(label='Flux', menu=MFlux)
 mPlotSpec.add_cascade(label='Central Flux-density', menu=MFd)
 mPlotSpec.add_cascade(label='Distributions in Pinhole', menu=MDist)
 mPlotSpec.add_cascade(label='Distributions of Propagated Fields', menu=MProp)
+mPlotSpec.add_cascade(label='Wigner Distributions', menu=MWigner)
 mPlotSpec.add_cascade(label='Electrons', menu=MElec)
 
 MElec.add_command(label="Zi-Zi'", command= lambda key='zizpi': _pElec(key))
@@ -3261,6 +5741,74 @@ MPropFields.add_command(label='Ey_real', command= lambda key='EYR': _pFdProp(key
 MPropFields.add_command(label='Ey_imag', command= lambda key='EYI': _pFdProp(key))
 MPropFields.add_command(label='Ez_real', command= lambda key='EZR': _pFdProp(key))
 MPropFields.add_command(label='Ez_imag', command= lambda key='EZI': _pFdProp(key))
+MPropFields.add_command(label='Ez_imag', command= lambda key='EZI': _pFdProp(key))
+
+IWigner = Dsetup['IWigner'][1]
+nEfold = Dsetup['nEfold'][1]
+
+def _reset_mwigner():
+
+  global MWigner, NWignerMentries,nEfold
+
+  #reakpoint()
+
+  try: MWigner.delete('WzzZ')
+  except: pass
+  try: MWigner.delete('WzzY')
+  except: pass
+
+  try: MWigner.delete('WyyZ')
+  except: pass
+  try: MWigner.delete('WyyY')
+  except: pass
+
+  try: MWigner.delete('WzyZ')
+  except: pass
+  try: MWigner.delete('WzyY')
+  except: pass
+
+  try: MWigner.delete('WyzZ')
+  except: pass
+  try: MWigner.delete('WyzY')
+  except: pass
+
+  try: MWigner.delete('Select E_photon')
+  except: pass
+
+  NWignerMentries = 0
+
+  if IWigner == -1 or IWigner > 0:
+    MWigner.add_command(label='WzzZ', command= lambda key='WzzZ': _pWigner(key))
+    MWigner.add_command(label='WzzY', command= lambda key='WzzY': _pWigner(key))
+    NWignerMentries += 2
+  #endif
+
+  if IWigner == -2 or IWigner > 0:
+    MWigner.add_command(label='WyyZ', command= lambda key='WyyZ': _pWigner(key))
+    MWigner.add_command(label='WyyY', command= lambda key='WyyY': _pWigner(key))
+    NWignerMentries += 2
+  #endif
+
+  if IWigner == -3 or IWigner > 0:
+    MWigner.add_command(label='WzyZ', command= lambda key='WzyZ': _pWigner(key))
+    MWigner.add_command(label='WzyY', command= lambda key='WzyY': _pWigner(key))
+    NWignerMentries += 2
+  #endif
+
+  if IWigner == -4 or IWigner > 0:
+    MWigner.add_command(label='WyzZ', command= lambda key='WyzZ': _pWigner(key))
+    MWigner.add_command(label='WyzY', command= lambda key='WyzY': _pWigner(key))
+    NWignerMentries += 2
+  #endif
+
+  MWigner.add_command(label='Select E_photon', command=_setup_esel)
+  NWignerMentries += 1
+
+#enddef
+
+debugbreak('Main 4')
+
+_reset_mwigner()
 
 bExit = Button(Toolbar,text='Exit',font=Myfont,command=_exit)
 bExit.pack(side=LEFT)
@@ -3271,6 +5819,7 @@ S_Esel = StringVar()
 S_IEsel.set(IEsel)
 S_Esel.set(Esel)
 
-#_setup_menu()
-#_setup()
-#_pbrill()
+def Load_Previous_Run(): _get_spec()
+
+# Execute ntupplot_startup.py
+startup()

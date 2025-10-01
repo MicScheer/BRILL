@@ -20,23 +20,26 @@
      &  perlen_u,shift_u,beffv_u,beffh_u,pherror_u,phgshift_u,
      &  xbeta_u,betah_u,alphah_u,betav_u,alphav_u,espread_u,
      &  disph_u,dispph_u,dispv_u,disppv_u,bunchlen_u,bunchcharge_u,
-     &  pinxprop_u,pinwprop_u,pinhprop_u
+     &  pinxprop_u,pinwprop_u,pinhprop_u,globphase_u,globphaseprop_u,
+     &  wavzstart,wavystart,wavzamp,wavyamp,defl_u
 
-      integer nstep_u,nepho_u,nobsv_u,nbunch_u,npiny_u,npinz_u,
+      integer nstep_u,nepho_u,nobsv_u,nbunch_u,npiny_u,npinz_u,ianalytic_u,nharm_u,
      &  nper_u,modeph_u,modepin_u,modesphere_u,noranone_u,nlpoi_u,ifixphase_u,ifold_u,
      &  nobsvprop_u,npinyprop_u,npinzprop_u,npinzo_u,npinyo_u,ifieldprop_u,ifieldsym_u
 
       integer
-     &  ibunch_u,ihbunch_u,mthreads_u,nelec_u,icohere_u,modebunch_u
+     &  ibunch_u,ihbunch_u,mthreads_u,nelec_u,icohere_u,modebunch_u,
+     &  kalloarad_u,kalloepho_u,kalloobsv_u,kalloaradprop_u,kallostokes_u,kallostokesprop_u
 
       end module uradphasemod
 *KEEP,WIGNERMOD.
       module wignermod
 
       double precision, dimension(:,:,:,:,:,:), allocatable :: wigr,wigi,wigkr,wigki
-c      double precision, dimension(:,:,:,:), allocatable :: wigkr,wigki
-      double precision, dimension(:), allocatable :: wigthez,wigthey,wigz,wigy
-      double precision :: dzprop,dyprop,dzwig,dywig,pinwwig,pinhwig,thezwig,theywig
+      double precision, dimension(:), allocatable :: thetazwig,thetaywig,zwig,ywig
+
+      double precision :: dzprop,dyprop,dzwig,dywig,pinwwig,pinhwig,thezwig,theywig,
+     &  dtzwig,dtywig
 
       integer nywig,nzwig,nzthewig,nythewig,nzfringe,nyfringe
 

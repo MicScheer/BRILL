@@ -66,6 +66,118 @@ c      print*,n
 
       return
       end
+*CMZ :  2.66/07 04/03/2010  21.48.04  by  Michael Scheer
+*-- Author :    Michael Scheer   04/03/2010
+      subroutine util_bessel(n,x,bessel,jfail)
+*KEEP,GPLHINT.
+!******************************************************************************
+!
+!      Copyright 2013 Helmholtz-Zentrum Berlin (HZB)
+!      Hahn-Meitner-Platz 1
+!      D-14109 Berlin
+!      Germany
+!
+!      Author Michael Scheer, Michael.Scheer@Helmholtz-Berlin.de
+!
+! -----------------------------------------------------------------------
+!
+!    This program is free software: you can redistribute it and/or modify
+!    it under the terms of the GNU General Public License as published by
+!    the Free Software Foundation, either version 3 of the License, or
+!    (at your option) any later version.
+!
+!    This program is distributed in the hope that it will be useful,
+!    but WITHOUT ANY WARRANTY; without even the implied warranty of
+!    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!    GNU General Public License for more details.
+!
+!    You should have received a copy (wave_gpl.txt) of the GNU General Public
+!    License along with this program.
+!    If not, see <http://www.gnu.org/licenses/>.
+!
+!    Dieses Programm ist Freie Software: Sie koennen es unter den Bedingungen
+!    der GNU General Public License, wie von der Free Software Foundation,
+!    Version 3 der Lizenz oder (nach Ihrer Option) jeder spaeteren
+!    veroeffentlichten Version, weiterverbreiten und/oder modifizieren.
+!
+!    Dieses Programm wird in der Hoffnung, dass es nuetzlich sein wird, aber
+!    OHNE JEDE GEWAEHRLEISTUNG, bereitgestellt; sogar ohne die implizite
+!    Gewaehrleistung der MARKTFAEHIGKEIT oder EIGNUNG FueR EINEN BESTIMMTEN ZWECK.
+!    Siehe die GNU General Public License fuer weitere Details.
+!
+!    Sie sollten eine Kopie (wave_gpl.txt) der GNU General Public License
+!    zusammen mit diesem Programm erhalten haben. Wenn nicht,
+!    siehe <http://www.gnu.org/licenses/>.
+!
+!******************************************************************************
+*KEND.
+
+c Calculates BESSEL-function Jn(x)
+
+      implicit none
+
+      integer ndimp
+      parameter(ndimp=1000)
+
+      double complex z
+     &  ,f(ndimp),g(ndimp),fp(ndimp),gp(ndimp),sig(ndimp),eta(ndimp),zlmin
+
+      double precision x,bessel
+
+      integer n,jfail
+
+      if (n.ge.ndimp) then
+        jfail=-9999
+        return
+      endif
+
+      z=dcmplx(x,0.0d0)
+
+c     CALL WCLBES(Z,ETA,ZLMIN,NL,F,G,FP,GP,SIG,KFN,MODE,JFAIL,JPR)
+
+      zlmin=dcmplx(dble(n),0.0d0)
+      call wclbes(z,eta,zlmin,0,f,g,fp,gp,sig,2,1,jfail,0) !CERN C309
+
+      bessel=dreal(f(1))
+
+      return
+      end
+*CMZ :  4.02/00 16/06/2025  17.12.53  by  Michael Scheer
+*CMZ : 00.00/16 18/03/2014  17.02.27  by  Michael Scheer
+*CMZ : 00.00/15 12/10/2013  12.22.24  by  Michael Scheer
+*CMZ : 00.00/07 02/05/2008  13.10.35  by  Michael Scheer
+*CMZ : 00.00/02 17/08/2004  09.47.26  by  Michael Scheer
+*CMZ : 00.00/00 10/01/95  15.25.29  by  Michael Scheer
+*-- Author :
+      SUBROUTINE UTIL_integral_spline(X,Y,N,resultat)
+
+C---  CALCULATES INTERGRAL OF Y(X) VIA SPLINES
+
+      IMPLICIT NONE
+
+      INTEGER I,N
+      REAL*8 X(N),Y(N),resultat
+      REAL*8 COEF(N),WORK1(N),WORK2(N),WORK3(N),WORK4(N)
+
+C---  SPLINE-COEFFICIENTS
+
+      CALL UTIL_SPLINE_COEF(X,Y,N,9999.0d0,9999.0d0,COEF,WORK1,WORK2,WORK3,WORK4)
+
+C--- INTEGRATION
+
+      resultat=0.0D0
+      DO I=1,N-1
+
+      resultat=resultat
+     &          +(X(I+1)-X(I))*0.5D0
+     &          *(Y(I)+Y(I+1))
+     &          -(X(I+1)-X(I))**3/24.D0
+     &          *(COEF(I)+COEF(I+1))
+
+      ENDDO
+
+      RETURN
+      END
 *CMZ :  4.00/11 28/05/2021  09.17.01  by  Michael Scheer
 *CMZ :  3.05/05 12/07/2018  13.12.16  by  Michael Scheer
 *CMZ :  3.02/00 24/09/2014  13.51.08  by  Michael Scheer
@@ -79,7 +191,47 @@ c      print*,n
 *CMZ : 00.00/00 10/01/95  15.27.54  by  Michael Scheer
 *-- Author : Michael Scheer
       SUBROUTINE UTIL_SPLINE_INTER(XA,YA,Y2A,N,X,Y,MODE)
-*KEEP,GPLHINT.
+*KEEP,gplhint.
+!******************************************************************************
+!
+!      Copyright 2013 Helmholtz-Zentrum Berlin (HZB)
+!      Hahn-Meitner-Platz 1
+!      D-14109 Berlin
+!      Germany
+!
+!      Author Michael Scheer, Michael.Scheer@Helmholtz-Berlin.de
+!
+! -----------------------------------------------------------------------
+!
+!    This program is free software: you can redistribute it and/or modify
+!    it under the terms of the GNU General Public License as published by
+!    the Free Software Foundation, either version 3 of the License, or
+!    (at your option) any later version.
+!
+!    This program is distributed in the hope that it will be useful,
+!    but WITHOUT ANY WARRANTY; without even the implied warranty of
+!    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!    GNU General Public License for more details.
+!
+!    You should have received a copy (wave_gpl.txt) of the GNU General Public
+!    License along with this program.
+!    If not, see <http://www.gnu.org/licenses/>.
+!
+!    Dieses Programm ist Freie Software: Sie koennen es unter den Bedingungen
+!    der GNU General Public License, wie von der Free Software Foundation,
+!    Version 3 der Lizenz oder (nach Ihrer Option) jeder spaeteren
+!    veroeffentlichten Version, weiterverbreiten und/oder modifizieren.
+!
+!    Dieses Programm wird in der Hoffnung, dass es nuetzlich sein wird, aber
+!    OHNE JEDE GEWAEHRLEISTUNG, bereitgestellt; sogar ohne die implizite
+!    Gewaehrleistung der MARKTFAEHIGKEIT oder EIGNUNG FueR EINEN BESTIMMTEN ZWECK.
+!    Siehe die GNU General Public License fuer weitere Details.
+!
+!    Sie sollten eine Kopie (wave_gpl.txt) der GNU General Public License
+!    zusammen mit diesem Programm erhalten haben. Wenn nicht,
+!    siehe <http://www.gnu.org/licenses/>.
+!
+!******************************************************************************
 *KEND.
 
 C---  INTERPOLATES Y(X) VIA SPLINE
@@ -267,6 +419,46 @@ c      save klold,nold,xa1old,xanold
 *-- Author : Michael Scheer
       SUBROUTINE UTIL_SPLINE_COEF(X,Y,N,YP1,YPN,Y2,AA,BB,CC,C)
 *KEEP,gplhint.
+!******************************************************************************
+!
+!      Copyright 2013 Helmholtz-Zentrum Berlin (HZB)
+!      Hahn-Meitner-Platz 1
+!      D-14109 Berlin
+!      Germany
+!
+!      Author Michael Scheer, Michael.Scheer@Helmholtz-Berlin.de
+!
+! -----------------------------------------------------------------------
+!
+!    This program is free software: you can redistribute it and/or modify
+!    it under the terms of the GNU General Public License as published by
+!    the Free Software Foundation, either version 3 of the License, or
+!    (at your option) any later version.
+!
+!    This program is distributed in the hope that it will be useful,
+!    but WITHOUT ANY WARRANTY; without even the implied warranty of
+!    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!    GNU General Public License for more details.
+!
+!    You should have received a copy (wave_gpl.txt) of the GNU General Public
+!    License along with this program.
+!    If not, see <http://www.gnu.org/licenses/>.
+!
+!    Dieses Programm ist Freie Software: Sie koennen es unter den Bedingungen
+!    der GNU General Public License, wie von der Free Software Foundation,
+!    Version 3 der Lizenz oder (nach Ihrer Option) jeder spaeteren
+!    veroeffentlichten Version, weiterverbreiten und/oder modifizieren.
+!
+!    Dieses Programm wird in der Hoffnung, dass es nuetzlich sein wird, aber
+!    OHNE JEDE GEWAEHRLEISTUNG, bereitgestellt; sogar ohne die implizite
+!    Gewaehrleistung der MARKTFAEHIGKEIT oder EIGNUNG FueR EINEN BESTIMMTEN ZWECK.
+!    Siehe die GNU General Public License fuer weitere Details.
+!
+!    Sie sollten eine Kopie (wave_gpl.txt) der GNU General Public License
+!    zusammen mit diesem Programm erhalten haben. Wenn nicht,
+!    siehe <http://www.gnu.org/licenses/>.
+!
+!******************************************************************************
 *KEND.
 
 C--- CALCULATES SPLINE COEFFICIENTS
@@ -377,6 +569,7 @@ C          AA(J)=AA(J)-AA(J)*BB(J-1)
 
       RETURN
       END
+*CMZ :  4.01/07 29/11/2024  18.43.16  by  Michael Scheer
 *CMZ :  4.01/05 31/10/2022  17.05.45  by  Michael Scheer
 *CMZ : 00.00/16 19/03/2014  12.30.26  by  Michael Scheer
 *CMZ : 00.00/15 03/09/2012  09.27.13  by  Michael Scheer
@@ -385,6 +578,49 @@ C          AA(J)=AA(J)-AA(J)*BB(J-1)
 *CMZ : 00.00/00 10/01/95  15.27.40  by  Michael Scheer
 *-- Author :
       SUBROUTINE UTIL_PARABEL(Xin,Yin,A,YP,XOPT,yopt,IFAIL)
+
+*KEEP,gplhint.
+!******************************************************************************
+!
+!      Copyright 2013 Helmholtz-Zentrum Berlin (HZB)
+!      Hahn-Meitner-Platz 1
+!      D-14109 Berlin
+!      Germany
+!
+!      Author Michael Scheer, Michael.Scheer@Helmholtz-Berlin.de
+!
+! -----------------------------------------------------------------------
+!
+!    This program is free software: you can redistribute it and/or modify
+!    it under the terms of the GNU General Public License as published by
+!    the Free Software Foundation, either version 3 of the License, or
+!    (at your option) any later version.
+!
+!    This program is distributed in the hope that it will be useful,
+!    but WITHOUT ANY WARRANTY; without even the implied warranty of
+!    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!    GNU General Public License for more details.
+!
+!    You should have received a copy (wave_gpl.txt) of the GNU General Public
+!    License along with this program.
+!    If not, see <http://www.gnu.org/licenses/>.
+!
+!    Dieses Programm ist Freie Software: Sie koennen es unter den Bedingungen
+!    der GNU General Public License, wie von der Free Software Foundation,
+!    Version 3 der Lizenz oder (nach Ihrer Option) jeder spaeteren
+!    veroeffentlichten Version, weiterverbreiten und/oder modifizieren.
+!
+!    Dieses Programm wird in der Hoffnung, dass es nuetzlich sein wird, aber
+!    OHNE JEDE GEWAEHRLEISTUNG, bereitgestellt; sogar ohne die implizite
+!    Gewaehrleistung der MARKTFAEHIGKEIT oder EIGNUNG FueR EINEN BESTIMMTEN ZWECK.
+!    Siehe die GNU General Public License fuer weitere Details.
+!
+!    Sie sollten eine Kopie (wave_gpl.txt) der GNU General Public License
+!    zusammen mit diesem Programm erhalten haben. Wenn nicht,
+!    siehe <http://www.gnu.org/licenses/>.
+!
+!******************************************************************************
+*KEND.
 
 C--- CALCULATES A(1),A(2),A(3), THE DERIVATIVES YP(X(1)),YP(X(2)),YP(X(3)),
 C    AND THE EXTREMUM (XOPT,A(XOPT)) OF PARABOLA Y=A1+A2*X+A3*X**2
@@ -477,6 +713,46 @@ c calculate yp=a1+2*a2*dx
       SUBROUTINE util_spline_running_integral(X,Y,N,RESULT
      &                                 ,COEF,WORK1,WORK2,WORK3,WORK4)
 *KEEP,gplhint.
+!******************************************************************************
+!
+!      Copyright 2013 Helmholtz-Zentrum Berlin (HZB)
+!      Hahn-Meitner-Platz 1
+!      D-14109 Berlin
+!      Germany
+!
+!      Author Michael Scheer, Michael.Scheer@Helmholtz-Berlin.de
+!
+! -----------------------------------------------------------------------
+!
+!    This program is free software: you can redistribute it and/or modify
+!    it under the terms of the GNU General Public License as published by
+!    the Free Software Foundation, either version 3 of the License, or
+!    (at your option) any later version.
+!
+!    This program is distributed in the hope that it will be useful,
+!    but WITHOUT ANY WARRANTY; without even the implied warranty of
+!    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!    GNU General Public License for more details.
+!
+!    You should have received a copy (wave_gpl.txt) of the GNU General Public
+!    License along with this program.
+!    If not, see <http://www.gnu.org/licenses/>.
+!
+!    Dieses Programm ist Freie Software: Sie koennen es unter den Bedingungen
+!    der GNU General Public License, wie von der Free Software Foundation,
+!    Version 3 der Lizenz oder (nach Ihrer Option) jeder spaeteren
+!    veroeffentlichten Version, weiterverbreiten und/oder modifizieren.
+!
+!    Dieses Programm wird in der Hoffnung, dass es nuetzlich sein wird, aber
+!    OHNE JEDE GEWAEHRLEISTUNG, bereitgestellt; sogar ohne die implizite
+!    Gewaehrleistung der MARKTFAEHIGKEIT oder EIGNUNG FueR EINEN BESTIMMTEN ZWECK.
+!    Siehe die GNU General Public License fuer weitere Details.
+!
+!    Sie sollten eine Kopie (wave_gpl.txt) der GNU General Public License
+!    zusammen mit diesem Programm erhalten haben. Wenn nicht,
+!    siehe <http://www.gnu.org/licenses/>.
+!
+!******************************************************************************
 *KEND.
 
 C---  CALCULATES RUNNING INTERGRAL OF Y(X) VIA SPLINES
@@ -515,6 +791,46 @@ C--- INTEGRATION
 *-- Author :    Michael Scheer   10/05/2012
       subroutine util_g1_static(y,g1)
 *KEEP,gplhint.
+!******************************************************************************
+!
+!      Copyright 2013 Helmholtz-Zentrum Berlin (HZB)
+!      Hahn-Meitner-Platz 1
+!      D-14109 Berlin
+!      Germany
+!
+!      Author Michael Scheer, Michael.Scheer@Helmholtz-Berlin.de
+!
+! -----------------------------------------------------------------------
+!
+!    This program is free software: you can redistribute it and/or modify
+!    it under the terms of the GNU General Public License as published by
+!    the Free Software Foundation, either version 3 of the License, or
+!    (at your option) any later version.
+!
+!    This program is distributed in the hope that it will be useful,
+!    but WITHOUT ANY WARRANTY; without even the implied warranty of
+!    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!    GNU General Public License for more details.
+!
+!    You should have received a copy (wave_gpl.txt) of the GNU General Public
+!    License along with this program.
+!    If not, see <http://www.gnu.org/licenses/>.
+!
+!    Dieses Programm ist Freie Software: Sie koennen es unter den Bedingungen
+!    der GNU General Public License, wie von der Free Software Foundation,
+!    Version 3 der Lizenz oder (nach Ihrer Option) jeder spaeteren
+!    veroeffentlichten Version, weiterverbreiten und/oder modifizieren.
+!
+!    Dieses Programm wird in der Hoffnung, dass es nuetzlich sein wird, aber
+!    OHNE JEDE GEWAEHRLEISTUNG, bereitgestellt; sogar ohne die implizite
+!    Gewaehrleistung der MARKTFAEHIGKEIT oder EIGNUNG FueR EINEN BESTIMMTEN ZWECK.
+!    Siehe die GNU General Public License fuer weitere Details.
+!
+!    Sie sollten eine Kopie (wave_gpl.txt) der GNU General Public License
+!    zusammen mit diesem Programm erhalten haben. Wenn nicht,
+!    siehe <http://www.gnu.org/licenses/>.
+!
+!******************************************************************************
 *KEND.
 
 c calculates G1(y) with an estimated precision of about 1.5e-3 for y<=30,
@@ -862,98 +1178,330 @@ c util_random_get_seed.
 
       return
       end
-*CMZ :          16/08/2024  17.10.30  by  Michael Scheer
+*CMZ :  4.02/00 03/08/2025  10.05.09  by  Michael Scheer
 *CMZ :  4.01/03 17/05/2023  11.24.58  by  Michael Scheer
 *CMZ :  4.01/02 12/05/2023  11.49.33  by  Michael Scheer
 *CMZ : 00.00/16 21/11/2014  14.53.59  by  Michael Scheer
 *-- Author :    Michael Scheer   21/11/2014
-      subroutine util_spline_integral_2d(nx,ny,x,y,f,result,istat,kalloc)
+      subroutine util_spline_integral_2d(nx,ny,x,y,f,result,istat)
 *KEEP,gplhint.
+!******************************************************************************
+!
+!      Copyright 2013 Helmholtz-Zentrum Berlin (HZB)
+!      Hahn-Meitner-Platz 1
+!      D-14109 Berlin
+!      Germany
+!
+!      Author Michael Scheer, Michael.Scheer@Helmholtz-Berlin.de
+!
+! -----------------------------------------------------------------------
+!
+!    This program is free software: you can redistribute it and/or modify
+!    it under the terms of the GNU General Public License as published by
+!    the Free Software Foundation, either version 3 of the License, or
+!    (at your option) any later version.
+!
+!    This program is distributed in the hope that it will be useful,
+!    but WITHOUT ANY WARRANTY; without even the implied warranty of
+!    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!    GNU General Public License for more details.
+!
+!    You should have received a copy (wave_gpl.txt) of the GNU General Public
+!    License along with this program.
+!    If not, see <http://www.gnu.org/licenses/>.
+!
+!    Dieses Programm ist Freie Software: Sie koennen es unter den Bedingungen
+!    der GNU General Public License, wie von der Free Software Foundation,
+!    Version 3 der Lizenz oder (nach Ihrer Option) jeder spaeteren
+!    veroeffentlichten Version, weiterverbreiten und/oder modifizieren.
+!
+!    Dieses Programm wird in der Hoffnung, dass es nuetzlich sein wird, aber
+!    OHNE JEDE GEWAEHRLEISTUNG, bereitgestellt; sogar ohne die implizite
+!    Gewaehrleistung der MARKTFAEHIGKEIT oder EIGNUNG FueR EINEN BESTIMMTEN ZWECK.
+!    Siehe die GNU General Public License fuer weitere Details.
+!
+!    Sie sollten eine Kopie (wave_gpl.txt) der GNU General Public License
+!    zusammen mit diesem Programm erhalten haben. Wenn nicht,
+!    siehe <http://www.gnu.org/licenses/>.
+!
+!******************************************************************************
 *KEND.
 
       implicit none
 
-      double precision x(nx),y(ny),f(nx,ny),result
-      integer :: istat,nx,ny,ix,iy,kstat,kalloc,nxyo=0,kallo=0
+      double precision x(nx),y(ny),f(nx,ny),result,coef(4,4,nx,ny),a(4,4),dx,dy
+      integer nx,ny,ix,iy,istat,k,l
 
-      double precision, allocatable :: fb(:),fb2(:),coef(:),
-     &  w1(:),w2(:),w3(:),w4(:)
+      call util_coef_spline_2d(nx,ny,f,coef,istat)
+      if (istat.ne.0) return
 
-      save
+      dx=(x(nx)-x(1))/(nx-1)
+      dy=(y(ny)-y(1))/(ny-1)
 
-      if (kalloc.eq.0) then
-        if (kallo.eq.0) then
-          kalloc=1
-        else
-          if (max(nx,ny).gt.nxyo) then
-            deallocate(fb)
-            deallocate(fb2)
-            deallocate(coef)
-            deallocate(w1)
-            deallocate(w2)
-            deallocate(w3)
-            deallocate(w4)
-            kalloc=1
-          endif
-        endif
+      result=0.0d0
+
+      do iy=1,ny-1
+        do ix=1,nx-1
+
+          a(1:4,1:4)=coef(1:4,1:4,ix,iy)
+          do k=1,4
+            do l=1,4
+              result=result+a(k,l)/k/l
+            enddo
+          enddo
+
+        enddo
+      enddo
+
+c      a(1:4,1:4)=coef(1:4,1:4,1,1)
+c      do k=1,4
+c        do l=1,4
+c          result=result-a(k,l)/k/l
+c        enddo
+c      enddo
+
+      result=result*dx*dy
+
+      end
+*CMZ :  4.02/00 03/08/2025  10.08.49  by  Michael Scheer
+*-- Author :    Michael Scheer   17/03/2024
+      subroutine util_coef_spline_2d(nx,ny,f,coef,istat)
+
+      implicit none
+
+      integer nx,ny
+
+      real*8 f(nx,ny),coef(4,4,nx,ny),
+     &  fx(nx,ny),fy(nx,ny),fxy(nx,ny)
+
+      real*8, dimension(16) :: a16=[
+     &  1.0d0,0.0d0,-3.0d0,2.0d0,
+     &  0.0d0,0.0d0,3.0d0,-2.0d0,
+     &  0.0d0,1.0d0,-2.0d0,1.0d0,
+     &  0.0d0,0.0d0,-1.0d0,1.0d0
+     &  ]
+
+      real*8, dimension(4,4) :: ar,al,fm,a
+      equivalence (al,a16)
+
+      real*8, dimension(:), allocatable :: t
+      real*8 ::
+     &  p(max(nx,ny)),p1(max(nx,ny)),p2(max(nx,ny))
+
+      integer :: istat,ix,iy,ifail,nxyo=0,nxy,i,j
+
+      save nxyo,t
+
+      istat=0
+      ifail=0
+
+      nxy=max(nx,ny)
+
+      if (nxy.gt.nxyo) then
+        deallocate(t,stat=istat)
+        allocate(t(nxy))
+        do i=1,nxy
+          t(i)=dble(i)
+        enddo
       endif
 
-      if (kalloc.gt.0) then
-        allocate(fb(max(nx,ny)))
-        allocate(fb2(max(nx,ny)))
-        allocate(coef(max(nx,ny)))
-        allocate(w1(max(nx,ny)))
-        allocate(w2(max(nx,ny)))
-        allocate(w3(max(nx,ny)))
-        allocate(w4(max(nx,ny)))
-        kallo=1
-        kalloc=0
-      else if (kalloc.lt.0) then
-        deallocate(fb)
-        deallocate(fb2)
-        deallocate(coef)
-        deallocate(w1)
-        deallocate(w2)
-        deallocate(w3)
-        deallocate(w4)
-        return
-      endif
+      do iy=1,ny
+        p(1:nx)=f(1:nx,iy)
+        call util_coef_spline(nx,t,p,0.0d0,0.0d0,p1,p2,istat)
+        if (istat.ne.0) return
+        fx(1:nx,iy)=p1(1:nx)
+      enddo
 
-      kstat=0
+      do ix=1,nx
+        p(1:ny)=f(ix,1:ny)
+        call util_coef_spline(ny,t,p,0.0d0,0.0d0,p1,p2,istat)
+        if (istat.ne.0) return
+        fy(ix,1:ny)=p1(1:ny)
+      enddo
 
-      if (ny.gt.nx) then
-        do ix=1,nx
-          fb(1:ny)=f(ix,1:ny)
-          call util_spline_integral_stat(y,fb,ny,fb2(ix)
-     &      ,coef,w1,w2,w3,w4,istat)
-          kstat=kstat+istat
+      do ix=1,nx
+        p(1:ny)=fx(ix,1:ny)
+        call util_coef_spline(ny,t,p,0.0d0,0.0d0,p1,p2,istat)
+        if (istat.ne.0) return
+        fxy(ix,1:ny)=p1(1:ny)
+      enddo
+
+      ar=transpose(al)
+
+      do ix=1,nx-1
+        do iy=1,ny-1
+
+          fm(1,1:2)=f(ix,iy:iy+1)
+          fm(1,3:4)=fy(ix,iy:iy+1)
+
+          fm(2,1:2)=f(ix+1,iy:iy+1)
+          fm(2,3:4)=fy(ix+1,iy:iy+1)
+
+          fm(3,1:2)=fx(ix,iy:iy+1)
+          fm(3,3:4)=fxy(ix,iy:iy+1)
+
+          fm(4,1:2)=fx(ix+1,iy:iy+1)
+          fm(4,3:4)=fxy(ix+1,iy:iy+1)
+
+          a=matmul(fm,ar)
+          coef(1:4,1:4,ix,iy)=matmul(al,a)
+
         enddo
-        call util_spline_integral_stat(x,fb2,nx,result
-     &    ,coef,w1,w2,w3,w4,istat)
-        kstat=kstat+istat
-      else !nx.gt.ny?
-        do iy=1,ny
-          fb(1:nx)=f(1:nx,iy)
-          call util_spline_integral_stat(x,fb,nx,fb2(iy)
-     &      ,coef,w1,w2,w3,w4,istat)
-          kstat=kstat+istat
-        enddo
-        call util_spline_integral_stat(y,fb2,ny,result
-     &    ,coef,w1,w2,w3,w4,istat)
-        kstat=kstat+istat
-      endif !nx.gt.ny
+      enddo
 
-      nxyo=max(nx,ny)
+      coef(1:4,1:4,nx,1:ny)=-1.0d0
+      coef(1:4,1:4,1:nx,ny)=-2.0d0
+
+      do ix=1,nx
+        do i=1,4
+          do j=1,4
+            coef(i,j,ix,ny)=2.0d0*coef(i,j,ix,ny-1)-coef(i,j,ix,ny-2)
+          enddo
+        enddo
+        coef(1,1,ix,ny)=f(ix,ny)
+      enddo
+
+      do iy=1,ny
+        do i=1,4
+          do j=1,4
+            coef(i,j,nx,iy)=2.0d0*coef(i,j,nx-1,iy)-coef(i,j,nx-2,iy)
+          enddo
+        enddo
+        coef(1,1,nx,iy)=f(nx,iy)
+      enddo
+
+      do i=1,4
+        do j=1,4
+          coef(i,j,nx,ny)=2.0d0*coef(i,j,nx-1,ny-1)-coef(i,j,nx-2,ny-2)
+        enddo
+      enddo
+
+      coef(1,1,nx,ny)=f(nx,ny)
+
+      nxyo=nxy
+      istat=ifail
 
       return
       end
-*CMZ :          16/08/2024  14.55.31  by  Michael Scheer
+*CMZ :  4.01/05 17/03/2024  10.34.16  by  Michael Scheer
+*CMZ : 00.00/07 07/05/2008  14.02.20  by  Michael Scheer
+*CMZ : 00.00/02 14/04/2004  14.25.24  by  Michael Scheer
+*CMZ : 00.00/00 10/01/95  15.27.48  by  Michael Scheer
+*-- Author : Michael Scheer
+      SUBROUTINE UTIL_coef_SPLINE(n,X,Y,YP1,YPN,YP,Y2,istatus)
+
+C--- CALCULATES SPLINE COEFFICIENTS
+
+C--   INPUT:
+
+C-       N: NUMBER OF X,Y-VALUES
+C-       X: ARRAY OF X-VALUES
+C-       Y: ARRAY OF Y-VALUES
+C-       YP1:  SECOND DERIVATIVE AT FIRST X-VALUE
+C-       YPN:  SECOND DERIVATIVE AT LAST X-VALUE
+
+C--   OUPUT:
+
+C-       YP:   DERIVATIVES AT XA
+C-       Y2:   SPLINE-COEFFICIENTS
+C-  ISTATUS:   EXIT-CODE
+
+
+      IMPLICIT NONE
+
+      INTEGER N,J,I,I1,istatus
+
+      REAL*8  X(N),Y(N),YP(N),Y2(N),AA(N),BB(N),CC(N),C(N)
+      REAL*8 YP1,YPN
+
+      double precision xx(3),yy(3),a(3),yp3(3),xopt,yopt
+      INTEGER ifail
+
+      istatus=0
+
+      IF (N.LT.3) then
+        istatus=-1
+        RETURN
+      endif
+
+      if (abs(yp1).eq.9999.0d0) then
+        xx=x(1:3)
+        yy=y(1:3)
+        call UTIL_PARABEL(xx,yy,A,YP3,XOPT,yopt,IFAIL)
+        if (ifail.eq.0) then
+          y2(1)=2.0d0*a(3)
+        else
+          y2(1)=0.0d0
+        endif
+      else
+        Y2(1)=YP1
+      endif
+
+      if (abs(ypn).eq.9999.0d0) then
+        xx=x(n-2:n)
+        yy=y(n-2:n)
+        call UTIL_PARABEL(xx,yy,A,YP3,XOPT,yopt,IFAIL)
+        if (ifail.eq.0) then
+          y2(n)=2.0d0*a(3)
+        else
+          y2(N)=0.0d0
+        endif
+      else
+        Y2(N)=YPN
+      endif
+
+      C(1)=Y2(1)
+      C(N)=y2(n)
+
+      BB(1)=1.D0
+      CC(1)=0.D0
+      CC(N)=1.D0
+
+      DO J=2,N-1
+        AA(J)=(X(J  )-X(J-1))/6.D0
+        BB(J)=(X(J+1)-X(J-1))/3.D0
+        CC(J)=(X(J+1)-X(J  ))/6.D0
+        C(J)=(Y(J+1)-Y(J  ))/(X(J+1)-X(J  ))
+     &    -(Y(J  )-Y(J-1))/(X(J  )-X(J-1))
+      ENDDO !J
+
+      DO J=2,N-1
+
+        BB(J)=BB(J)-AA(J)*CC(J-1)
+        C(J)= C(J)-AA(J)* C(J-1)
+
+        CC(J)=CC(J)/BB(J)
+        C(J)= C(J)/BB(J)
+        BB(J)=1.D0
+
+      ENDDO !J
+
+      DO J=N-1,2,-1
+        Y2(J)=C(J)-CC(J)*Y2(J+1)
+      ENDDO
+
+      DO I=1,N-1
+        I1=I+1
+        YP(I)=(Y(I1)-Y(I))/(X(I1)-X(I))-
+     &    (Y2(I1)+2.D0*Y2(I))/6.D0*(X(I1)-X(I))
+      ENDDO
+
+      I1=N
+      I=N-1
+
+      YP(N)=(Y(I1)-Y(I))/(X(I1)-X(I))+
+     &  (2.D0*Y2(I1)+Y2(I))/6.D0*(X(I1)-X(I))
+
+      RETURN
+      END
+*CMZ :  4.02/00 03/08/2025  09.42.28  by  Michael Scheer
+*CMZ :  4.01/07 16/08/2024  14.55.31  by  Michael Scheer
 *CMZ :  4.01/03 16/05/2023  19.38.31  by  Michael Scheer
 *CMZ : 00.00/02 17/08/2004  09.47.26  by  Michael Scheer
 *CMZ : 00.00/00 10/01/95  15.25.29  by  Michael Scheer
 *-- Author :
       SUBROUTINE UTIL_SPLINE_INTEGRAL_STAT(X,Y,N,RESULT
-     &                                 ,COEF,WORK1,WORK2,WORK3,WORK4,ISTAT)
+     &  ,COEF,WORK1,WORK2,WORK3,WORK4,ISTAT)
 
 C---  CALCULATES INTERGRAL OF Y(X) VIA SPLINES
 
@@ -966,6 +1514,7 @@ C---  CALCULATES INTERGRAL OF Y(X) VIA SPLINES
 C---  SPLINE-COEFFICIENTS
 
       CALL UTIL_SPLINE_COEF_STATus(X,Y,N,0.0d0,0.0d0,COEF,WORK1,WORK2,WORK3,WORK4,ISTAT)
+      if (istat.ne.0) return
 
 C--- INTEGRATION
 
@@ -1348,7 +1897,7 @@ c     &    ,isize
 
       return
       end
-*CMZ :          16/05/2024  10.08.43  by  Michael Scheer
+*CMZ :  4.01/07 16/05/2024  10.08.43  by  Michael Scheer
 *CMZ : 00.00/02 21/08/2006  11.07.41  by  Michael Scheer
 *-- Author :    Michael Scheer   21/08/2006
       subroutine util_simpson_integral(n,x,f,sum)
@@ -1486,7 +2035,7 @@ c---  calculates integral(f(x)*sin(omega*x)) and integral(f(x)*cos(omega*x))
 
       return
       end
-*CMZ :          16/05/2024  11.37.20  by  Michael Scheer
+*CMZ :  4.01/07 16/05/2024  11.37.20  by  Michael Scheer
 *-- Author : Michael Scheer
       subroutine util_wigner(ndime,nx,nt,x,t,om,er,ei,wig,istat)
 
@@ -1550,7 +2099,7 @@ c---  calculates integral(f(x)*sin(omega*x)) and integral(f(x)*cos(omega*x))
       if (iw.ne.nx) istat=-2
 
       end
-*CMZ :          05/06/2024  12.03.37  by  Michael Scheer
+*CMZ :  4.01/07 05/06/2024  12.03.37  by  Michael Scheer
 *-- Author : Michael Scheer
       subroutine util_wigner_2d(
      &  ndimez,nz,ntz,z,tz,
@@ -1732,7 +2281,7 @@ c---  calculates integral(f(x)*sin(omega*x)) and integral(f(x)*cos(omega*x))
       istat=0
 
       end
-*CMZ :          08/06/2024  07.58.46  by  Michael Scheer
+*CMZ :  4.01/07 08/06/2024  07.58.46  by  Michael Scheer
 *-- Author : Michael Scheer
       subroutine util_wigner_2d_kernel(
      &  nz,ny,
@@ -1794,7 +2343,7 @@ c              if (iz.eq.izc.and.iy.eq.iyc) print*,iz,iy,izp,iyp
       istat=0
 
       end
-*CMZ :          04/06/2024  11.51.30  by  Michael Scheer
+*CMZ :  4.01/07 04/06/2024  11.51.30  by  Michael Scheer
 *-- Author : Michael Scheer
       subroutine util_wigner_2d_oldwig(
      &  ndimez,nz,ntz,z,tz,
@@ -1980,7 +2529,7 @@ c              endif
       istat=0
 
       end
-*CMZ :          05/06/2024  10.42.57  by  Michael Scheer
+*CMZ :  4.01/07 05/06/2024  10.42.57  by  Michael Scheer
 *-- Author : Michael Scheer
       subroutine util_wigner_2d_good(
      &  ndimez,nz,ntz,z,tz,
@@ -2741,6 +3290,87 @@ C     ERROR FINISH, INSUFFICIENT ARRAY STORAGE
       WRITE(6,999)
   999 FORMAT('*** Error in util_cft: ARRAY BOUNDS EXCEEDED, change number of points to avoid too big a prime factor')
       END
+*CMZ :  3.03/04 02/01/2018  14.56.04  by  Michael Scheer
+*CMZ :  3.01/07 23/06/2014  15.51.32  by  Michael Scheer
+*CMZ : 00.00/07 21/07/2009  14.58.29  by  Michael Scheer
+*CMZ : 00.00/06 12/07/2007  15.45.32  by  Michael Scheer
+*-- Author :    Michael Scheer   12/07/2007
+      subroutine util_file_delete(file,istat)
+*KEEP,gplhint.
+!******************************************************************************
+!
+!      Copyright 2013 Helmholtz-Zentrum Berlin (HZB)
+!      Hahn-Meitner-Platz 1
+!      D-14109 Berlin
+!      Germany
+!
+!      Author Michael Scheer, Michael.Scheer@Helmholtz-Berlin.de
+!
+! -----------------------------------------------------------------------
+!
+!    This program is free software: you can redistribute it and/or modify
+!    it under the terms of the GNU General Public License as published by
+!    the Free Software Foundation, either version 3 of the License, or
+!    (at your option) any later version.
+!
+!    This program is distributed in the hope that it will be useful,
+!    but WITHOUT ANY WARRANTY; without even the implied warranty of
+!    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!    GNU General Public License for more details.
+!
+!    You should have received a copy (wave_gpl.txt) of the GNU General Public
+!    License along with this program.
+!    If not, see <http://www.gnu.org/licenses/>.
+!
+!    Dieses Programm ist Freie Software: Sie koennen es unter den Bedingungen
+!    der GNU General Public License, wie von der Free Software Foundation,
+!    Version 3 der Lizenz oder (nach Ihrer Option) jeder spaeteren
+!    veroeffentlichten Version, weiterverbreiten und/oder modifizieren.
+!
+!    Dieses Programm wird in der Hoffnung, dass es nuetzlich sein wird, aber
+!    OHNE JEDE GEWAEHRLEISTUNG, bereitgestellt; sogar ohne die implizite
+!    Gewaehrleistung der MARKTFAEHIGKEIT oder EIGNUNG FueR EINEN BESTIMMTEN ZWECK.
+!    Siehe die GNU General Public License fuer weitere Details.
+!
+!    Sie sollten eine Kopie (wave_gpl.txt) der GNU General Public License
+!    zusammen mit diesem Programm erhalten haben. Wenn nicht,
+!    siehe <http://www.gnu.org/licenses/>.
+!
+!******************************************************************************
+*KEND.
+
+      integer istat,lun
+
+      character(*) file
+      logical lexist,isopen
+
+      istat=-1
+
+      inquire(file=file,exist=lexist)
+
+      if (lexist.eqv..false.) then
+        istat=1
+        return
+      endif
+
+      lun=1234567
+      itry=0
+1     itry=itry+1
+      lun=lun+1
+      inquire(unit=lun,opened=isopen)
+      if (itry.gt.10) then
+        istat=2
+        return
+      endif
+      if (isopen) goto 1
+
+      open(unit=lun,file=file,status='old')
+      close(lun,status='delete')
+
+      istat=0
+
+      return
+      end
 *CMZ :  4.01/05 12/01/2024  18.00.46  by  Michael Scheer
 *-- Author :    Michael Scheer   11/11/2023
       subroutine util_cft_2d(nx,ny,arin,aiin,arout,aiout,isn)
@@ -2771,4 +3401,58 @@ C     ERROR FINISH, INSUFFICIENT ARRAY STORAGE
       isn=ksn
 
       return
+      end
+*CMZ :          26/09/2025  13.16.41  by  Michael Scheer
+*-- Author :    Michael Scheer   26/09/2025
+      subroutine util_e_to_stokes(e,specnor,s)
+
+      implicit none
+
+      complex(8), dimension(4,3), parameter ::
+     &  vstokes=reshape([
+     &  ( 0.0000000000000000d0,  0.0000000000000000d0),
+     &  ( 0.0000000000000000d0,  0.0000000000000000d0),
+     &  ( 0.0000000000000000d0,  0.0000000000000000d0),
+     &  ( 0.0000000000000000d0,  0.0000000000000000d0),
+     &  ( 0.0000000000000000d0,  0.0000000000000000d0),
+     &  ( 0.0000000000000000d0, -0.70710678118654746d0),
+     &  ( 0.0000000000000000d0, -0.70710678118654746d0),
+     &  ( 0.70710678118654746d0, 0.0000000000000000d0),
+     &  (-0.70710678118654746d0,-0.70710678118654746d0),
+     &  ( 0.70710678118654746d0, 0.0000000000000000d0),
+     &  (-0.70710678118654746d0, 0.0000000000000000d0),
+     &  (-0.70710678118654746d0, 0.0000000000000000d0)
+     &  ],[4,3])
+
+
+      complex(8) e(3),apolh,apolr,apoll,apol45
+      real(8) s(4),s1,s2,s3,s4,specnor
+
+      apolh=
+     &  e(1)*conjg(vstokes(1,1))
+     &  +e(2)*conjg(vstokes(1,2))
+     &  +e(3)*conjg(vstokes(1,3))
+
+      apolr=
+     &  e(1)*conjg(vstokes(2,1))
+     &  +e(2)*conjg(vstokes(2,2))
+     &  +e(3)*conjg(vstokes(2,3))
+
+      apoll=
+     &  e(1)*conjg(vstokes(3,1))
+     &  +e(2)*conjg(vstokes(3,2))
+     &  +e(3)*conjg(vstokes(3,3))
+
+      apol45=
+     &  e(1)*conjg(vstokes(4,1))
+     &  +e(2)*conjg(vstokes(4,2))
+     &  +e(3)*conjg(vstokes(4,3))
+
+      s1=dreal(apolr*conjg(apolr)+apoll*conjg(apoll))
+      s2=dreal(-s1+2.0d0*apolh*conjg(apolh))
+      s3=dreal(2.0d0*apol45*conjg(apol45)-s1)
+      s4=dreal(apolr*conjg(apolr)-apoll*conjg(apoll))
+
+      s=[s1,s2,s3,s4]*specnor
+
       end
