@@ -1,76 +1,92 @@
  $uradphasen
 
-  Mthreads=-1          !Number of threads (<0: Use all cores)
-  Ebeam=1.722          !Beam energy [GeV]
-  Curr=0.1          !Current [A]
-  Step=1.0          !Tracking step size [mm]
-  Nelec=1          !Nelec
-  !Nelec=1          !Nelec
-  Noranone=1          !No random change for first e-
-  Icohere=0          !
-  !Ihbunch=1          !Each Ihbunch_th bunch is recorded
-  Bunchlen=0.0          !Not yet
-  BunchCharge=0.0          !Not yet
-  Modebunch=0          !Not yet
-  
-  ifixphase=0
-  
-  PinX=10000.0    !X of PinHole [mm]
-  PinY=0          !Y of PinHole [mm]
-  PinZ=0          !Z of PinHole [mm]
-  PinW=5.0          !Width of PinHole [mm]
-  PinH=2.0        !Height of PinHole [mm]
-  PinW=5.          !Width of PinHole [mm]
-  PinH=2.        !Height of PinHole [mm]
-  NpinY=201          !Number of vert. points
-  NpinZ=201          !Number of hori. points
-  
-  Modepin=0         !Monte-Carlo mode [0,1]
+  Mthreads=-1        !Number of threads (<0: Use all cores)
 
-  iFold=1       !Emittanz folding, overwrites phasespace Monte-Carlo, except for ESPREAD
-  
-  ModeSphere=0          !Arrange grid points on sphere [0,1]
-  
-  Perlen=51          !Period-length [mm]
-  Shift=0.0          !Shift [mm] (for spectra only)
-  Nper=78          !Number of periods
-  Nharm=1          !Nharm (>0: overwrites Beff)
-  harm=200          !Harmonic [eV]
+  Ebeam=1.7          !Beam energy [GeV]
+  Curr=0.1           !Current [A]
+  Step=0.1           !Tracking step size [mm]
+
+  Nelec=1            !Nelec
+  Noranone=1         !No random change for first e-
+  IfixPhase=0        !Random phase for e-
+
+  Icohere=0          ! to be tested
+  Ihbunch=1          ! Each Ihbunch_th bunch is recorded
+  Bunchlen=0.0
+  BunchCharge=0.0
+  Modebunch=0        ! Not yet
+
+  PinX=2000000.0      !X of PinHole [mm]
+  PinY=0.0            !Y of PinHole [mm]
+  PinZ=0.0            !Z of PinHole [mm]
+  PinW=150.0          !Width of PinHole [mm]
+  PinH=150.0          !Height of PinHole [mm]
+  NpinY=101           !Number of vert. points
+  NpinZ=101           !Number of hori. points
+
+  Modepin=0           !Monte-Carlo mode [0,1]
+
+  ModeSphere=0        !Arrange grid points on sphere [0,1]
+
+  Perlen=50.0         !Period-length [mm]
+  Shift=0.0           !Shift [mm] (for spectra only)
+
+  Nper=50             !Number of periods
+  Nharm=1             !Nharm (>0: overwrites Beff)
+
+  harm=200.0          !Harm [eV]
   Beffv=1.0          !B0 vert. [T]
-  Beffh=0.          !B0 hori.. [T]
-  Nepho=1          !Number of Photon Energies
-  EphMin=198          !Min. Photon Energy [eV]
-  EphMax=198          !Max. Photon Energy [eV]
-  !EphMin=200.          !Min. Photon Energy [eV]
-  !EphMax=200.          !Max. Photon Energy [eV]
-  
-  BetaH=9.8          !Hori. Beta function
-  BetaV=3.29          !Vert. Beta function
-  EmitH=7.685          !Hor. Emit. [nm-rad]
-  EmitV=0.01537          !Ver. Emit. [nm-rad]
+  Beffh=0.0          !B0 hori.. [T]
+
+  Nepho=3            !Number of Photon Energies
+  EphMin=1390.0      !Min. Photon Energy [eV]
+  EphMax=1410.0       !Max. Photon Energy [eV]
+
   Espread=0.001          !Rel. energy spread
+
+  BetaH=1.0          !Hori. Beta function
+  BetaV=1.0          !Vert. Beta function
+  EmitH=1.0          !Hor. Emit. [nm-rad]
+  EmitV=0.0          !Ver. Emit. [nm-rad]
   Disph=0.0          !Hori. Dispersion [mm]
-  Dispph=0.0          !Derivative of Hori. Dispersion [mrad]
+  Dispph=0.0         !Derivative of Hori. Dispersion [mrad]
   Dispv=0.0          !Vert. Dispersion [mm]
-  Disppv=0.0          !Derivative of Vert. Dispersion [mrad]
-  
-  Modeph=0          !Mode for phase-error
-  Pherror=0          !Phase errors
-  
-  IFieldProp=1          !Propagate radiation field back to origin
-  PinXprop=0000.0          !Long. Position of Plane [mm]
-  PinWprop=2.0          !Width of PinHole in Plane [mm]
-  PinHprop=0.3        !Height of PinHole in Plane [mm]
-  PinWprop=4.0          !Width of PinHole in Plane [mm]
-  PinHprop=0.6        !Height of PinHole in Plane [mm]
-  NpinYprop=201          !Number of vert. points in Plane
-  NpinZprop=101          !Number of hori. points in Plane
+  Disppv=0.0         !Derivative of Vert. Dispersion [mrad]
+
+  Modeph=0            !Mode for phase-error, only for inanalytic = 0
+  Pherror=0.0         !Phase errors
+
+  IFieldProp=0        !Propagate radiation field back to origin
+  PinXprop=0.0        !Long. Position of Plane [mm]
+  PinWprop=0.05       !Width of PinHole in Origin[mm]
+  PinHprop=0.05       !Height of PinHole in Origin [mm]
+  NpinYprop=51        !Number of vert. points in Origin
+  NpinZprop=51        !Number of hori. points in Origin
+  IfixPhase=0         !Random phase for e-
+  PhGshift=9999.0     !Global phase shift. 9999.: Hori. amplitude is zero for (PinX,PinY,PinZ))
+
+  IWigner=-1          !Calculate Wigner Distributions [-4,-3,-2,-1,0,1], triggers ifieldprop
+                      ! -1: Wzz only
+                      ! -2: Wyy only
+                      ! -3: Wzy only
+                      ! -4: Wyz only
+                      !  1: all
+		
+  NyTheWig=1          !Number of vert. angle steps
+  NzTheWig=31         !Number of hori.. angle steps
+
+  TheYWig=0.05        !Vert. angle range
+  TheZWig=0.05        !Hori. angle range
+
+  nEfold=15           !Number of E-spread steps
+
+  NoSplineEfold=0     !Suppress splines for E-spread folding, use simple summation
 
  $end
 
  $seedn
 
-  Ifixseed=1         !Fix Seeds [0,1]
+  Ifixseed=0         !Fix Seeds [0,1]
   irnseed(1)=376577121
   irnseed(2)=52147852
   irnseed(3)=-1273034815
@@ -137,4 +153,3 @@
   irnseed(64)=-674825931
 
  $end
-
