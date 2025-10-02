@@ -2040,7 +2040,7 @@ def write_brill(fout="brilliance.dat"):
 #enddef write_brill()
 global Mthreads,Step,Nelec,Noranone,Icohere,Ihbunch,Bunchlen, \
 Bunchcharge,Modebunch,PinX,PinY,PinZ,PinW,PinH,NpinY,NpinZ,modepin,modesphere, \
-Shift,Nper,Nharm,Harm,Beffv,Beffh,Nepho,EphMin,EphMax, \
+Shift,Nper,Nharm,Harm,Beffv,Beffh,Nepho,EphMin,EphMax, Ianalytic, \
 Disph,Dispph,Dispv,Disppv,Pherror,Ifixseed,ScreenWidth, ScreenHeight,Vsetup_Plot
 
 global Esel
@@ -2147,7 +2147,7 @@ def _set_uname():
   'Mthreads','Ebeam','Curr','Step','Nelec','Noranone','IfixPhase','Icohere','Ihbunch', \
   'Bunchlen','BunchCharge','Modebunch','PinX','PinY','PinZ','PinW','PinH', \
   'NpinY','NpinZ','Modepin','ModeSphere','Perlen','Shift','Nper','Nharm', \
-  'Harm','Beffv','Beffh','Nepho','EphMin','EphMax','Espread','BetaH', \
+  'Harm','Beffv','Beffh','Ianalytic','Nepho','EphMin','EphMax','Espread','BetaH', \
   'BetaV','EmitH','EmitV','Disph','Dispph','Dispv','Disppv','Modeph','Pherror', \
   'IFieldProp','PinXprop','PinWprop','PinHprop','NpinYprop','NpinZprop', \
   'IfixPhase','PhGshift','IWigner','NyTheWig','TheYWig','NzTheWig','TheZWig', \
@@ -2184,7 +2184,7 @@ def _set_uname():
   Dsetup['IWigner'] = ['Calculate Wigner Distributions [-4,-3,-2,-1,0,1]',0]
   Dsetup['NyTheWig'] = ['Number of vert. angle steps',51]
   Dsetup['TheYWig'] = ['Vert. angle range',0.05]
-  Dsetup['NzTheWig'] = ['Number of hori.. angle steps',51]
+  Dsetup['NzTheWig'] = ['Number of hori. angle steps',51]
   Dsetup['TheZWig'] = ['Hori. angle range',0.05]
   Dsetup['nEfold'] = ['Number of E-spread steps',0]
   Dsetup['NoSplineEfold'] = ['Suppress splines for E-spread folding',0]
@@ -2193,7 +2193,7 @@ def _set_uname():
 
 global Fkn, F,FD, FC, FB, Qn, B, Harm, Lam, Sigr, Sigrp, KyxList
 global Nmin, Nmax,Emin,Emax,Bmin,Bmax,FDmin,FDmax,Fmin,Fmax,FBmin,FBmax,FCmin,FCmax
-global MBrill, Omenu, NMBrill, NOmenu, Myfont, Toolbar, \
+global MBrill, Omenu, NMBrill, NOmenu, Myfont, Mylabe_font_size, Toolbar, \
 Calculated_Brill, Fig, Ax, Grid, Calculated_Spec
 
 global MSetup,MBrill,MSpec
@@ -2204,12 +2204,12 @@ debugbreak('Main 1')
 BeamPar = ['Ebeam','Curr','EmitH','EmitV','BetaH','BetaV','SigE', \
 'Disph','Dispph','Dispv','Disppv']
 
-UnduPar = ['Perlen','Nper','Beffv','Beffh','Nharm','Harmonic','Shift']
+UnduPar = ['Perlen','Nper','Beffv','Beffh','Ianalytic','Nharm','Harmonic','Shift']
 
 BrillPar = ['nKvals','Kmin','Kmax','Nmin','Nmax','Mode']
 
 SpecPar = ['Nelec','Modepin','Noranone','ModeSphere','Nepho','EphMin','EphMax','PinX', \
-'PinY','PinZ','PinW','PinH','NpinZ','NpinY','Step','Pherror', 'EbeamMin','EbeamMax', \
+'PinY','PinZ','PinW','PinH','NpinZ','NpinY','Step','Pherror', \
 'IFieldProp','PinXprop','PinWprop','PinHprop','NpinYprop','NpinZprop', \
 'IfixPhase','PhGshift','IWigner','NyTheWig','TheYWig','NzTheWig','TheZWig','nEfold','NoSplineEfold', \
 'Ifixseed']
@@ -2320,7 +2320,7 @@ def _sel_Esel():
   global Curr,EmitX,EmitV,BetaH,BetaV,SigE,Disph,Dispph,Dispv,Disppv,L,N,Beffv,Beffh,Nharm, \
   Harm,Shift,nKvals,Kmin,Kmax,Nmin,Nmax,Mode,Nelec,modepin,modesphere,Nepho, \
   EphMin,EphMax,PinX,PinY,PinZ,PinW,PinH,NpinZ,NpinY,Step,Pherror, \
-  Ifixseed,Kellip
+  Ifixseed,Kellip, Ianalytic
 
   global Dsetup
   global Vsetup_Beam, LastSetUp_Beam,  SetUp_Beam, \
@@ -2331,7 +2331,7 @@ def _sel_Esel():
   global Mthreads,Step,Nelec,Noranone,Icohere,Ihbunch,Bunchlen, \
   Bunchcharge,Modebunch,PinX,PinY,PinZ,PinW,PinH,NpinY,NpinZ,modepin,modesphere, \
   Shift,Nper,Nharm,Harm,Beffv,Beffh,Nepho,EphMin,EphMax, \
-  Disph,Dispph,Dispv,Disppv,Pherror,Ifixseed
+  Disph,Dispph,Dispv,Disppv,Pherror,Ifixseed,Ianalytic
 
   global nsto,nfld,nflx,nbun,Esel
   global BeamPar,UnduPar,SpecPar,BrillPar,PlotPar
@@ -2504,7 +2504,7 @@ def _setup_esel():
   global Mthreads,Step,Nelec,Noranone,Icohere,Ihbunch,Bunchlen, \
   Bunchcharge,Modebunch,PinX,PinY,PinZ,PinW,PinH,NpinY,NpinZ,modepin,modesphere, \
   Shift,Nper,Nharm,Harm,Beffv,Beffh,Nepho,EphMin,EphMax, \
-  Disph,Dispph,Dispv,Disppv,Pherror,Ifixseed
+  Disph,Dispph,Dispv,Disppv,Pherror,Ifixseed,Ianalytic
 
   global nsto,nfld,nflx,nbun,Esel
   global BeamPar,UnduPar,SpecPar,BrillPar,PlotPar
@@ -2523,7 +2523,7 @@ def _setup_esel():
   SetUp_Esel.geometry('+' + str(int(xm+wm/2)) + '+' + str(int(ym+hm*0.7)))
 
   f = Frame(SetUp_Esel)
-  flab = Label(f,text="Index of E_photon")
+  flab = Label(f,text="Index of E_photon",font=('arial',MyLabel_font_size))
   fent =  Entry(f,text=S_IEsel)
   flab.pack(side=LEFT)
   fent.pack(side=RIGHT)
@@ -2533,8 +2533,8 @@ def _setup_esel():
   f.pack(fill='x')
 
   f = Frame(SetUp_Esel)
-  flab = Label(f,text="E_photon")
-  fent =  Entry(f,text=S_Esel)
+  flab = Label(f,text="E_photon",font=('arial',MyLabel_font_size))
+  fent =  Entry(f,text=S_Esel,font=('arial',MyLabel_font_size))
   flab.pack(side=LEFT)
   fent.pack(side=RIGHT)
   fent.bind('<FocusIn>',lambda event,kvar=2:_SetUpIn_Esel(event,kvar))
@@ -2542,9 +2542,9 @@ def _setup_esel():
   fent.bind('<Return>',lambda event,kvar=2:_SetUpOut_Esel(event,kvar))
   f.pack(fill='x')
 
-  bSel = Button(SetUp_Esel,text='Select from spectrum',command=_sel_Esel)
+  bSel = Button(SetUp_Esel,text='Select from spectrum',font=MyLabel_font_size,command=_sel_Esel)
   bSel.pack()
-  bClose = Button(SetUp_Esel,text='Close',command=_closeSetUp_Esel)
+  bClose = Button(SetUp_Esel,text='Close',font=MyLabel_font_size,command=_closeSetUp_Esel)
   bClose.pack()
 
 #enddef _setup_esel()
@@ -2560,7 +2560,7 @@ def _ini_Esel():
   global Mthreads,Step,Nelec,Noranone,Icohere,Ihbunch,Bunchlen, \
   Bunchcharge,Modebunch,PinX,PinY,PinZ,PinW,PinH,NpinY,NpinZ,modepin,modesphere, \
   Shift,Nper,Nharm,Harm,Beffv,Beffh,Nepho,EphMin,EphMax, \
-  Disph,Dispph,Dispv,Disppv,Pherror,Ifixseed
+  Disph,Dispph,Dispv,Disppv,Pherror,Ifixseed,Ianalytic
 
   global nsto,nfld,nflx,nbun,Esel
   global BeamPar,UnduPar,SpecPar,BrillPar,PlotPar
@@ -2602,7 +2602,7 @@ def _pFdProp(key='s0'):
   global Mthreads,Step,Nelec,Noranone,Icohere,Ihbunch,Bunchlen, \
   Bunchcharge,Modebunch,PinX,PinY,PinZ,PinW,PinH,NpinY,NpinZ,modepin,modesphere, \
   Shift,Nper,Nharm,Harm,Beffv,Beffh,Nepho,EphMin,EphMax, \
-  Disph,Dispph,Dispv,Disppv,Pherror,Ifixseed
+  Disph,Dispph,Dispv,Disppv,Pherror,Ifixseed,Ianalytic
 
   global nsto,nfld,nflx,nbun,Esel
   global BeamPar,UnduPar,SpecPar,BrillPar,PlotPar
@@ -2855,7 +2855,7 @@ def _pFdPin(key='s0'):
   global Mthreads,Step,Nelec,Noranone,Icohere,Ihbunch,Bunchlen, \
   Bunchcharge,Modebunch,PinX,PinY,PinZ,PinW,PinH,NpinY,NpinZ,modepin,modesphere, \
   Shift,Nper,Nharm,Harm,Beffv,Beffh,Nepho,EphMin,EphMax, \
-  Disph,Dispph,Dispv,Disppv,Pherror,Ifixseed
+  Disph,Dispph,Dispv,Disppv,Pherror,Ifixseed,Ianalytic
 
   global nsto,nfld,nflx,nbun,Esel
   global BeamPar,UnduPar,SpecPar,BrillPar,PlotPar
@@ -3088,7 +3088,7 @@ def _pElec(key='zizpi'):
   global Mthreads,Step,Nelec,Noranone,Icohere,Ihbunch,Bunchlen, \
   Bunchcharge,Modebunch,PinX,PinY,PinZ,PinW,PinH,NpinY,NpinZ,modepin,modesphere, \
   Shift,Nper,Nharm,Harm,Beffv,Beffh,Nepho,EphMin,EphMax, \
-  Disph,Dispph,Dispv,Disppv,Pherror,Ifixseed
+  Disph,Dispph,Dispv,Disppv,Pherror,Ifixseed,Ianalytic
 
   global nsto,nfld,nflx,nbun,Esel
   global BeamPar,UnduPar,SpecPar,BrillPar,PlotPar
@@ -3148,7 +3148,7 @@ def _pWigner(key='WzzZ',select=''):
   global Mthreads,Step,Nelec,Noranone,Icohere,Ihbunch,Bunchlen, \
   Bunchcharge,Modebunch,PinX,PinY,PinZ,PinW,PinH,NpinY,NpinZ,modepin,modesphere, \
   Shift,Nper,Nharm,Harm,Beffv,Beffh,Nepho,EphMin,EphMax, \
-  Disph,Dispph,Dispv,Disppv,Pherror,Ifixseed
+  Disph,Dispph,Dispv,Disppv,Pherror,Ifixseed,Ianalytic
 
   global nsto,nfld,nflx,nbun,Esel
   global BeamPar,UnduPar,SpecPar,BrillPar,PlotPar
@@ -3371,7 +3371,7 @@ def _pWignerE(key='WzzZ',select=''):
   global Mthreads,Step,Nelec,Noranone,Icohere,Ihbunch,Bunchlen, \
   Bunchcharge,Modebunch,PinX,PinY,PinZ,PinW,PinH,NpinY,NpinZ,modepin,modesphere, \
   Shift,Nper,Nharm,Harm,Beffv,Beffh,Nepho,EphMin,EphMax, \
-  Disph,Dispph,Dispv,Disppv,Pherror,Ifixseed
+  Disph,Dispph,Dispv,Disppv,Pherror,Ifixseed,Ianalytic
 
   global nsto,nfld,nflx,nbun,Esel
   global BeamPar,UnduPar,SpecPar,BrillPar,PlotPar
@@ -3622,7 +3622,7 @@ def _pFdSpec(key='s0'):
   global Mthreads,Step,Nelec,Noranone,Icohere,Ihbunch,Bunchlen, \
   Bunchcharge,Modebunch,PinX,PinY,PinZ,PinW,PinH,NpinY,NpinZ,modepin,modesphere, \
   Shift,Nper,Nharm,Harm,Beffv,Beffh,Nepho,EphMin,EphMax, \
-  Disph,Dispph,Dispv,Disppv,Pherror,Ifixseed
+  Disph,Dispph,Dispv,Disppv,Pherror,Ifixseed,Ianalytic
 
   global nsto,nfld,nflx,nbun,Esel
   global BeamPar,UnduPar,SpecPar,BrillPar,PlotPar
@@ -3676,7 +3676,7 @@ def _pFluxSpec(key='s0'):
   global Mthreads,Step,Nelec,Noranone,Icohere,Ihbunch,Bunchlen, \
   Bunchcharge,Modebunch,PinX,PinY,PinZ,PinW,PinH,NpinY,NpinZ,modepin,modesphere, \
   Shift,Nper,Nharm,Harm,Beffv,Beffh,Nepho,EphMin,EphMax, \
-  Disph,Dispph,Dispv,Disppv,Pherror,Ifixseed
+  Disph,Dispph,Dispv,Disppv,Pherror,Ifixseed,Ianalytic
 
   global nsto,nfld,nflx,nbun,Esel
   global BeamPar,UnduPar,SpecPar,BrillPar,PlotPar
@@ -3739,7 +3739,7 @@ def _write_urad_phase_nam():
   global Mthreads,Step,Nelec,Noranone,Icohere,Ihbunch,Bunchlen, \
   Bunchcharge,Modebunch,PinX,PinY,PinZ,PinW,PinH,NpinY,NpinZ,modepin,modesphere, \
   Shift,Nper,Nharm,Harm,Beffv,Beffh,Nepho,EphMin,EphMax, \
-  Disph,Dispph,Dispv,Disppv,Pherror,Ifixseed
+  Disph,Dispph,Dispv,Disppv,Pherror,Ifixseed,Ianalytic
 
   global nsto,nfld,nflx,nbun,Esel
   global BeamPar,UnduPar,SpecPar,BrillPar,PlotPar
@@ -3789,7 +3789,7 @@ def _write_urad_phase_nam_alt():
   global Mthreads,Step,Nelec,Noranone,Icohere,Ihbunch,Bunchlen, \
   Bunchcharge,Modebunch,PinX,PinY,PinZ,PinW,PinH,NpinY,NpinZ,modepin,modesphere, \
   Shift,Nper,Nharm,Harm,Beffv,Beffh,Nepho,EphMin,EphMax, \
-  Disph,Dispph,Dispv,Disppv,Pherror,Ifixseed
+  Disph,Dispph,Dispv,Disppv,Pherror,Ifixseed,Ianalytic
 
   global nsto,nfld,nflx,nbun,Esel
   global BeamPar,UnduPar,SpecPar,BrillPar,PlotPar
@@ -3856,7 +3856,7 @@ def _dvsetup():
   global Curr,EmitX,EmitV,BetaH,BetaV,SigE,Disph,Dispph,Dispv,Disppv,L,N,Beffv,Beffh,Nharm, \
   Harm,Shift,nKvals,Kmin,Kmax,Nmin,Nmax,Mode,Nelec,modepin,modesphere,Nepho, \
   EphMin,EphMax,PinX,PinY,PinZ,PinW,PinH,NpinZ,NpinY,Step,Pherror, \
-  Ifixseed,Kellip
+  Ifixseed,Kellip, Ianalytic
   global Ebeam, EbeamMin, EbeamMax, Espread
 
   Vsetup_Beam = []
@@ -3977,7 +3977,7 @@ def _get_spec():
   ifieldprop = int(words[3])
   nelec = int(words[4])
   ihbunch=int(words[5])
-  ianalytic = float(words[6])
+  Ianalytic = float(words[6])
 
   words = fpin.readline().strip().split()
   betah = float(words[0])
@@ -4153,7 +4153,7 @@ def _calc_spec():
   ifieldprop = int(words[3])
   nelec = int(words[4])
   ihbunch=int(words[5])
-  ianalytic = float(words[6])
+  Ianalytic = float(words[6])
 
   words = fpin.readline().strip().split()
   betah = float(words[0])
@@ -4205,7 +4205,7 @@ def _set_plot_spec():
   global Mthreads,Step,Nelec,Noranone,Icohere,Ihbunch,Bunchlen, \
   Bunchcharge,Modebunch,PinX,PinY,PinZ,PinW,PinH,NpinY,NpinZ,modepin,modesphere, \
   Shift,Nper,Nharm,Harm,Beffv,Beffh,Nepho,EphMin,EphMax, \
-  Disph,Dispph,Dispv,Disppv,Pherror,Ifixseed
+  Disph,Dispph,Dispv,Disppv,Pherror,Ifixseed,Ianalytic
 
   global nsto,nfld,nflx,nbun,Esel
   global BeamPar,UnduPar,SpecPar,BrillPar,PlotPar
@@ -4310,7 +4310,7 @@ def _setup_plot():
   global Mthreads,Step,Nelec,Noranone,Icohere,Ihbunch,Bunchlen, \
   Bunchcharge,Modebunch,PinX,PinY,PinZ,PinW,PinH,NpinY,NpinZ,modepin,modesphere, \
   Shift,Nper,Nharm,Harm,Beffv,Beffh,Nepho,EphMin,EphMax, \
-  Disph,Dispph,Dispv,Disppv,Pherror,Ifixseed
+  Disph,Dispph,Dispv,Disppv,Pherror,Ifixseed,Ianalytic
 
   global nsto,nfld,nflx,nbun,Esel
   global BeamPar,UnduPar,SpecPar,BrillPar,PlotPar
@@ -4332,8 +4332,8 @@ def _setup_plot():
 
   for i in range(len(Vsetup_Plot)):
     f = Frame(SetUp_Plot)
-    flab = Label(f,text=Vsetup_Plot[i][1][0])
-    fent =  Entry(f)
+    flab = Label(f,text=Vsetup_Plot[i][1][0],font=('arial',MyLabel_font_size))
+    fent =  Entry(f,font=('arial',MyLabel_font_size))
     fent.insert(1,Vsetup_Plot[i][1][1])
     flab.pack(side=LEFT)
     fent.pack(side=RIGHT)
@@ -4343,7 +4343,7 @@ def _setup_plot():
     f.pack(fill='x')
   #endfor
 
-  bClose = Button(SetUp_Plot,text='Close',command=_closeSetUp_Plot)
+  bClose = Button(SetUp_Plot,text='Close',font=MyLabel_font_size,command=_closeSetUp_Plot)
   bClose.pack()
 
 #enddef _setup_plot()
@@ -4414,7 +4414,7 @@ def _setup_spec():
   global Mthreads,Step,Nelec,Noranone,Icohere,Ihbunch,Bunchlen, \
   Bunchcharge,Modebunch,PinX,PinY,PinZ,PinW,PinH,NpinY,NpinZ,modepin,modesphere, \
   Shift,Nper,Nharm,Harm,Beffv,Beffh,Nepho,EphMin,EphMax, \
-  Disph,Dispph,Dispv,Disppv,Pherror,Ifixseed
+  Disph,Dispph,Dispv,Disppv,Pherror,Ifixseed,Ianalytic
 
   global nsto,nfld,nflx,nbun,Esel
   global BeamPar,UnduPar,SpecPar,BrillPar,PlotPar
@@ -4443,8 +4443,8 @@ def _setup_spec():
 
   for i in range(len(Vsetup_Spec)):
     f = Frame(SetUp_Spec)
-    flab = Label(f,text=Vsetup_Spec[i][1][0])
-    fent =  Entry(f)
+    flab = Label(f,text=Vsetup_Spec[i][1][0],font=('arial',MyLabel_font_size))
+    fent =  Entry(f,font=('arial',MyLabel_font_size))
     fent.insert(1,Vsetup_Spec[i][1][1])
     flab.pack(side=LEFT)
     fent.pack(side=RIGHT)
@@ -4454,7 +4454,7 @@ def _setup_spec():
     f.pack(fill='x')
   #endfor
 
-  bClose = Button(SetUp_Spec,text='Close',command=_closeSetUp_Spec)
+  bClose = Button(SetUp_Spec,text='Close',font=MyLabel_font_size,command=_closeSetUp_Spec)
   bClose.pack()
 
 #enddef _setup_spec()
@@ -4524,7 +4524,7 @@ def _setup_brill():
   global Mthreads,Step,Nelec,Noranone,Icohere,Ihbunch,Bunchlen, \
   Bunchcharge,Modebunch,PinX,PinY,PinZ,PinW,PinH,NpinY,NpinZ,modepin,modesphere, \
   Shift,Nper,Nharm,Harm,Beffv,Beffh,Nepho,EphMin,EphMax, \
-  Disph,Dispph,Dispv,Disppv,Pherror,Ifixseed
+  Disph,Dispph,Dispv,Disppv,Pherror,Ifixseed,Ianalytic
 
   global nsto,nfld,nflx,nbun,Esel
   global BeamPar,UnduPar,SpecPar,BrillPar,PlotPar
@@ -4551,8 +4551,8 @@ def _setup_brill():
 
   for i in range(len(Vsetup_Brill)):
     f = Frame(SetUp_Brill)
-    flab = Label(f,text=Vsetup_Brill[i][1][0])
-    fent =  Entry(f)
+    flab = Label(f,text=Vsetup_Brill[i][1][0],font=('arial',MyLabel_font_size))
+    fent =  Entry(f,font=('arial',MyLabel_font_size))
     fent.insert(1,Vsetup_Brill[i][1][1])
     flab.pack(side=LEFT)
     fent.pack(side=RIGHT)
@@ -4562,7 +4562,7 @@ def _setup_brill():
     f.pack(fill='x')
   #endfor
 
-  bClose = Button(SetUp_Brill,text='Close',command=_closeSetUp_Brill)
+  bClose = Button(SetUp_Brill,text='Close',font=MyLabel_font_size,command=_closeSetUp_Brill)
   bClose.pack()
 
 #enddef _setup_brill()
@@ -4631,7 +4631,7 @@ def _setup_undu():
   global Mthreads,Step,Nelec,Noranone,Icohere,Ihbunch,Bunchlen, \
   Bunchcharge,Modebunch,PinX,PinY,PinZ,PinW,PinH,NpinY,NpinZ,modepin,modesphere, \
   Shift,Nper,Nharm,Harm,Beffv,Beffh,Nepho,EphMin,EphMax, \
-  Disph,Dispph,Dispv,Disppv,Pherror,Ifixseed
+  Disph,Dispph,Dispv,Disppv,Pherror,Ifixseed,Ianalytic
 
   global nsto,nfld,nflx,nbun,Esel
   global BeamPar,UnduPar,SpecPar,BrillPar,PlotPar
@@ -4639,6 +4639,7 @@ def _setup_undu():
 
   global SetUp_Undu,Vsetup_Undu, LastSetUp_Undu
 
+  debugbreak('_setup_undu')
   if not len(Vsetup_Undu):
     Vsetup_Undu = []
     for key in UnduPar:
@@ -4660,8 +4661,8 @@ def _setup_undu():
 
   for i in range(len(Vsetup_Undu)):
     f = Frame(SetUp_Undu)
-    flab = Label(f,text=Vsetup_Undu[i][1][0])
-    fent =  Entry(f)
+    flab = Label(f,text=Vsetup_Undu[i][1][0],font=('arial',MyLabel_font_size))
+    fent =  Entry(f,font=('arial',MyLabel_font_size))
     fent.insert(1,Vsetup_Undu[i][1][1])
     flab.pack(side=LEFT)
     fent.pack(side=RIGHT)
@@ -4671,7 +4672,7 @@ def _setup_undu():
     f.pack(fill='x')
   #endfor
 
-  bClose = Button(SetUp_Undu,text='Close',command=_closeSetUp_Undu)
+  bClose = Button(SetUp_Undu,text='Close',font=MyLabel_font_size,command=_closeSetUp_Undu)
   bClose.pack()
 
 #enddef _setup_undu()
@@ -4741,7 +4742,7 @@ def _setup_beam():
   global Mthreads,Step,Nelec,Noranone,Icohere,Ihbunch,Bunchlen, \
   Bunchcharge,Modebunch,PinX,PinY,PinZ,PinW,PinH,NpinY,NpinZ,modepin,modesphere, \
   Shift,Nper,Nharm,Harm,Beffv,Beffh,Nepho,EphMin,EphMax, \
-  Disph,Dispph,Dispv,Disppv,Pherror,Ifixseed
+  Disph,Dispph,Dispv,Disppv,Pherror,Ifixseed,Ianalytic
 
   global nsto,nfld,nflx,nbun,Esel
   global BeamPar,UnduPar,SpecPar,BrillPar,PlotPar
@@ -4769,8 +4770,8 @@ def _setup_beam():
 
   for i in range(len(Vsetup_Beam)):
     f = Frame(SetUp_Beam)
-    flab = Label(f,text=Vsetup_Beam[i][1][0])
-    fent =  Entry(f)
+    flab = Label(f,text=Vsetup_Beam[i][1][0],font=('arial',MyLabel_font_size))
+    fent =  Entry(f,font=('arial',MyLabel_font_size))
     fent.insert(1,Vsetup_Beam[i][1][1])
     flab.pack(side=LEFT)
     fent.pack(side=RIGHT)
@@ -4780,7 +4781,7 @@ def _setup_beam():
     f.pack(fill='x')
   #endfor
 
-  bClose = Button(SetUp_Beam,text='Close',command=_closeSetUp_Beam)
+  bClose = Button(SetUp_Beam,text='Close',font=MyLabel_font_size,command=_closeSetUp_Beam)
   bClose.pack()
 #enddef _setup_beam()
 
@@ -4813,7 +4814,7 @@ def _readlastrun():
   global Curr,EmitX,EmitV,BetaH,BetaV,SigE,Disph,Dispph,Dispv,Disppv,L,N,Beffv,Beffh,Nharm, \
   Harm,Shift,nKvals,Kmin,Kmax,Nmin,Nmax,Mode,Nelec,modepin,modesphere,Nepho, \
   EphMin,EphMax,PinX,PinY,PinZ,PinW,PinH,NpinZ,NpinY,Step,Pherror, \
-  Ifixseed,Kellip
+  Ifixseed,Kellip, Ianalytic
 
 #  debugbreak('_readlastrun')
   fl = ".pybrill_last.dat"
@@ -5103,7 +5104,7 @@ def _UpdateVars():
   global Curr,EmitX,EmitV,BetaH,BetaV,SigE,Disph,Dispph,Dispv,Disppv,L,N,Beffv,Beffh,Nharm, \
   Harm,Shift,nKvals,Kmin,Kmax,Nmin,Nmax,Mode,Nelec,modepin,modesphere,Nepho, \
   EphMin,EphMax,PinX,PinY,PinZ,PinW,PinH,NpinZ,NpinY,Step,Pherror, \
-  Ifixseed,Kellip
+  Ifixseed,Kellip, Ianalytic
 
   global Calculated_Brill, LastSetup, Kellip, Calculated_Spec, NcalcSpec
   global L, nKvals, Kvals, b0, Kmin, Kmax, Kellip, N, Ebeam, Curr, \
@@ -5256,7 +5257,7 @@ def _setup():
   global Mthreads,Step,Nelec,Noranone,Icohere,Ihbunch,Bunchlen, \
   Bunchcharge,Modebunch,PinX,PinY,PinZ,PinW,PinH,NpinY,NpinZ,modepin,modesphere, \
   Shift,Nper,Nharm,Harm,Beffv,Beffh,Nepho,EphMin,EphMax, \
-  Disph,Dispph,Dispv,Disppv,Pherror,Ifixseed
+  Disph,Dispph,Dispv,Disppv,Pherror,Ifixseed,Ianalytic
 
   global nsto,nfld,nflx,nbun,Esel
   global BeamPar,UnduPar,SpecPar,BrillPar,PlotPar
@@ -5266,7 +5267,7 @@ def _setup():
   global Fkn, F,FD, FC, FB, Qn, B, Harm, Lam, Sigr, Sigrp, KyxList
   global L, nKvals, Kvals, b0, Kmin, Kmax, Kellip, N, Ebeam, Curr, \
   EmitH, EmitV, BetaH, BetaV, SigE, Mode, Nmax
-  global MBrill, Myfont
+  global MBrill, Myfont, MyLabel_font_size
   global SetUp, Setup_Menu, Vsetup,Vsetup_Beam,Vsetup_Undu,Vsetup_Brill, \
   Vsetup_Spec,Vsetup_Cont, LastSetup
 
@@ -5276,8 +5277,8 @@ def _setup():
 
   for i in range(len(Vsetup)):
     f = Frame(SetUp)
-    flab = Label(f,text=Vsetup[i][0])
-    fent =  Entry(f)
+    flab = Label(f,text=Vsetup[i][0],font=('arial',MyLabel_font_size))
+    fent =  Entry(f,font=('arial',MyLabel_font_size))
     fent.insert(1,Vsetup[i][1])
     flab.pack(side=LEFT)
     fent.pack(side=RIGHT)
@@ -5287,7 +5288,7 @@ def _setup():
     f.pack(fill='x')
   #ENDfor i in range(len(V))
 
-  bClose = Button(SetUp,text='Ok',command=_closeSetUp)
+  bClose = Button(SetUp,text='Ok',font=Myfont,command=_closeSetUp)
   bClose.pack()
 
   v = Vsetup[4][1]
@@ -5397,6 +5398,7 @@ IEsel = 0
 
 Beffv = 1.0
 Beffh = 0.0
+Ianalytic = 0
 Nharm = 1
 Harmonic = 100.0
 Shift = 0.0
@@ -5418,7 +5420,8 @@ Dsetup['Disppv'] =  ["Derivative of Vert. Dispersion [mrad]",Disppv]
 Dsetup['Perlen'] = ["Period-length [mm]",Perlen]
 Dsetup['Nper'] = ["Number of periods",Nper]
 Dsetup['Beffv'] = ["B0 vert. [T]",Beffv]
-Dsetup['Beffh'] = ["B0 hori.. [T]",Beffh]
+Dsetup['Beffh'] = ["B0 hori. [T]",Beffh]
+Dsetup['Ianalytic'] = ["Use analytic formular for rad. field",Ianalytic]
 Dsetup['Nharm'] = ["Nharm (>0: overwrites Beff)",Nharm]
 Dsetup['Harmonic'] = ["Harmonic [eV]",Harmonic]
 Dsetup['Shift'] = ["Shift [mm] (for spectra only)",Shift]
@@ -5595,6 +5598,8 @@ Wmaster = WmainMaster
 
 Toolbar = Wmain.canvas.toolbar
 Myfont = ('arial',15)
+#MyLabel_font_size = StringVar(value=15)
+MyLabel_font_size = 12
 
 CanButpyBrill = Wmain.canvas.mpl_connect('button_press_event',_canbutpybrill)
 CanKeySpec = plt.connect('key_press_event', _spec_key_press)

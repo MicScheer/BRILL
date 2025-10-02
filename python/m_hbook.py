@@ -1761,6 +1761,9 @@ global Narg,Argv
 Narg = len(sys.argv)
 Argv = sys.argv
 
+global ClearCanvas
+ClearCanvas = 0
+
 global Icallfromoverview, Krun
 global Foverview
 Foverview = None
