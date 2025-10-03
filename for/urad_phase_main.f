@@ -1,4 +1,4 @@
-*CMZ :          02/10/2025  13.04.31  by  Michael Scheer
+*CMZ :          03/10/2025  17.10.54  by  Michael Scheer
 *CMZ :  4.02/00 16/09/2025  09.13.49  by  Michael Scheer
 *CMZ :  4.01/07 18/10/2024  08.57.02  by  Michael Scheer
 *CMZ :  4.01/05 16/04/2024  14.41.20  by  Michael Scheer
@@ -136,7 +136,7 @@
       namelist/seedn/irnseed,ifixseed
 
       integer :: luna,lung,kstat,lunex,lunwigr,lunwigw,lunbun,lunebm,lunflx,lunfld,lunfdp,
-     &  lunfldf,lunfdpf,lunwflx,lunwck,lunseed,lunflde,lunfdpe,lunflxe
+     &  lunfldf,lunfdpf,lunwflx,lunwck,lunseed,lunflde,lunfdpe,lunflxe,lunfdpflx,lunfdpflxe
 
       character(2048) cline
 
@@ -155,6 +155,8 @@
       kallostokes_u=0
       kallostokesprop_u=0
 
+      call util_file_delete('urad_phase_prop.flx',kstat)
+      call util_file_delete('urad_phase_prop_espread.flx',kstat)
       call util_file_delete('urad_phase.flx',kstat)
       call util_file_delete('urad_phase_espread.flx',kstat)
       call util_file_delete('urad_phase.fld',kstat)
@@ -628,6 +630,7 @@ c     &      esourzypol(2,nz,ny,nepho,nefold))
 
       if (ifieldprop.ne.0.or.ianalytic.gt.0) then
         open(newunit=lunfdp,file='urad_phase.fdp')
+        open(newunit=lunfdpflx,file='urad_phase_prop.flx')
       endif
 
       do iefold=1,nefold
@@ -847,11 +850,30 @@ c          print*,"S0_max:",sngl(maxval(stokes_u))
 
           enddo !iobs=1,nobsvprop_u
 
+          do iepho=1,nepho
+            do isto=1,4
+              iobs=0
+              do iz=1,npinzprop_u
+                do iy=1,npinyprop_u
+                  iobs=iobs+1
+                  iobph=iobs+nzyprop*(iepho-1)
+                  s(iz,iy)=stokesprope(isto,iobph,iefold)
+                enddo
+              enddo
+              callutil_break
+              call util_spline_integral_2d(npinzprop_u,npinyprop_u,zprop,yprop,s,
+     &          stosume(isto,iepho,iefold),kstat)
+            enddo !isto
+
+            write(lunfdpflx,*)iepho,iefold,epho_u(iepho),buffe(iefold),stosume(:,iepho,iefold),
+     &        g(iefold)
+          enddo !nepho
+
 c          print*,"S0_prop_max:",sngl(maxval(stokesprop_u))
 
         endif !ifieldprop
 
-        callutil_break
+        !allutil_break
         if (ianalytic.le.0) then
 
           do iepho=1,nepho
@@ -1025,7 +1047,7 @@ c          print*,"S0_prop_max:",sngl(maxval(stokesprop_u))
               enddo !iz
             enddo !iy
 
-            write(lunflxe,*)iepho,-nefold,epho_u(iepho),ebeam,stosumetot(:,iepho)
+            write(lunflxe,*)iepho,-nefold,epho_u(iepho),ebeammean,stosumetot(:,iepho)
 
           enddo !iepho
         endif !(ianalytic.le.0)
@@ -1033,8 +1055,9 @@ c          print*,"S0_prop_max:",sngl(maxval(stokesprop_u))
         if (ifieldprop.gt.0.or.ianalytic.gt.0) then
 
           open(newunit=lunfdpe,file='urad_phase_espread.fdp')
+          open(newunit=lunfdpflxe,file='urad_phase_prop_espread.flx')
 
-          callutil_break
+          !allutil_break
           do iepho=1,nepho
 
             iobs=0
@@ -1121,6 +1144,21 @@ c          print*,"S0_prop_max:",sngl(maxval(stokesprop_u))
               enddo !iz
             enddo !iy
 
+            do isto=1,4
+              iobs=0
+              do iz=1,npinzprop_u
+                do iy=1,npinyprop_u
+                  iobs=iobs+1
+                  iobph=iobs+nobsvprop_u*(iepho-1)
+                  s(iz,iy)=stokespropetot(isto,iobph)
+                enddo
+              enddo
+              call util_spline_integral_2d(npinzprop,npinyprop,zprop,yprop,s,stosum(isto),kstat)
+              stosumetot(isto,iepho)=stosum(isto)
+            enddo !isto
+
+            write(lunfdpflxe,*)iepho,iefold,epho_u(iepho),ebeammean,stosumetot(:,iepho)
+
           enddo !iepho
 
         endif !ifieldprop
@@ -1160,7 +1198,7 @@ c          print*,"S0_prop_max:",sngl(maxval(stokesprop_u))
 
             do iefold=1,nefold
 
-              callutil_break
+              !allutil_break
 
               if (kpola.eq.1) then
                 if (iwigner.eq.-2.or.iwigner.eq.-3.or.iwigner.eq.-4) cycle
@@ -1197,7 +1235,7 @@ c          print*,"S0_prop_max:",sngl(maxval(stokesprop_u))
      &                    iepho,iefold,epho_u(iepho),buffe(iefold),
      &                    dreal(esourzy2(1,iz,iy)),dimag(esourzy2(1,iz,iy)),
      &                    dreal(esourzy2(2,iz,iy)),dimag(esourzy2(2,iz,iy)),
-     &                    wig(iz,iy,itz,ity),g(iefold)
+     &                    wig(iz,iy,itz,ity)/1.0d12,g(iefold)
                       enddo
                     enddo
                   enddo !nz
@@ -1226,7 +1264,7 @@ c          print*,"S0_prop_max:",sngl(maxval(stokesprop_u))
      &                  iepho,-nefold,epho_u(iepho),ebeammean,
      &                  dreal(esourzye(2,iz,iy,iepho)),dimag(esourzye(2,iz,iy,iepho)),
      &                  dreal(esourzye(3,iz,iy,iepho)),dimag(esourzye(3,iz,iy,iepho)),
-     &                  wint
+     &                  wint/1.0d12
                     enddo !iz
                   enddo !iy
                 enddo !itz
