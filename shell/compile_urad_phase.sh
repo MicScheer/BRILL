@@ -8,7 +8,7 @@ fi
 
 cd $BRILL/for
 
-rm -f $BRILL/urad_phase.exe
+rm -f $BRILL/bin/urad_phase.exe
 
 # mshcern.f is created by cat $WAVE_INCL/mshcern/*.f > $BRILL/for/mshcern.f
 

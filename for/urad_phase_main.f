@@ -1,4 +1,4 @@
-*CMZ :          30/09/2025  13.50.22  by  Michael Scheer
+*CMZ :          02/10/2025  13.04.31  by  Michael Scheer
 *CMZ :  4.02/00 16/09/2025  09.13.49  by  Michael Scheer
 *CMZ :  4.01/07 18/10/2024  08.57.02  by  Michael Scheer
 *CMZ :  4.01/05 16/04/2024  14.41.20  by  Michael Scheer
@@ -823,7 +823,7 @@ c          print*,"S0_max:",sngl(maxval(stokes_u))
                   rn(3)=real(aradprop_u(1,iobph)*conjg(aradprop_u(5,iobph))-aradprop_u(2,iobph)*conjg(aradprop_u(4,iobph)))
                   rn=rn/norm2(rn)
                 else if (ifieldprop.eq.-1) then
-                  rn(1:3)=obsvprop_u(4:6,iobs)
+                  rn(1:3)=aradprop_u(4:6,iobs)
                 endif
               endif
 
@@ -835,7 +835,7 @@ c          print*,"S0_max:",sngl(maxval(stokes_u))
               bzi=imag(aradprop_u(6,iobph))
 
               write(lunfdp,'(3(1pe15.6e3),2i10,30(1pe15.6e3))')
-     &          obsvprop_u(1:3,iobs),
+     &          obsvprop_u(1:3,iobs)*1000.0d0,
      &          iepho,iefold,
      &          epho_u(iepho),buffe(iefold),
      &          stokesprop_u(1:4,iobph),
@@ -1107,7 +1107,7 @@ c          print*,"S0_prop_max:",sngl(maxval(stokesprop_u))
                 azi=imag(esourzye(3,iz,iy,iepho))
 
                 write(lunfdpe,'(3(1pe17.8e3),2i10,30(1pe17.8e3))')
-     &            obsvprop_u(1:3,iobs),
+     &            obsvprop_u(1:3,iobs)*1000.0d0,
      &            iepho,-nefold,
      &            epho_u(iepho),ebeammean,stokespropetot(1:4,iobph),
      &            real(esourzye(1,iz,iy,iepho)),imag(esourzye(1,iz,iy,iepho)),

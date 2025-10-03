@@ -8,7 +8,7 @@ fi
 
 cd $BRILL/for
 
-rm -f $BRILL/urad_phase.exe
+rm -f $BRILL/urad_phase_debug.exe
 
 # mshcern.f is created by cat $WAVE_INCL/mshcern/*.f > $BRILL/for/mshcern.f
 
@@ -49,6 +49,6 @@ gfortran -g -cpp \
 urad_modules.o urad_util.o \
 mshcern.o \
 -o $BRILL/bin/urad_phase_debug.exe \
-urad_phase_main_debug.f
+urad_phase_main.f
 
 cd $OWD
