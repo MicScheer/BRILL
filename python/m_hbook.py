@@ -15055,8 +15055,6 @@ def vstat(x='?',y=''):
   Mrun, Mcomment, Mdate, ROFx, Rofy, Hull2D,Hull3DList,THull3D,Hull3D, Kgrid, KxAxis,KyAxis,KzAxis,Kbox, \
   FillColor,WisLinux,Ishow,Sepp,Backslash
 
-  #nreakpoint()
-
   if type(x) == str:
     print("\nvstat(x,y) returns [xmin, xmax, xmean, xrms, xopt, yopt]")
     print("If y is missing, y is treated as unity.\n")
@@ -15069,9 +15067,14 @@ def vstat(x='?',y=''):
     y = x*0 + 1.
   #endif type(y) == str
 
-  ya = abs(y)
-  ny = len(y)
-  ly = len(y) - 1
+  #reakpoint()
+  try:
+    ya = abs(y)
+    ny = len(y)
+    ly = len(y) - 1
+  except:
+    return [0.0,0.0,0.0,0.0,0.0,0.0]
+  #endtry
 
   sumy = y.sum()
   ymaxa = abs(y).max()
@@ -19889,27 +19892,31 @@ def vplxy(x='!',y='!',plopt='',label='',color='!',fillcolor='none'):
       sfs = StatFontSize
     #endif StatFontSize < 0
 
-    if Ispline:
-      xmin, xmax, xmean, xrms, xopt, yopt = vstat(xspl,yspl)
-    else:
-      xmin, xmax, xmean, xrms, xopt, yopt = vstat(x,y)
-    #endif
+    try:
 
-    tex = \
-    "N, Sum: " + str(int(len(x))) + ", " + '{:.4g}'.format(y.sum()) + \
-    "\n \n Mean: " + '{:.4g}'.format(xmean) + \
-    "\n \n RMS: " + '{:.4g}'.format(xrms)
+      if Ispline:
+        xmin, xmax, xmean, xrms, xopt, yopt = vstat(xspl,yspl)
+      else:
+        xmin, xmax, xmean, xrms, xopt, yopt = vstat(x,y)
+      #endif
 
-    if xopt != None and yopt != None:
-      tex += " \n \n xOpt: " + '{:.4g}'.format(xopt) + \
-      "\n\nyOpt: " + '{:.4g}'.format(yopt)
-    #endif
+      tex = \
+      "N, Sum: " + str(int(len(x))) + ", " + '{:.4g}'.format(y.sum()) + \
+      "\n \n Mean: " + '{:.4g}'.format(xmean) + \
+      "\n \n RMS: " + '{:.4g}'.format(xrms)
 
-    text(Xstat,Ystat,tex,halign='left')
-    # Latex makes trouble with exponents
-    #    latex(Xstat,Ystat,tex,color='black',fontsize=sfs,halign='left',valign='top', \
-    #    bbox='none',bbstyle='round',fc='white',ec='black',pad=0.2)
+      if xopt != None and yopt != None:
+        tex += " \n \n xOpt: " + '{:.4g}'.format(xopt) + \
+        "\n\nyOpt: " + '{:.4g}'.format(yopt)
+      #endif
 
+      text(Xstat,Ystat,tex,halign='left')
+
+      # Latex makes trouble with exponents
+      #    latex(Xstat,Ystat,tex,color='black',fontsize=sfs,halign='left',valign='top', \
+      #    bbox='none',bbstyle='round',fc='white',ec='black',pad=0.2)
+
+    except: pass
   #endif Kstat
 
   Kplots[Kzone-1] = 1
@@ -19948,7 +19955,7 @@ def vpllls(x='!',y='!',plopt='sameline',label='',color='l',fillcolor='none'):
 def vpllcs(x='!',y='!',plopt='sameline',label='',color='c',fillcolor='none'):
   vplxy(x,y,plopt,label,color,fillcolor)
 
-def pmark(x,y,z='!',plopt='isame'):
+def pmark(x,y,z='!',plopt='same'):
   if type(z) != str:
     vplxyz(x,y,z,plopt)
   else:

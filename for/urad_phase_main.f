@@ -4425,6 +4425,7 @@ c          write(77,*)sourcepoint,z,y,dreal(fprop(1:3,iz,iy)),dimag(fprop(1:3,iz
 
       return
       end
+*CMZ :          04/10/2025  07.34.01  by  Michael Scheer
 *CMZ :  4.02/00 11/09/2025  15.05.09  by  Michael Scheer
 *-- Author :    Michael Scheer   16/04/2025
       subroutine undulator_wigner_num(nx,ny,dx,dy,wlen,esour,ntx,nty,thex,they,wig,curr,banwid)
@@ -4441,8 +4442,6 @@ c          write(77,*)sourcepoint,z,y,dreal(fprop(1:3,iz,iy)),dimag(fprop(1:3,iz
      &  cthe,eki,expom,em,ep
 
       complex*16, intent(in) :: esour(2,nx,ny)
-c      complex*16  :: wkern(2*nx,2*ny,nx,ny)
-c      complex*16 :: wigc(nx,ny,ntx,nty)
 
       real*8, intent(in):: wlen,thex(ntx),they(nty),dx,dy
       real*8, intent(out) :: wig(nx,ny,ntx,nty)
@@ -4450,21 +4449,13 @@ c      complex*16 :: wigc(nx,ny,ntx,nty)
       real*8 :: tx,ty,ek,dtx,dty,xm,xp,xpm,ypm,ym,yp,rp,rm,x,y,wlen12,wignor,curr,banwid,
      &  specnor_si
 
-      integer :: ix,iy,itx,ity,kx,ky,jfail,nper,iypm,ixpm,lx,ly,ifound,nmaxth=1
-
-c      real secin,secout
-c      print*
-c      print*,"     Calculating Wigner Distribution for ",sngl(wlen)," nm"
-c      print*
-
-c      secin=secnds(0.0)
+      integer :: ix,iy,itx,ity,kx,ky,nper,iypm,ixpm,lx,ly,nmaxth=1
 
       wlen12=1.0d0/(wlen*1.0d-9)**2
       ek=twopi1/abs(wlen*1.0d-9) !1/m
       eki=ci*ek
 
       wig=0.0d0
-c      wigc=(0.0d0,0.0d0)
 
       if (ntx.gt.1) then
         dtx=thex(2)-thex(1)
@@ -4480,27 +4471,12 @@ c      wigc=(0.0d0,0.0d0)
 
       nmaxth=OMP_GET_MAX_THREADS()
 
-c      call undulator_wigner_kernel(nx,ny,esour,wkern) bringt's nicht
-
       SPECNOR_SI= !merke/synchrotron_radiation.txt
      &  curr ! Strom
      &  /echarge1/hbar1*clight1/PI1*EPS01
      &  *banwid
 
       wignor=specnor_si*dx*dy*wlen12 !??*4.0d0 ! factor 4 due to change in integration variables!?
-
-c      nmaxth=1
-c      print*,"Nur ein Thread!"
-
-c      do iy=1,ny
-c        do ix=1,nx
-c          write(77,*)ix,iy,
-c     &      dreal(esour(1,ix,iy)),dimag(esour(2,ix,iy)),
-c     &      dreal(esour(2,ix,iy)),dimag(esour(2,ix,iy))
-c        enddo
-c      enddo
-c      flush(77)
-c      close(77)
 
 !$OMP PARALLEL NUM_THREADS(nmaxth) DEFAULT(PRIVATE)
 !$OMP& FIRSTPRIVATE(nx,ny,ntx,nty,dx,dy,eki,wlen12,they,thex,dtx,dty,wignor)
@@ -4552,7 +4528,6 @@ c      close(77)
                     else
                       expom=expom*expdtx
                     endif
-
                   else
                     if (itx.eq.1) then
                       tx=thex(itx)
@@ -4563,12 +4538,7 @@ c      close(77)
                     endif
                   endif
 
-C                  expom=exp(-eki*(xpm*tx+ypm*ty))
-
-                  wig(ix,iy,itx,ity)=wig(ix,iy,itx,ity)+
-     &              dreal(em*ep*expom)*wignor
-c                  wigc(ix,iy,itx,ity)=wigc(ix,iy,itx,ity)+
-c     &              em*ep*expom*wignor
+                  wig(ix,iy,itx,ity)=wig(ix,iy,itx,ity)+dreal(em*ep*expom)*wignor
 
                 enddo
               enddo
@@ -4580,11 +4550,6 @@ c     &              em*ep*expom*wignor
       enddo
 !$OMP END DO
 !$OMP END PARALLEL
-
-c      wig=dreal(wig)
-c      secout=secnds(0.0)
-
-c      print*,"     Seconds used:",secout-secin
 
       end
 *CMZ :          28/09/2025  14.46.51  by  Michael Scheer
