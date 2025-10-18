@@ -3756,11 +3756,24 @@ def _write_urad_phase_nam():
   Fnam = open("urad_phase.nam",'w')
 
   Fnam.write(" $uradphasen\n\n")
+
   for var in Unamelist:
     if var == 'Harm':
       Fnam.write("  " 'harm='+ str(Dsetup['Harmonic'][1]) + '          !' + Dsetup['Harmonic'][0] + '\n')
     else:
-      Fnam.write("  " + var+'='+ str(Dsetup[var][1]) + '          !' + Dsetup[var][0] + '\n')
+      val = Dsetup[var][1]
+      if (\
+      var.strip().upper()[0] == 'I' or \
+      var.strip().upper()[0] == 'J' or \
+      var.strip().upper()[0] == 'K' or \
+      var.strip().upper()[0] == 'L' or \
+      var.strip().upper()[0] == 'I' or \
+      var.strip().upper()[0] == 'N') \
+      :
+        val = int(val)
+        Dsetup[var][1] = val
+      #endif
+      Fnam.write("  " + var+'='+ str(val) + '          !' + Dsetup[var][0] + '\n')
   #endfor
   Fnam.write("\n $end\n\n")
 
@@ -3918,7 +3931,7 @@ def debug(s=''):
   if s: print("debug:",s)
 #enddef debug()
 
-def _get_spec():
+def __get_spec():
 
   global Calculated_Spec, NcalcSpec, SpecPar
   global nsto,nflx,nfld,nbun,nfdp,nwig,nwge
@@ -4037,7 +4050,15 @@ def _get_spec():
 
   NcalcSpec += 1
 
-#enddef _get_spec()
+#enddef __get_spec()
+
+def _get_spec():
+  try:
+    __get_spec()
+  except:
+    print('\n*** Failed to load previous run *** \n')
+  #enddef
+#enddef __get_spec()
 
 def _calc_spec():
 
@@ -5825,11 +5846,7 @@ S_IEsel.set(IEsel)
 S_Esel.set(Esel)
 
 def Load_Previous_Run():
-  try:
-    _get_spec()
-  except:
-    print('\n*** Failed to load previous run *** \n')
-  #endtry
+  _get_spec()
 #enddef
 
 # Execute ntupplot_startup.py
