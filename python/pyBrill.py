@@ -2388,7 +2388,11 @@ def _sel_Esel():
 
   if Modepin == 0:
     selzy = "abs(z-" + str(PinZ) + ") < 1.0e-10 and abs(y-" + str(PinY) + ") < 1.e-10"
-    npl(nfld,"egam:s0",selzy,plopt='line')
+    if Nepho > 1:
+      npl(nfld,"egam:s0",selzy,plopt='line')
+    else:
+      npl(nfld,"egam:s0",selzy)
+    #endif
     xtit="photon energy [eV]"
     ytit = 'N$_{\gamma}$' + '/mm$^2$/s/0.1' + '%BW/' + str(int(Curr*1000)) + "mA"
     titp = "\nS0 (x={:.3g}m, y={:.3g}mm, z={:.3g}mm)". \
@@ -2400,7 +2404,11 @@ def _sel_Esel():
     nextzone()
   #endif
 
-  npl(nflx,"egam:s0",plopt='line')
+  if Nepho > 1:
+    npl(nflx,"egam:s0",plopt='line')
+  else:
+    npl(nflx,"egam:s0")
+  #endif
 
   if Nepho < 100:
     npl(nflx,"egam:s0",plopt='markersame')
@@ -3651,7 +3659,11 @@ def _pFdSpec(key='s0'):
   nEfold = int(Dsetup['nEfold'][1])
 
   if keyl[0] == 's':
-    npl(nfld,"egam:"+keyl,selzy,plopt='line')
+    if Nepho > 1:
+      npl(nfld,"egam:"+keyl,selzy,plopt='line')
+    else:
+      npl(nfld,"egam:"+keyl,selzy)
+    #endif
     xtit="photon energy [eV]"
     ytit = 'N$_{\gamma}$' + '/mm$^2$/s/0.1' + '%BW/' + str(int(Curr*1000)) + "mA"
     #endif NpinZ, NpinY
@@ -3702,7 +3714,11 @@ def _pFluxSpec(key='s0'):
   setlinecolor(Vsetup_Plot[3][1][1])
 
   if keyl[0] == 's':
-    npl(nflx,"egam:"+keyl,plopt='line')
+    if Nepho > 1:
+      npl(nflx,"egam:"+keyl,plopt='line')
+    else:
+      npl(nflx,"egam:"+keyl)
+    #endif
     xtit="photon energy [eV]"
     if NpinZ > 1 and NpinY > 1:
       ytit = 'N$_{\gamma}$' + '/s/0.1' + '%BW/' + str(int(Curr*1000)) + "mA"
@@ -3713,7 +3729,11 @@ def _pFluxSpec(key='s0'):
     format(PinW,PinH,PinX/1000.,PinY,PinZ)
   elif keyl[0] == 'p':
     Quit("Baustelle P")
-    npl(nflx,"egam:"+keyl,plopt='line')
+    if Nepho > 1:
+      npl(nflx,"egam:"+keyl,plopt='line')
+    else:
+      npl(nflx,"egam:"+keyl)
+    #endif
     xtit="photon energy [eV]"
     if NpinZ > 1 and NpinY > 1:
       ytit = 'N$_{\gamma}$' + '/s/0.1' + '%BW/' + str(int(Curr*1000)) + "mA"
