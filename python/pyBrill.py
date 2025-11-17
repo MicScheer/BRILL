@@ -1565,7 +1565,8 @@ def _nPlot():
 
 
   global FillColor
-
+  print("_Plot!")
+  breakpoint()
   print(WavesMode)
   if not len(Nhead):
     nError("  No Ntuple defined so far!  ")
@@ -2394,7 +2395,7 @@ def _sel_Esel():
       npl(nfld,"egam:s0",selzy)
     #endif
     xtit="photon energy [eV]"
-    ytit = 'N$_{\gamma}$' + '/mm$^2$/s/0.1' + '%BW/' + str(int(Curr*1000)) + "mA"
+    ytit = 'N$_{\\gamma}$' + '/mm$^2$/s/0.1' + '%BW/' + str(int(Curr*1000)) + "mA"
     titp = "\nS0 (x={:.3g}m, y={:.3g}mm, z={:.3g}mm)". \
     format(PinX/1000.,PinY,PinZ)
     txyz(titp,'',ytit)
@@ -2416,9 +2417,9 @@ def _sel_Esel():
   xtit="photon energy [eV]"
 
   if NpinZ > 1 and NpinY > 1:
-    ytit = 'N$_{\gamma}$' + '/s/0.1' + '%BW/' + str(int(Curr*1000)) + "mA"
+    ytit = 'N$_{\\gamma}$' + '/s/0.1' + '%BW/' + str(int(Curr*1000)) + "mA"
   else:
-    ytit = 'N$_{\gamma}$' + '/mm/s/0.1' + '%BW/' + str(int(Curr*1000)) + "mA"
+    ytit = 'N$_{\\gamma}$' + '/mm/s/0.1' + '%BW/' + str(int(Curr*1000)) + "mA"
   #endif NpinZ, NpinY
 
   titp = "\nS0 (w={:.3g}mm, h={:.3g}mm, x={:.3g}m, y={:.3g}mm, z={:.3g}mm)". \
@@ -2695,7 +2696,7 @@ def _pFdProp(key='s0'):
       #endif
     #endif
 
-    tunit = 'N$_{\gamma}$' + '/mm$^2$/s/0.1' + '%BW/' + str(int(Curr*1000)) + "mA"
+    tunit = 'N$_{\\gamma}$' + '/mm$^2$/s/0.1' + '%BW/' + str(int(Curr*1000)) + "mA"
 
     cbp = getcolorbarpad()
     xuni = 0.97 + cbp
@@ -2709,19 +2710,19 @@ def _pFdProp(key='s0'):
       zunit = tunit
     #endif
     if keyu == 'S0':
-      txyz("Dens. of S$_0$ for E$_{\gamma}$  = " + pg5(Esel) + " eV","z [mm]","y [mm]",zunit)
+      txyz("Dens. of S$_0$ for E$_{\\gamma}$  = " + pg5(Esel) + " eV","z [mm]","y [mm]",zunit)
     elif keyu == 'S1':
-      txyz("Dens. of S$_1$ for E$_{\gamma}$  = " + pg5(Esel) + " eV","z [mm]","y [mm]",zunit)
+      txyz("Dens. of S$_1$ for E$_{\\gamma}$  = " + pg5(Esel) + " eV","z [mm]","y [mm]",zunit)
     elif keyu == 'S2':
-      txyz("Dens. of S$_2$ for E$_{\gamma}$  = " + pg5(Esel) + " eV","z [mm]","y [mm]",zunit)
+      txyz("Dens. of S$_2$ for E$_{\\gamma}$  = " + pg5(Esel) + " eV","z [mm]","y [mm]",zunit)
     elif keyu == 'S3':
-      txyz("Dens. of S$_3$ for E$_{\gamma}$  = " + pg5(Esel) + " eV","z [mm]","y [mm]",zunit)
+      txyz("Dens. of S$_3$ for E$_{\\gamma}$  = " + pg5(Esel) + " eV","z [mm]","y [mm]",zunit)
     elif keyu == 'P':
       xuni = 1.0 + cbp
       yuni = 1.05
       auni = 0.0
       zunit = '[W/mm$^2$]'
-      txyz("Dens. of Power for E$_{\gamma}$  = " + pg5(Esel) + " eV","z [mm]","y [mm]",zunit)
+      txyz("Dens. of Power for E$_{\\gamma}$  = " + pg5(Esel) + " eV","z [mm]","y [mm]",zunit)
     #endif
 
     if type(ax) == Tax2d:
@@ -2766,7 +2767,7 @@ def _pFdProp(key='s0'):
       #endif
     #endif
 
-    tunit = 'Sqrt(N$_{\gamma}$' + '/mm$^2$/s/0.1' + '%BW/' + str(int(Curr*1000)) + "mA)"
+    tunit = 'Sqrt(N$_{\\gamma}$' + '/mm$^2$/s/0.1' + '%BW/' + str(int(Curr*1000)) + "mA)"
 
     cbp = getcolorbarpad()
     xuni = 0.97 + cbp
@@ -2780,13 +2781,13 @@ def _pFdProp(key='s0'):
       zunit = tunit
     #endif
     if keyu == 'EYR':
-      txyz("Dens. of Ey_real for E$_{\gamma}$  = " + pg5(Esel) + " eV","z [mm]","y [mm]",zunit)
+      txyz("Dens. of Ey_real for E$_{\\gamma}$  = " + pg5(Esel) + " eV","z [mm]","y [mm]",zunit)
     elif keyu == 'EYI':
-      txyz("Dens. of Ey_imag for E$_{\gamma}$  = " + pg5(Esel) + " eV","z [mm]","y [mm]",zunit)
+      txyz("Dens. of Ey_imag for E$_{\\gamma}$  = " + pg5(Esel) + " eV","z [mm]","y [mm]",zunit)
     elif keyu == 'EZR':
-      txyz("Dens. of Ez_real for E$_{\gamma}$  = " + pg5(Esel) + " eV","z [mm]","y [mm]",zunit)
+      txyz("Dens. of Ez_real for E$_{\\gamma}$  = " + pg5(Esel) + " eV","z [mm]","y [mm]",zunit)
     elif keyu == 'EZI':
-      txyz("Dens. of Ez_imag for E$_{\gamma}$  = " + pg5(Esel) + " eV","z [mm]","y [mm]",zunit)
+      txyz("Dens. of Ez_imag for E$_{\\gamma}$  = " + pg5(Esel) + " eV","z [mm]","y [mm]",zunit)
     #endif
 
     if type(ax) == Tax2d:
@@ -2840,13 +2841,13 @@ def _pFdProp(key='s0'):
     #endif
 
     if keyu == 'P0': \
-    txyz("P$_0$ for E$_{\gamma}$  = " + pg5(Esel) + " eV","z [mm]","y [mm]")
+    txyz("P$_0$ for E$_{\\gamma}$  = " + pg5(Esel) + " eV","z [mm]","y [mm]")
     elif keyu == 'P1': \
-    txyz("P$_1$ for E$_{\gamma}$  = " + pg5(Esel) + " eV","z [mm]","y [mm]")
+    txyz("P$_1$ for E$_{\\gamma}$  = " + pg5(Esel) + " eV","z [mm]","y [mm]")
     elif keyu == 'P2': \
-    txyz("P$_2$ for E$_{\gamma}$  = " + pg5(Esel) + " eV","z [mm]","y [mm]")
+    txyz("P$_2$ for E$_{\\gamma}$  = " + pg5(Esel) + " eV","z [mm]","y [mm]")
     elif keyu == 'P3': \
-    txyz("P$_3$ for E$_{\gamma}$  = " + pg5(Esel) + " eV","z [mm]","y [mm]")
+    txyz("P$_3$ for E$_{\\gamma}$  = " + pg5(Esel) + " eV","z [mm]","y [mm]")
 
   #endif key
 
@@ -2940,7 +2941,7 @@ def _pFdPin(key='s0'):
       #endif
     #endif
 
-    tunit = 'N$_{\gamma}$' + '/mm$^2$/s/0.1' + '%BW/' + str(int(Curr*1000)) + "mA"
+    tunit = 'N$_{\\gamma}$' + '/mm$^2$/s/0.1' + '%BW/' + str(int(Curr*1000)) + "mA"
 
     cbp = getcolorbarpad()
     xuni = 0.97 + cbp
@@ -2954,19 +2955,19 @@ def _pFdPin(key='s0'):
       zunit = tunit
     #endif
     if keyu == 'S0':
-      txyz("Dens. of S$_0$ for E$_{\gamma}$  = " + pg5(Esel) + " eV","z [mm]","y [mm]",zunit)
+      txyz("Dens. of S$_0$ for E$_{\\gamma}$  = " + pg5(Esel) + " eV","z [mm]","y [mm]",zunit)
     elif keyu == 'S1':
-      txyz("Dens. of S$_1$ for E$_{\gamma}$  = " + pg5(Esel) + " eV","z [mm]","y [mm]",zunit)
+      txyz("Dens. of S$_1$ for E$_{\\gamma}$  = " + pg5(Esel) + " eV","z [mm]","y [mm]",zunit)
     elif keyu == 'S2':
-      txyz("Dens. of S$_2$ for E$_{\gamma}$  = " + pg5(Esel) + " eV","z [mm]","y [mm]",zunit)
+      txyz("Dens. of S$_2$ for E$_{\\gamma}$  = " + pg5(Esel) + " eV","z [mm]","y [mm]",zunit)
     elif keyu == 'S3':
-      txyz("Dens. of S$_3$ for E$_{\gamma}$  = " + pg5(Esel) + " eV","z [mm]","y [mm]",zunit)
+      txyz("Dens. of S$_3$ for E$_{\\gamma}$  = " + pg5(Esel) + " eV","z [mm]","y [mm]",zunit)
     elif keyu == 'P':
       xuni = 1.0 + cbp
       yuni = 1.05
       auni = 0.0
       zunit = '[W/mm$^2$]'
-      txyz("Dens. of Power for E$_{\gamma}$  = " + pg5(Esel) + " eV","z [mm]","y [mm]",zunit)
+      txyz("Dens. of Power for E$_{\\gamma}$  = " + pg5(Esel) + " eV","z [mm]","y [mm]",zunit)
     #endif
 
     if type(ax) == Tax2d:
@@ -3005,7 +3006,7 @@ def _pFdPin(key='s0'):
       #endif
     #endif
 
-    tunit = 'Sqrt(N$_{\gamma}$' + '/mm$^2$/s/0.1' + '%BW/' + str(int(Curr*1000)) + "mA)"
+    tunit = 'Sqrt(N$_{\\gamma}$' + '/mm$^2$/s/0.1' + '%BW/' + str(int(Curr*1000)) + "mA)"
 
     cbp = getcolorbarpad()
     xuni = 0.97 + cbp
@@ -3019,13 +3020,13 @@ def _pFdPin(key='s0'):
       zunit = tunit
     #endif
     if keyu == 'EYR':
-      txyz("Dens. of Ey_real for E$_{\gamma}$  = " + pg5(Esel) + " eV","z [mm]","y [mm]",zunit)
+      txyz("Dens. of Ey_real for E$_{\\gamma}$  = " + pg5(Esel) + " eV","z [mm]","y [mm]",zunit)
     elif keyu == 'EYI':
-      txyz("Dens. of Ey_imag for E$_{\gamma}$  = " + pg5(Esel) + " eV","z [mm]","y [mm]",zunit)
+      txyz("Dens. of Ey_imag for E$_{\\gamma}$  = " + pg5(Esel) + " eV","z [mm]","y [mm]",zunit)
     elif keyu == 'EZR':
-      txyz("Dens. of Ez_real for E$_{\gamma}$  = " + pg5(Esel) + " eV","z [mm]","y [mm]",zunit)
+      txyz("Dens. of Ez_real for E$_{\\gamma}$  = " + pg5(Esel) + " eV","z [mm]","y [mm]",zunit)
     elif keyu == 'EZI':
-      txyz("Dens. of Ez_imag for E$_{\gamma}$  = " + pg5(Esel) + " eV","z [mm]","y [mm]",zunit)
+      txyz("Dens. of Ez_imag for E$_{\\gamma}$  = " + pg5(Esel) + " eV","z [mm]","y [mm]",zunit)
     #endif
 
     if type(ax) == Tax2d:
@@ -3073,13 +3074,13 @@ def _pFdPin(key='s0'):
     #endif
 
     if keyu == 'P0': \
-    txyz("P$_0$ for E$_{\gamma}$  = " + pg5(Esel) + " eV","z [mm]","y [mm]")
+    txyz("P$_0$ for E$_{\\gamma}$  = " + pg5(Esel) + " eV","z [mm]","y [mm]")
     elif keyu == 'P1': \
-    txyz("P$_1$ for E$_{\gamma}$  = " + pg5(Esel) + " eV","z [mm]","y [mm]")
+    txyz("P$_1$ for E$_{\\gamma}$  = " + pg5(Esel) + " eV","z [mm]","y [mm]")
     elif keyu == 'P2': \
-    txyz("P$_2$ for E$_{\gamma}$  = " + pg5(Esel) + " eV","z [mm]","y [mm]")
+    txyz("P$_2$ for E$_{\\gamma}$  = " + pg5(Esel) + " eV","z [mm]","y [mm]")
     elif keyu == 'P3': \
-    txyz("P$_3$ for E$_{\gamma}$  = " + pg5(Esel) + " eV","z [mm]","y [mm]")
+    txyz("P$_3$ for E$_{\\gamma}$  = " + pg5(Esel) + " eV","z [mm]","y [mm]")
 
   #endif key
 
@@ -3665,7 +3666,7 @@ def _pFdSpec(key='s0'):
       npl(nfld,"egam:"+keyl,selzy)
     #endif
     xtit="photon energy [eV]"
-    ytit = 'N$_{\gamma}$' + '/mm$^2$/s/0.1' + '%BW/' + str(int(Curr*1000)) + "mA"
+    ytit = 'N$_{\\gamma}$' + '/mm$^2$/s/0.1' + '%BW/' + str(int(Curr*1000)) + "mA"
     #endif NpinZ, NpinY
     titp = "\n" + keyu + " (x={:.3g}m, y={:.3g}mm, z={:.3g}mm)". \
     format(PinX/1000.,PinY,PinZ)
@@ -3721,9 +3722,9 @@ def _pFluxSpec(key='s0'):
     #endif
     xtit="photon energy [eV]"
     if NpinZ > 1 and NpinY > 1:
-      ytit = 'N$_{\gamma}$' + '/s/0.1' + '%BW/' + str(int(Curr*1000)) + "mA"
+      ytit = 'N$_{\\gamma}$' + '/s/0.1' + '%BW/' + str(int(Curr*1000)) + "mA"
     else:
-      ytit = 'N$_{\gamma}$' + '/mm/s/0.1' + '%BW/' + str(int(Curr*1000)) + "mA"
+      ytit = 'N$_{\\gamma}$' + '/mm/s/0.1' + '%BW/' + str(int(Curr*1000)) + "mA"
     #endif NpinZ, NpinY
     titp = "\n" + keyu + " (w={:.3g}mm, h={:.3g}mm, x={:.3g}m, y={:.3g}mm, z={:.3g}mm)". \
     format(PinW,PinH,PinX/1000.,PinY,PinZ)
@@ -3736,9 +3737,9 @@ def _pFluxSpec(key='s0'):
     #endif
     xtit="photon energy [eV]"
     if NpinZ > 1 and NpinY > 1:
-      ytit = 'N$_{\gamma}$' + '/s/0.1' + '%BW/' + str(int(Curr*1000)) + "mA"
+      ytit = 'N$_{\\gamma}$' + '/s/0.1' + '%BW/' + str(int(Curr*1000)) + "mA"
     else:
-      ytit = 'N$_{\gamma}$' + '/mm/s/0.1' + '%BW/' + str(int(Curr*1000)) + "mA"
+      ytit = 'N$_{\\gamma}$' + '/mm/s/0.1' + '%BW/' + str(int(Curr*1000)) + "mA"
     #endif NpinZ, NpinY
     titp = "\n" + keyu + " (w={:.3g}mm, h={:.3g}mm, x={:.3g}m, y={:.3g}mm, z={:.3g}mm)". \
     format(PinW,PinH,PinX/1000.,PinY,PinZ)
