@@ -1,4 +1,4 @@
-*CMZ :          18/10/2025  06.57.47  by  Michael Scheer
+*CMZ :          20/11/2025  11.44.37  by  Michael Scheer
 *CMZ :  4.02/00 16/09/2025  09.13.49  by  Michael Scheer
 *CMZ :  4.01/07 18/10/2024  08.57.02  by  Michael Scheer
 *CMZ :  4.01/05 16/04/2024  14.41.20  by  Michael Scheer
@@ -69,7 +69,7 @@
       double precision, dimension(:), allocatable :: z,y,zm,ym,zprop,yprop,f,ws1,ws2,fg,thez,they,
      &  buffz,buffy,buffe,buffr,buffi,buffu,buffv,buffw,powetot
 
-      double precision, dimension(:,:), allocatable :: s,fzf,stokscr,f2d,fzfprop,f2dprop,
+      double precision, dimension(:,:), allocatable :: s,sp,fzf,stokscr,f2d,fzfprop,f2dprop,
      &  fdspecesour,fdwig,fdwigtzty,
      &  stokesetot,stokespropetot,powe,stosumetot
 
@@ -423,7 +423,12 @@
      &  obsvzprop_u(npinzprop),obsvyprop_u(npinyprop),obsvprop_u(3,nobsvprop),
      &  aradprop_u(6,nobsvprop*nepho),stokesprop_u(4,nobsvprop*nepho))
 
-      allocate(zprop(npinzprop),yprop(npinyprop),s(npinz,npiny),
+      aradprop_u=(0.0d0,0.0d0)
+      stokesprop_u=0.0d0
+
+      allocate(zprop(npinzprop),yprop(npinyprop),
+     &  s(npinz,npiny),
+     &  sp(npinzprop,npinyprop),
      &  f(max(npinz,npiny,npinzprop,npinyprop)),
      &  fg(max(npinz,npiny,npinzprop,npinyprop)),
      &  f2d(npinz,npiny),
@@ -435,6 +440,7 @@
      &  aradfprop(nfoldp,npinzprop,npinyprop,nepho),
      &  ws1(max(npinz,npiny,npinzprop,npinyprop)),ws2(max(npinz,npiny,npinzprop,npinyprop)))
 
+      aradfprop=(0.0d0,0.0d0)
 
       obsvyprop_u(1)=-pinhprop/2.0d0/1000.0d0
       yprop(1)=obsvyprop_u(1)*1000.0d0
@@ -857,11 +863,11 @@ c          print*,"S0_max:",sngl(maxval(stokes_u))
                 do iy=1,npinyprop_u
                   iobs=iobs+1
                   iobph=iobs+nzyprop*(iepho-1)
-                  s(iz,iy)=stokesprope(isto,iobph,iefold)
+                  sp(iz,iy)=stokesprope(isto,iobph,iefold)
                 enddo
               enddo
-              callutil_break
-              call util_spline_integral_2d(npinzprop_u,npinyprop_u,zprop,yprop,s,
+              !all !til_break
+              call util_spline_integral_2d(npinzprop_u,npinyprop_u,zprop,yprop,sp,
      &          stosume(isto,iepho,iefold),kstat)
             enddo !isto
 
@@ -1150,10 +1156,10 @@ c          print*,"S0_prop_max:",sngl(maxval(stokesprop_u))
                 do iy=1,npinyprop_u
                   iobs=iobs+1
                   iobph=iobs+nobsvprop_u*(iepho-1)
-                  s(iz,iy)=stokespropetot(isto,iobph)
+                  sp(iz,iy)=stokespropetot(isto,iobph)
                 enddo
               enddo
-              call util_spline_integral_2d(npinzprop,npinyprop,zprop,yprop,s,stosum(isto),kstat)
+              call util_spline_integral_2d(npinzprop,npinyprop,zprop,yprop,sp,stosum(isto),kstat)
               stosumetot(isto,iepho)=stosum(isto)
             enddo !isto
 
@@ -1525,7 +1531,7 @@ c      if (modewave.ne.0) call util_zeit_kommentar(6,'Leaving urad_phase')
 
       ical=1
       end
-*CMZ :          26/09/2025  11.42.49  by  Michael Scheer
+*CMZ :          17/11/2025  15.48.57  by  Michael Scheer
 *CMZ :  4.02/00 27/08/2025  14.45.47  by  Michael Scheer
 *CMZ :  4.01/07 18/10/2024  09.41.32  by  Michael Scheer
 *CMZ :  4.01/05 26/04/2024  07.41.13  by  Michael Scheer
@@ -1693,20 +1699,21 @@ c     &    fpriv(3,npinzprop_u,npinyprop_u),
         parkv=echarge1*dabs(beffv_u)*perlen_u/(twopi1*emasskg1*clight1)
 
         if (modewave.eq.0) then
-c*** OBSOLITE, SEE z0= further down
+c*** OBSOLeTE, SEE z0= further down
           zampell=beffv_u*clight1/emom/xkellip**2
           yampell=beffh_u*clight1/emom/xkellip**2
 c        zampell=zmx
 c        yampell=ymx
 c        print*,zpampell
-c        ypampell=parkh/gamma_u
+          zpampell=parkh/gamma_u
+          ypampell=parkv/gamma_u
 c        zpampell=tan(phimx)
 c        print*,zpampell
 c        stop
         else
-          call util_break
-          yampell=ymx-ymn
-          zampell=zmx-zmn
+c          !all util_break
+          yampell=(ymx-ymn)/2.0d0
+          zampell=(zmx-zmn)/2.0d0
         endif
       else
         print*,''
@@ -4384,44 +4391,6 @@ c          write(77,*)sourcepoint,z,y,dreal(fprop(1:3,iz,iy)),dimag(fprop(1:3,iz
 
         ENDDO !nzprop
       enddo !nyprop
-
-      return
-      end
-*CMZ :  4.01/07 10/08/2024  16.46.49  by  Michael Scheer
-*CMZ :  4.01/05 16/04/2024  14.41.20  by  Michael Scheer
-*CMZ :  4.01/04 28/12/2023  15.32.18  by  Michael Scheer
-*CMZ :  4.01/03 17/05/2023  10.57.05  by  Michael Scheer
-*CMZ :  4.01/02 12/05/2023  13.32.32  by  Michael Scheer
-*CMZ :  4.01/00 22/02/2023  14.57.49  by  Michael Scheer
-*-- Author : Michael Scheer
-      subroutine urad_phase_fold_2d(nx,ny,x,y,fin,sigx,sigy,fold)
-
-      implicit none
-
-      integer ix,iy,nx,ny
-
-      real*8 fin(nx,ny),x(nx),y(ny),sigx,sigy,fold(nx,ny),
-     &  fxf(nx,ny),f(max(nx,ny)),fg(max(nx,ny)),ws1(max(nx,ny)),ws2(max(nx,ny))
-
-      do iy=1,ny
-        f(1:nx)=fin(1:nx,iy)
-        if (sigx.gt.0.0d0) then
-          call util_fold_function_gauss_lin(nx,x,f,sigx,3.0d0,fg,ws1,ws2)
-          fxf(1:nx,iy)=fg(1:nx)
-        else
-          fxf(1:nx,iy)=fin(1:nx,iy)
-        endif
-      enddo
-
-      do ix=1,nx
-        if (sigy.gt.0.0d0) then
-          f(1:ny)=fxf(ix,1:ny)
-          call util_fold_function_gauss_lin(ny,y,f,sigy,3.0d0,fg,ws1,ws2)
-          fold(ix,1:ny)=fg(1:ny)
-        else
-          fold(ix,1:ny)=fxf(ix,1:ny)
-        endif
-      enddo
 
       return
       end
