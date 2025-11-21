@@ -1,4 +1,4 @@
-*CMZ :          20/11/2025  11.44.37  by  Michael Scheer
+*CMZ :          21/11/2025  12.37.07  by  Michael Scheer
 *CMZ :  4.02/00 16/09/2025  09.13.49  by  Michael Scheer
 *CMZ :  4.01/07 18/10/2024  08.57.02  by  Michael Scheer
 *CMZ :  4.01/05 16/04/2024  14.41.20  by  Michael Scheer
@@ -84,7 +84,7 @@
       complex*16, dimension(:,:,:,:,:), allocatable :: esourzy,esourzypin
       complex*16, dimension(:,:,:,:,:,:), allocatable :: esourzypol
 
-      double precision :: banwid=0.001,xbeta=0.0d0,drea,dima,
+      double precision :: banwid=0.001d0,xbeta=0.0d0,drea,dima,
      &  perlen,shift,ee,ebeam,ebeammean,curr,step,perl,ebeammin,debeam,deltae,g(1000),gsum,
      &  pincen(3),pinw,pinh,park,wlen1,wlen,gamma,
      &  ephmin,ephmax,beffv,beffh,pherror,phgshift,stosum(4),
@@ -1287,7 +1287,7 @@ c          print*,"S0_prop_max:",sngl(maxval(stokesprop_u))
       print*,' '
 
       end
-*CMZ :          29/09/2025  12.35.09  by  Michael Scheer
+*CMZ :          20/11/2025  17.24.32  by  Michael Scheer
 *CMZ :  4.02/00 13/09/2025  10.16.17  by  Michael Scheer
 *CMZ :  4.01/07 13/08/2024  10.11.51  by  Michael Scheer
 *CMZ :  4.01/05 26/04/2024  10.49.56  by  Michael Scheer
@@ -1483,15 +1483,7 @@ c              r=xx*(1.0d0+h2/2.0d0-h2**2/8.0d0)
       pherror_u=pherror
       phgshift_u=phgshift
 
-c      call urad_spline(modewave)
-c      stop
-c      if (modewave.eq.2) then
-c        call urad_nnb(modewave)
-c      else if (modewave.eq.3) then
-c        call urad_spline(modewave)
-c      else
       call urad_amprep(modewave)
-c      endif
 
       stokes_u=stokes_u/1.0d6 ! photons/mm**2
 
