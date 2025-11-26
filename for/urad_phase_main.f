@@ -1523,7 +1523,7 @@ c      if (modewave.ne.0) call util_zeit_kommentar(6,'Leaving urad_phase')
 
       ical=1
       end
-*CMZ :          17/11/2025  15.48.57  by  Michael Scheer
+*CMZ :          26/11/2025  13.12.14  by  Michael Scheer
 *CMZ :  4.02/00 27/08/2025  14.45.47  by  Michael Scheer
 *CMZ :  4.01/07 18/10/2024  09.41.32  by  Michael Scheer
 *CMZ :  4.01/05 26/04/2024  07.41.13  by  Michael Scheer
@@ -2259,7 +2259,7 @@ c25.4.2024     &          (1.0d0+parke**2/2.0d0)/2.0d0/gamma**2+
             if (jhbunch.ne.0) then
 
               if (
-     &            ((iamppin.eq.3.or.iobsv.eq.icbrill).and.jhbunch.gt.0.and.
+     &            ((iamppin.eq.3.and.iobsv.eq.icbrill).and.jhbunch.gt.0.and.
      &            mod(ielec,jhbunch).eq.0) .or.
      &            (jhbunch.lt.0.and.mod(ielec,-jhbunch).eq.0)) then
 
@@ -2271,28 +2271,29 @@ c25.4.2024     &          (1.0d0+parke**2/2.0d0)/2.0d0/gamma**2+
                   fillb(9)=zpi
                 else if (i.eq.nper_u) then
 
-                  if (abs(phgsh).eq.9999.0d0) then
-                    rea=amp(1:3)
-                    expsh=rea(3)/abs(rea(3))
-                    if (phgsh.eq.-9999.0d0) expsh=expsh*cdexp(dcmplx(0.0d0,-pi1/2.0d0))
-                    amp=amp/expsh
-                  else if (phgsh.ne.0.0d0) then
-                    expsh=cdexp(dcmplx(0.0d0,phgsh)) !*1.0d3
-                    amp=amp/expsh
-                  endif
-
-                  if (phgsh.eq.9999.0d0) then
-                    rea=amp(1:3)
-                    expsh=rea(3)/abs(rea(3))
-                    amp=amp/expsh
-                  else if (phgsh.eq.-9999.0d0) then
-                    rea=amp(1:3)
-                    expsh=rea(3)/abs(rea(3))*cdexp(dcmplx(0.0d0,-pi1/2.0d0))
-                    amp=amp/expsh
-                  else if (phgsh.ne.0.0d0) then
-                    expsh=cdexp(dcmplx(0.0d0,phgsh)) !*1.0d3
-                    amp=amp/expsh
-                  endif
+C Bug, if nobsv.gt.1, since phase not globally shifted
+c                  if (abs(phgsh).eq.9999.0d0) then
+c                    rea=amp(1:3)
+c                    expsh=rea(3)/abs(rea(3))
+c                    if (phgsh.eq.-9999.0d0) expsh=expsh*cdexp(dcmplx(0.0d0,-pi1/2.0d0))
+c                    amp=amp/expsh
+c                  else if (phgsh.ne.0.0d0) then
+c                    expsh=cdexp(dcmplx(0.0d0,phgsh)) !*1.0d3
+c                    amp=amp/expsh
+c                  endif
+c
+c                  if (phgsh.eq.9999.0d0) then
+c                    rea=amp(1:3)
+c                    expsh=rea(3)/abs(rea(3))
+c                    amp=amp/expsh
+c                  else if (phgsh.eq.-9999.0d0) then
+c                    rea=amp(1:3)
+c                    expsh=rea(3)/abs(rea(3))*cdexp(dcmplx(0.0d0,-pi1/2.0d0))
+c                    amp=amp/expsh
+c                  else if (phgsh.ne.0.0d0) then
+c                    expsh=cdexp(dcmplx(0.0d0,phgsh)) !*1.0d3
+c                    amp=amp/expsh
+c                  endif
 
                   fillb(10:12)=r
                   fillb(13)=ypi
