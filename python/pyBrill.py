@@ -5788,7 +5788,6 @@ MPropFields.add_command(label='Ey_real', command= lambda key='EYR': _pFdProp(key
 MPropFields.add_command(label='Ey_imag', command= lambda key='EYI': _pFdProp(key))
 MPropFields.add_command(label='Ez_real', command= lambda key='EZR': _pFdProp(key))
 MPropFields.add_command(label='Ez_imag', command= lambda key='EZI': _pFdProp(key))
-MPropFields.add_command(label='Ez_imag', command= lambda key='EZI': _pFdProp(key))
 
 IWigner = Dsetup['IWigner'][1]
 nEfold = Dsetup['nEfold'][1]
