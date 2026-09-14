@@ -1,0 +1,419 @@
+%+PATCH,//BRILL/TEX
+%+DECK,abbrevs,T=LATEX.
+\newcommand{\vitemt}[2]{
+\begin{center}
+{
+\setlength{\fboxrule}{3pt}
+\fcolorbox{schwachgrau}{hellgrau}
+  {\color{black}
+    \setlength{\fboxrule}{0pt}
+    \framebox[0.5\textwidth]{#1 \hfill}
+    \colorbox{white}{\color{black} #2}
+  }
+}
+\end{center}
+}
+
+\newcommand{\vitem}[2]{
+\begin{center}
+{
+\setlength{\fboxrule}{3pt}
+\fcolorbox{schwachgrau}{hellgrau}
+  {\color{black}
+    \setlength{\fboxrule}{0pt}
+    \framebox[0.25\textwidth]{\small #1 \hfill}
+    \framebox[0.2\textwidth]{\hfill
+      \colorbox{white}{\color{black} \small #2}
+    }
+  }
+}
+\end{center}
+}
+
+\newcommand{\bsp}{\hspace{-0.2cm}}
+
+\newcommand{\git}[1]{\textbf{\color{grau}\textit{#1}} \color{black}}
+\newcommand{\gits}[1]{\textbf{\color{grau}\textit{\textsmaller[0.3]{#1}}} \color{black}}
+\newcommand{\gitse}[1]{\textbf{\color{grau}\textit{\textsmaller[0.3]{#1}}}\color{black}}
+\newcommand{\gite}[1]{\textbf{\color{grau}\textit{#1}}\color{black}}
+
+\newcommand{\gti}[1]{\textbf{\color{grau}\textit{#1}} \color{black}}
+\newcommand{\gtis}[1]{\textbf{\color{grau}\textit{\textsmaller[0.3]{#1}}} \color{black}}
+\newcommand{\gtise}[1]{\textbf{\color{grau}\textit{\textsmaller[0.3]{#1}}}\color{black}}
+\newcommand{\gtie}[1]{\textbf{\color{grau}\textit{#1}}\color{black}}
+
+\newcommand{\witem}[1]{
+  \begin{center}
+    \colorbox{schwachgrau}{
+      \colorbox{hellgrau}{
+      \color{grau}
+      \framebox[0.45\textwidth]{\color{black} \small #1}
+      }
+    }
+  \end{center}
+}
+
+\newcommand{\witemrot}[1]{
+  \begin{center}
+    \colorbox{yellow}{
+      \colorbox{red}{
+      \color{red}
+      \framebox[0.45\textwidth]{\color{white} \small #1}
+      }
+    }
+  \end{center}
+}
+
+\newcommand{\witems}[1]{
+  \begin{center}
+    \colorbox{yellow}{
+      \colorbox{blue}{
+      \color{blue}
+      \framebox[0.5\textwidth]{\color{white} #1}
+      }
+    }
+  \end{center}
+}
+
+\newcommand{\witemss}[1]{
+  \begin{center}
+    \colorbox{yellow}{
+      \colorbox{blue}{
+      \color{blue}
+      \framebox[0.5\textwidth]{\color{white} #1}
+      }
+    }
+  \end{center}
+}
+
+\newcommand{\witemsss}[1]{
+  \begin{center}
+    \colorbox{yellow}{
+      \colorbox{blue}{
+      \color{blue}
+      \framebox[0.5\textwidth]{\color{white} #1}
+      }
+    }
+  \end{center}
+}
+
+\newcommand{\ryellow}[1]{
+  \begin{center}
+    \colorbox{yellow}{\color{yellow}
+      \framebox[0.6\textwidth]{\color{black} \small #1}
+    }
+  \end{center}
+}
+\newcommand{\rorange}[1]{
+  \begin{center}
+    \colorbox{orange}{\color{orange}
+      \framebox[0.6\textwidth]{\color{black} \small #1}
+    }
+  \end{center}
+}
+\newcommand{\ryellows}[1]{
+  \begin{center}
+    \colorbox{yellow}{\color{yellow}
+      \framebox[0.55\textwidth]{\color{black} \small #1}
+    }
+  \end{center}
+}
+\newcommand{\roranges}[1]{
+  \begin{center}
+    \colorbox{orange}{\color{orange}
+      \framebox[0.55\textwidth]{\color{black} \small #1}
+    }
+  \end{center}
+}
+\newcommand{\rmft}[1]{\ryellow{magnetic field and trajectory}}
+\newcommand{\rby}[1]{\ryellows{By(x)}}
+\newcommand{\rbys}[1]{\ryellows{By(x) with observed sources of radiation}}
+\newcommand{\rnz}[1]{\ryellows{nz(x)}}
+\newcommand{\rnzs}[1]{\ryellows{nz(x) with observed sources of radiation}}
+\newcommand{\rnzp}[1]{\ryellows{nzp(x)}}
+\newcommand{\rnzps}[1]{\ryellows{nzp(x) with observed sources of radiation}}
+
+\newcommand{\witemold}[1]{
+  \begin{center}
+    \colorbox{yellow}{
+      \colorbox{blue}{
+      \color{blue}
+      \framebox[0.6\textwidth]{\color{white} \small #1}
+      }
+    }
+  \end{center}
+}
+
+\newcommand{\witemsold}[1]{
+  \begin{center}
+    \colorbox{yellow}{
+      \colorbox{blue}{
+      \color{blue}
+      \framebox[0.575\textwidth]{\color{white} \small #1}
+      }
+    }
+  \end{center}
+}
+
+\newcommand{\witemssold}[1]{
+  \begin{center}
+    \colorbox{yellow}{
+      \colorbox{blue}{
+      \color{blue}
+      \framebox[0.55\textwidth]{\color{white} \small #1}
+      }
+    }
+  \end{center}
+}
+
+\newcommand{\witemsssold}[1]{
+  \begin{center}
+    \colorbox{yellow}{
+      \colorbox{blue}{
+      \color{blue}
+      \framebox[0.50\textwidth]{\color{white} \small #1}
+      }
+    }
+  \end{center}
+}
+
+\definecolor{darkslategray}{rgb}{0.18, 0.31, 0.31}
+\definecolor{gray}{rgb}{0.18, 0.31, 0.31}
+
+\definecolor{orange}{rgb}{1.,0.8,0.4} % rgb
+\definecolor{hellgrau}{gray}{0.9}
+\definecolor{schwachgrau}{gray}{0.95}
+\definecolor{grau}{gray}{0.4}
+\definecolor{dunkelgrau}{gray}{0.2}
+
+\newcommand{\vitemold}[2]{
+\begin{center}
+  \colorbox{yellow}{
+    \color{yellow}
+    \colorbox{white}{
+      \color{white}
+      \framebox[0.6\textwidth]{
+        \colorbox{blue}{\color{white} \small #1}
+        \hfill \
+        \colorbox{blue}{\color{white} \small #2}
+      }
+    }
+  }
+\end{center}
+}
+
+\newcommand{\grau}{\color{grau}}
+\newcommand{\dunkelgrau}{\color{dunkelgrau}}
+\newcommand{\schwarz}{\color{black}}
+
+\newcommand{\Lin}{{\textit{\grau{\textbf{Linux~}}}}}
+\newcommand{\bash}{{\textit{\grau{\textbf{bash~}}}}}
+\newcommand{\Win}{{\textit{\grau{\textbf{Windows~}}}}}
+\newcommand{\Lie}{{\textit{\grau{\textbf{Linux}}}}}
+\newcommand{\Wine}{{\textit{\grau{\textbf{Windows}}}}}
+
+\newcommand{\PyB}{{\textit{\grau{\textbf{PyBrill~}}}}}
+\newcommand{\pyB}{{\textit{\grau{\textbf{pyBrill~}}}}}
+\newcommand{\pyBe}{{\textit{\grau{\textbf{pyBrill}}}}}
+
+\newcommand{\PB}{{\textit{\grau{\textbf{PyBrill~}}}}}
+\newcommand{\pB}{{\textit{\grau{\textbf{pyBrill~}}}}}
+\newcommand{\pBe}{{\textit{\grau{\textbf{pyBrill}}}}}
+
+\newcommand{\bri}{{\textit{\grau{\textbf{brill~}}}}}
+\newcommand{\brie}{{\textit{\grau{\textbf{brill}}}}}
+
+\newcommand{\sta}{{\textit{\grau{\textbf{stage~}}}}}
+\newcommand{\stae}{{\textit{\grau{\textbf{stage}}}}}
+
+\newcommand{\bin}{{\textit{\grau{\textbf{bin}}}}}
+\newcommand{\bine}{{\textit{\grau{\textbf{bin}}}}}
+
+\newcommand{\wdir}{{\textit{\grau{\textbf{working directory~}}}}}
+\newcommand{\wdire}{{\textit{\grau{\textbf{working directory}}}}}
+
+\newcommand{\Py}{{\textit{\grau{\textbf{Python~}}}}}
+\newcommand{\Pye}{{\textit{\grau{\textbf{Python}}}}}
+\newcommand{\F}{{\textit{\grau{\textbf{FORTRAN~}}}}}
+\newcommand{\Fe}{{\textit{\grau{\textbf{FORTRAN}}}}}
+
+\newcommand{\Urp}{{\textit{\grau{\textbf{Urad\_phase~}}}}}
+\newcommand{\urp}{{\textit{\grau{\textbf{urad\_phase~}}}}}
+\newcommand{\urpe}{{\textit{\grau{\textbf{urad\_phase}}}}}
+
+\newcommand{\Unam}{{\textit{\grau{\textbf{Urad\_phase.nam~}}}}}
+\newcommand{\unam}{{\textit{\grau{\textbf{urad\_phase.nam~}}}}}
+\newcommand{\uname}{{\textit{\grau{\textbf{urad\_phase.nam}}}}}
+
+\newcommand{\mhb}{{\textit{\grau \textsmaller[2]{\textbf{WAVE.mhb~}}}}}
+\newcommand{\mhbe}{{\textit{\grau \textsmaller[2]{\textbf{WAVE.mhb}}}}}
+\newcommand{\dw}{{\textit{\grau \textsmaller[1.]{\$WAVE}}}}
+\newcommand{\WSH}{{\textit{\grau\textsmaller[2]{\textbf{WAVESHOP~}}}}}
+\newcommand{\WSHE}{{\textit{\grau\textsmaller[2]{\textbf{WAVESHOP}}}}}
+
+\newcommand{\scap}[1]{\textit{\textsmaller[1]{\textbf{\grau #1}}}}
+\newcommand{\cbox}[1]{\vspace{0.1cm}\hspace{1cm}\parbox[c]{0.8\textwidth}{\gti{\hspace{-0.2cm}#1}}}
+\newcommand{\cboxs}[1]{\hspace{1cm} \parbox[c]{0.8\textwidth}{\grau \small \gti{#1}}}
+\newcommand{\cboxss}[1]{\hspace{1cm}\parbox[c]{0.8\textwidth}{\grau
+\textbf{\textsmaller[2]{#1}}}}
+\newcommand{\cboxsl}[1]{\parbox[c]{0.9\textwidth}{\small \gti{#1}}}
+\newcommand{\hin}{\hspace{1cm}}
+\newcommand{\ro}{{\textit{source \dw/shell/wave\_root.sh}}}
+\newcommand{\row}{{\textit{source \dw/shell/wave\_root.sh wave}}}
+\newcommand{\gui}{{\textit{source \dw/shell/wave\_root.sh gui}}}
+\newcommand{\wi}{{\gtis{wave.in~}}}
+\newcommand{\wie}{{\gtise{wave.in}}}
+\newcommand{\wo}{{\gtis{wave.out~}}}
+\newcommand{\woe}{{\gtis{wave.out}}}
+\newcommand{\wvs}{{\gti{wave.wvs~}}}
+\newcommand{\wpl}{{\gti{wplot~}}}
+\newcommand{\wple}{{\gti{wplot \bsp}}}
+\newcommand{\wpg}{{\gti{waveplot.py~}}}
+\newcommand{\wro}{{\gti{WAVE.root~}}}
+\newcommand{\w}{{\gti{wave}}}
+\newcommand{\senv}{\gtis{. \dw/shell/set\_wave\_environment.sh}}
+\newcommand{\we}{{\gtis{\dw/input/wave.examples~}}}
+\newcommand{\wee}{{\gtis{\dw/input/wave.examples}}}
+\newcommand{\U}{{\small UNDUMAG~}}
+\newcommand{\Ue}{{\small UNDUMAG}}
+\newcommand{\W}{{\small WAVE~}}
+\newcommand{\We}{{\small WAVE}}
+\newcommand{\WS}{{{\small WAVES~}}}
+\newcommand{\R}{{\small ROOT}}
+\newcommand{\ws}{{\textit{waves~}}}
+%\newcommand{\wpl}{{\textit{waves.pl~}}}
+%\newcommand{\wpy}{{\textit{waves.py~}}}
+\newcommand{\ispecnull}{{{\scap{ISPEC=0~}}}}
+\newcommand{\ispecone}{{{\scap{ISPEC=1~}}}}
+\newcommand{\ispec}{{\grau \bf \scap{ISPEC~}}}
+\newcommand{\imagsplnnull}{{\scap{IMAGSPLN=0~}}}
+\newcommand{\imagsplnone}{{\scap{IMAGSPLN=1~}}}
+\newcommand{\imagspln}{{\scap{IMAGSPLN~}}}
+\newcommand{\ieneloss}{{\scap{IENELOSS~}}}
+\newcommand{\xstart}{{\scap{XSTART~}}}
+\newcommand{\ystart}{{\scap{YSTART~}}}
+\newcommand{\zstart}{{\scap{ZSTART~}}}
+\newcommand{\vxin}{{\scap{VXIN~}}}
+\newcommand{\vyin}{{\scap{VYIN~}}}
+\newcommand{\vzin}{{\scap{VZIN~}}}
+\newcommand{\dmyenergy}{{\scap{DMYENERGY~}}}
+\newcommand{\dmycurr}{{\scap{DMYCURR~}}}
+\newcommand{\ienelossnull}{{\scap{IENELOSS=0~}}}
+\newcommand{\ienelossone}{{\scap{IENELOSS=1~}}}
+\newcommand{\dend}{{\textbf{\grau\bf\textit{\textsmaller[1]{\$END~}}}}\schwarz}
+\newcommand{\dende}{{\textbf{\grau\bf\textit{\textsmaller[1]{\$END}}}}\schwarz}
+\newcommand{\contrl}{{\textbf{\grau\bf\textit{\textsmaller[1]{\$CONTRL~}}}}\schwarz}
+\newcommand{\contrle}{{\textbf{\grau\bf\textit{\textsmaller[1]{\$CONTRL}}}}\schwarz}
+\newcommand{\halbach}{{{\scap{\$HALBACH~}}}}
+\newcommand{\ellip}{{{\scap{\$ELLIP~}}}}
+\newcommand{\halbasy}{{{\scap{\$HALBAS}Y~}}}
+
+%\renewcommand{\chaptername}{}
+%\renewcommand{\contentsname}{\vspace{-1cm} \center{\Large Contents} \\[-1cm]}
+%\renewcommand{\bibname}{\vspace{-3cm} \Large Literature \\[-0.4cm]}
+\renewcommand{\listfigurename}{\vspace{-3cm} \Large Figures \\[-0.4cm]}
+\renewcommand{\listtablename}{\vspace{-3cm} \Large Tables \\[-0.4cm]}
+\renewcommand{\appendixname}{Appendix}
+\renewcommand{\figurename}{Fig.}
+\renewcommand{\tablename}{Tab.}
+
+\newcommand{\lchib}{\mbox{ $ \large{\bar{ \chi}} $ }}
+\newcommand{\chib}{\mbox{ $ \bar{ \chi } $ }}
+
+\newcommand{\bt}{\tilde{\beta}}
+\newcommand{\bnt}{\tilde{\beta_0}}
+\newcommand{\boptt}{\tilde{\beta_{opt}}}
+\newcommand{\bnopt}{{\beta}_{0,opt}}
+\newcommand{\bnoptt}{\tilde{\beta}_{0,opt}}
+\newcommand{\et}{\tilde{\eta}}
+\newcommand{\eet}{\tilde{\eta_e}}
+\newcommand{\eeopt}{\eta_{e,opt}}
+\newcommand{\eeoptt}{\tilde{\eta}_{e,opt}}
+\newcommand{\eit}{\tilde{\eta_i}}
+\newcommand{\AT}{\tilde{A}}
+\newcommand{\BT}{\tilde{B}}
+\newcommand{\CT}{\tilde{C}}
+\newcommand{\DT}{\tilde{D}}
+\newcommand{\DOPTT}{\tilde{D}_{opt}}
+\newcommand{\ET}{\tilde{E}}
+
+\newcommand{\kapitel}{\chapter}
+
+\newcommand{\proz}{^0\!/\!_{0}}
+\newcommand{\prom}{^0\!/\!_{00}}
+
+\renewcommand{\textfraction}{0.01}
+\renewcommand{\floatpagefraction}{0.01}
+\renewcommand{\topfraction}{0.99}
+\renewcommand{\bottomfraction}{0.99}
+
+%\renewcommand{\figurename}{\bf Fig.}
+%\renewcommand{\tablename}{\bf Tab.}
+
+\newcommand{\fig}[8]	%  8 parameters are required:
+			% #1: FIGURE width: cm
+			% #2: FIGURE hight: cm
+			% #3: FIGURE caption width: cm
+			% #4: figure position: hERE, tOP, bOTTOM
+			% #5: figure label
+			% #6: figure caption (TEXT ZUM BILD)
+			% #7: entry for figure caption
+			% #8: Bild File (Postscript)
+{
+\begin{figure}[#4]
+   %\vspace{0.5cm}
+   \centering{
+   \epsfig{file=#8,width=#1cm}
+   \parbox[t]{#3cm}
+       {\vspace{-0.2cm} \caption[#7]{\label{#5} #6}}
+   } % centering
+   \vspace{-0.65cm}
+\end{figure}
+}
+
+\newcommand{\figo}[9]	% 9 parameters are required:
+			% #1: FIGURE width: cm
+			% #2: FIGURE caption width: cm
+			% #3: vertical offset preceeding picture: cm
+			% #4: vertical offset following picture: cm
+			% #5: figure position: hERE, tOP, bOTTOM
+			% #6: figure label
+			% #7: figure caption (TEXT ZUM BILD)
+			% #8: entry for figure caption
+			% #9: Bild File (Postscript)
+{
+\begin{figure}[#5]
+   \vspace{#3cm}
+   \centering{
+   \epsfig{file=#9,width=#1cm}
+   \parbox[t]{#2cm}
+       {\caption[#8]{\label{#6} #7}}
+   } % centering
+   \vspace{#4cm}
+\end{figure}
+}
+
+\newcommand{\abb}[4]	%  4 parameters are required:
+			% #1: figure label
+			% #2: figure caption (TEXT ZUM BILD)
+			% #3: entry for figure caption
+			% #4: Bild File (Postscript)
+{
+\begin{figure}[htb]
+   %\vspace{0.5cm}
+   \centering{
+   \epsfig{file=#4,width=12cm}
+   \parbox[t]{12cm}
+       {\caption[#3]{\label{#1} #2}}
+   } % centering
+   \vspace{-0.5cm}
+\end{figure}
+}
+
+% *** muessen unbedingt hinter \pagestyle{fancy} stehen, da dort defaults def.
+%\renewcommand{\chaptermark}[1]{\markboth{\thechapter\ #1}{}}
+%\renewcommand{\sectionmark}[1]{\markright{\thesection\ #1}}
+%\renewcommand{\sectionmark}[1]{\markright{\thesection}}
+%\renewcommand{\chaptermark}[1]{\markboth{#1}{}}
+%\renewcommand{\sectionmark}[1]{\markright{#1}}
+

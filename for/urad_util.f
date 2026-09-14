@@ -1,16 +1,3 @@
-*CMZ :  4.00/17 04/10/2022  08.10.22  by  Michael Scheer
-*CMZ :  4.00/11 27/05/2021  09.41.25  by  Michael Scheer
-*CMZ :  3.02/04 03/12/2014  15.11.16  by  Michael Scheer
-*-- Author :    Michael Scheer   03/12/2014
-      subroutine util_break
-*KEEP,DEBUGWAVE.
-      double precision x_debug,y_debug,z_debug,a_debug(100)
-      integer i_debug,k_debug
-
-      common/c_debug/x_debug,y_debug,z_debug,a_debug,i_debug,k_debug
-*KEND.
-      return
-      end
 *CMZ :  4.00/15 27/04/2022  15.20.19  by  Michael Scheer
 *CMZ :  3.06/00 14/01/2019  17.27.04  by  Michael Scheer
 *CMZ :  3.03/02 18/01/2016  13.02.27  by  Michael Scheer
@@ -67,11 +54,8 @@ c      print*,n
 *CMZ :  3.02/03 05/09/2014  12.29.51  by  Michael Scheer
 *-- Author :    Michael Scheer   05/09/2014
       subroutine util_random(n,r)
-*KEEP,RANDOM.
-      integer*8 irancalls
-      integer irnseed(64),irnmode,irnsize,irnseedi(64)
-      common /randomc/ irancalls,irnseed,irnmode,irnsize,irnseedi
-      namelist /randomn/ irnmode,irnseed
+*KEEP,random.
+      include 'random.cmn'
 *KEND.
 
       real r(n)
@@ -82,6 +66,120 @@ c      print*,n
 
       return
       end
+*CMZ :          23/08/2026  10.44.02  by  Michael Scheer
+*CMZ :  2.66/07 04/03/2010  21.48.04  by  Michael Scheer
+*-- Author :    Michael Scheer   04/03/2010
+      subroutine util_bessel(n,x,bessel,jfail)
+*KEEP,GPLHINT.
+!******************************************************************************
+!
+!      Copyright 2013 Helmholtz-Zentrum Berlin (HZB)
+!      Hahn-Meitner-Platz 1
+!      D-14109 Berlin
+!      Germany
+!
+!      Author Michael Scheer, Michael.Scheer@Helmholtz-Berlin.de
+!
+! -----------------------------------------------------------------------
+!
+!    This program is free software: you can redistribute it and/or modify
+!    it under the terms of the GNU General Public License as published by
+!    the Free Software Foundation, either version 3 of the License, or
+!    (at your option) any later version.
+!
+!    This program is distributed in the hope that it will be useful,
+!    but WITHOUT ANY WARRANTY; without even the implied warranty of
+!    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!    GNU General Public License for more details.
+!
+!    You should have received a copy (wave_gpl.txt) of the GNU General Public
+!    License along with this program.
+!    If not, see <http://www.gnu.org/licenses/>.
+!
+!    Dieses Programm ist Freie Software: Sie koennen es unter den Bedingungen
+!    der GNU General Public License, wie von der Free Software Foundation,
+!    Version 3 der Lizenz oder (nach Ihrer Option) jeder spaeteren
+!    veroeffentlichten Version, weiterverbreiten und/oder modifizieren.
+!
+!    Dieses Programm wird in der Hoffnung, dass es nuetzlich sein wird, aber
+!    OHNE JEDE GEWAEHRLEISTUNG, bereitgestellt; sogar ohne die implizite
+!    Gewaehrleistung der MARKTFAEHIGKEIT oder EIGNUNG FueR EINEN BESTIMMTEN ZWECK.
+!    Siehe die GNU General Public License fuer weitere Details.
+!
+!    Sie sollten eine Kopie (wave_gpl.txt) der GNU General Public License
+!    zusammen mit diesem Programm erhalten haben. Wenn nicht,
+!    siehe <http://www.gnu.org/licenses/>.
+!
+!******************************************************************************
+*KEND.
+
+c Calculates BESSEL-function Jn(x)
+
+      implicit none
+
+      integer ndimp
+      parameter(ndimp=1000)
+
+      double complex z
+     &  ,f(ndimp),g(ndimp),fp(ndimp),gp(ndimp),sig(ndimp),eta,zlmin
+
+      double precision x,bessel
+
+      integer n,jfail
+
+      if (n.ge.ndimp) then
+        jfail=-9999
+        return
+      endif
+
+      z=dcmplx(x,0.0d0)
+
+c     CALL WCLBES(Z,ETA,ZLMIN,NL,F,G,FP,GP,SIG,KFN,MODE,JFAIL,JPR)
+
+      zlmin=dcmplx(dble(n),0.0d0)
+      call wclbes(z,eta,zlmin,0,f,g,fp,gp,sig,2,1,jfail,0) !CERN C309
+
+      bessel=dreal(f(1))
+
+      return
+      end
+*CMZ :  4.02/00 16/06/2025  17.12.53  by  Michael Scheer
+*CMZ : 00.00/16 18/03/2014  17.02.27  by  Michael Scheer
+*CMZ : 00.00/15 12/10/2013  12.22.24  by  Michael Scheer
+*CMZ : 00.00/07 02/05/2008  13.10.35  by  Michael Scheer
+*CMZ : 00.00/02 17/08/2004  09.47.26  by  Michael Scheer
+*CMZ : 00.00/00 10/01/95  15.25.29  by  Michael Scheer
+*-- Author :
+      SUBROUTINE UTIL_integral_spline(X,Y,N,resultat)
+
+C---  CALCULATES INTERGRAL OF Y(X) VIA SPLINES
+
+      IMPLICIT NONE
+
+      INTEGER I,N
+      REAL*8 X(N),Y(N),resultat
+      REAL*8 COEF(N),WORK1(N),WORK2(N),WORK3(N),WORK4(N)
+
+C---  SPLINE-COEFFICIENTS
+
+      CALL UTIL_SPLINE_COEF(X,Y,N,9999.0d0,9999.0d0,COEF,WORK1,WORK2,WORK3,WORK4)
+
+C--- INTEGRATION
+
+      resultat=0.0D0
+      DO I=1,N-1
+
+      resultat=resultat
+     &          +(X(I+1)-X(I))*0.5D0
+     &          *(Y(I)+Y(I+1))
+     &          -(X(I+1)-X(I))**3/24.D0
+     &          *(COEF(I)+COEF(I+1))
+
+      ENDDO
+
+      RETURN
+      END
+*CMZ :          12/05/2026  08.28.47  by  Michael Scheer
 *CMZ :  4.00/11 28/05/2021  09.17.01  by  Michael Scheer
 *CMZ :  3.05/05 12/07/2018  13.12.16  by  Michael Scheer
 *CMZ :  3.02/00 24/09/2014  13.51.08  by  Michael Scheer
@@ -95,7 +193,47 @@ c      print*,n
 *CMZ : 00.00/00 10/01/95  15.27.54  by  Michael Scheer
 *-- Author : Michael Scheer
       SUBROUTINE UTIL_SPLINE_INTER(XA,YA,Y2A,N,X,Y,MODE)
-*KEEP,GPLHINT.
+*KEEP,gplhint.
+!******************************************************************************
+!
+!      Copyright 2013 Helmholtz-Zentrum Berlin (HZB)
+!      Hahn-Meitner-Platz 1
+!      D-14109 Berlin
+!      Germany
+!
+!      Author Michael Scheer, Michael.Scheer@Helmholtz-Berlin.de
+!
+! -----------------------------------------------------------------------
+!
+!    This program is free software: you can redistribute it and/or modify
+!    it under the terms of the GNU General Public License as published by
+!    the Free Software Foundation, either version 3 of the License, or
+!    (at your option) any later version.
+!
+!    This program is distributed in the hope that it will be useful,
+!    but WITHOUT ANY WARRANTY; without even the implied warranty of
+!    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!    GNU General Public License for more details.
+!
+!    You should have received a copy (wave_gpl.txt) of the GNU General Public
+!    License along with this program.
+!    If not, see <http://www.gnu.org/licenses/>.
+!
+!    Dieses Programm ist Freie Software: Sie koennen es unter den Bedingungen
+!    der GNU General Public License, wie von der Free Software Foundation,
+!    Version 3 der Lizenz oder (nach Ihrer Option) jeder spaeteren
+!    veroeffentlichten Version, weiterverbreiten und/oder modifizieren.
+!
+!    Dieses Programm wird in der Hoffnung, dass es nuetzlich sein wird, aber
+!    OHNE JEDE GEWAEHRLEISTUNG, bereitgestellt; sogar ohne die implizite
+!    Gewaehrleistung der MARKTFAEHIGKEIT oder EIGNUNG FueR EINEN BESTIMMTEN ZWECK.
+!    Siehe die GNU General Public License fuer weitere Details.
+!
+!    Sie sollten eine Kopie (wave_gpl.txt) der GNU General Public License
+!    zusammen mit diesem Programm erhalten haben. Wenn nicht,
+!    siehe <http://www.gnu.org/licenses/>.
+!
+!******************************************************************************
 *KEND.
 
 C---  INTERPOLATES Y(X) VIA SPLINE
@@ -146,7 +284,7 @@ c      save klold,nold,xa1old,xanold
 
         IF(XX.LT.XA(1).OR.XX.GT.XA(N)) THEN
           WRITE(6,*)'XA(1), XA(N):',XA(1), XA(N)
-          WRITE(6,*)'X:'
+          WRITE(6,*)'X:',x
           WRITE(6 ,*)'***ERROR IN UTIL_SPLINE_INTER: X OUT OF RANGE ***'
           STOP
         ENDIF
@@ -283,6 +421,46 @@ c      save klold,nold,xa1old,xanold
 *-- Author : Michael Scheer
       SUBROUTINE UTIL_SPLINE_COEF(X,Y,N,YP1,YPN,Y2,AA,BB,CC,C)
 *KEEP,gplhint.
+!******************************************************************************
+!
+!      Copyright 2013 Helmholtz-Zentrum Berlin (HZB)
+!      Hahn-Meitner-Platz 1
+!      D-14109 Berlin
+!      Germany
+!
+!      Author Michael Scheer, Michael.Scheer@Helmholtz-Berlin.de
+!
+! -----------------------------------------------------------------------
+!
+!    This program is free software: you can redistribute it and/or modify
+!    it under the terms of the GNU General Public License as published by
+!    the Free Software Foundation, either version 3 of the License, or
+!    (at your option) any later version.
+!
+!    This program is distributed in the hope that it will be useful,
+!    but WITHOUT ANY WARRANTY; without even the implied warranty of
+!    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!    GNU General Public License for more details.
+!
+!    You should have received a copy (wave_gpl.txt) of the GNU General Public
+!    License along with this program.
+!    If not, see <http://www.gnu.org/licenses/>.
+!
+!    Dieses Programm ist Freie Software: Sie koennen es unter den Bedingungen
+!    der GNU General Public License, wie von der Free Software Foundation,
+!    Version 3 der Lizenz oder (nach Ihrer Option) jeder spaeteren
+!    veroeffentlichten Version, weiterverbreiten und/oder modifizieren.
+!
+!    Dieses Programm wird in der Hoffnung, dass es nuetzlich sein wird, aber
+!    OHNE JEDE GEWAEHRLEISTUNG, bereitgestellt; sogar ohne die implizite
+!    Gewaehrleistung der MARKTFAEHIGKEIT oder EIGNUNG FueR EINEN BESTIMMTEN ZWECK.
+!    Siehe die GNU General Public License fuer weitere Details.
+!
+!    Sie sollten eine Kopie (wave_gpl.txt) der GNU General Public License
+!    zusammen mit diesem Programm erhalten haben. Wenn nicht,
+!    siehe <http://www.gnu.org/licenses/>.
+!
+!******************************************************************************
 *KEND.
 
 C--- CALCULATES SPLINE COEFFICIENTS
@@ -393,15 +571,57 @@ C          AA(J)=AA(J)-AA(J)*BB(J-1)
 
       RETURN
       END
-*CMZ :  4.00/11 28/05/2021  09.14.01  by  Michael Scheer
-*CMZ :  3.05/05 10/07/2018  11.20.27  by  Michael Scheer
-*CMZ :  2.68/02 02/07/2012  11.14.22  by  Michael Scheer
-*CMZ :  2.66/09 22/03/2010  15.23.05  by  Michael Scheer
+*CMZ :  4.01/07 29/11/2024  18.43.16  by  Michael Scheer
+*CMZ :  4.01/05 31/10/2022  17.05.45  by  Michael Scheer
+*CMZ : 00.00/16 19/03/2014  12.30.26  by  Michael Scheer
+*CMZ : 00.00/15 03/09/2012  09.27.13  by  Michael Scheer
+*CMZ : 00.00/07 22/03/2010  15.28.00  by  Michael Scheer
 *CMZ : 00.00/02 26/03/97  10.23.11  by  Michael Scheer
 *CMZ : 00.00/00 10/01/95  15.27.40  by  Michael Scheer
-*-- Author : Michael Scheer
+*-- Author :
       SUBROUTINE UTIL_PARABEL(Xin,Yin,A,YP,XOPT,yopt,IFAIL)
+
 *KEEP,gplhint.
+!******************************************************************************
+!
+!      Copyright 2013 Helmholtz-Zentrum Berlin (HZB)
+!      Hahn-Meitner-Platz 1
+!      D-14109 Berlin
+!      Germany
+!
+!      Author Michael Scheer, Michael.Scheer@Helmholtz-Berlin.de
+!
+! -----------------------------------------------------------------------
+!
+!    This program is free software: you can redistribute it and/or modify
+!    it under the terms of the GNU General Public License as published by
+!    the Free Software Foundation, either version 3 of the License, or
+!    (at your option) any later version.
+!
+!    This program is distributed in the hope that it will be useful,
+!    but WITHOUT ANY WARRANTY; without even the implied warranty of
+!    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!    GNU General Public License for more details.
+!
+!    You should have received a copy (wave_gpl.txt) of the GNU General Public
+!    License along with this program.
+!    If not, see <http://www.gnu.org/licenses/>.
+!
+!    Dieses Programm ist Freie Software: Sie koennen es unter den Bedingungen
+!    der GNU General Public License, wie von der Free Software Foundation,
+!    Version 3 der Lizenz oder (nach Ihrer Option) jeder spaeteren
+!    veroeffentlichten Version, weiterverbreiten und/oder modifizieren.
+!
+!    Dieses Programm wird in der Hoffnung, dass es nuetzlich sein wird, aber
+!    OHNE JEDE GEWAEHRLEISTUNG, bereitgestellt; sogar ohne die implizite
+!    Gewaehrleistung der MARKTFAEHIGKEIT oder EIGNUNG FueR EINEN BESTIMMTEN ZWECK.
+!    Siehe die GNU General Public License fuer weitere Details.
+!
+!    Sie sollten eine Kopie (wave_gpl.txt) der GNU General Public License
+!    zusammen mit diesem Programm erhalten haben. Wenn nicht,
+!    siehe <http://www.gnu.org/licenses/>.
+!
+!******************************************************************************
 *KEND.
 
 C--- CALCULATES A(1),A(2),A(3), THE DERIVATIVES YP(X(1)),YP(X(2)),YP(X(3)),
@@ -413,9 +633,10 @@ C
 
       INTEGER IFAIL
 
-      double precision A(3),X(3),Y(3),DXM,DXP,x0,a1,a2,dxm2,dxp2,dxmax,dymax,
-     &  xin(3),yin(3)
-      double precision DET,YP(3),XOPT,yopt,a22,fm,fp,f0
+      REAL*8 A(3),X(3),Y(3),DXM,DXP,x0,a1,a2,dxm2,dxp2,dxmax,dymax,
+     &  xin(3),yin(3),DET,YP(3),XOPT,yopt,a22,fm,fp,f0
+
+      IFAIL=0
 
 c calculate f=a0+a1*(x-x0)+a2*(x-x0)**2
 c  = a0 + a1*x - a0*x0 + a2*x**2 - 2*a2*x*x0 + a2*x0**2
@@ -428,9 +649,10 @@ c  df/dx=a1+2*a2*dx_max =! 0, dx_max=-a1/2/a2
       x=xin
       y=yin
 
-      if (ifail.eq.0) call util_sort_func(3,x,y)
+      call util_sort_func(3,x,y)
 
-      IFAIL=0
+c      if (x(1).le.x(2).and.x(1).le.x(3)) then
+c      endif
 
       x0=x(2)
       f0=y(2)
@@ -493,6 +715,46 @@ c calculate yp=a1+2*a2*dx
       SUBROUTINE util_spline_running_integral(X,Y,N,RESULT
      &                                 ,COEF,WORK1,WORK2,WORK3,WORK4)
 *KEEP,gplhint.
+!******************************************************************************
+!
+!      Copyright 2013 Helmholtz-Zentrum Berlin (HZB)
+!      Hahn-Meitner-Platz 1
+!      D-14109 Berlin
+!      Germany
+!
+!      Author Michael Scheer, Michael.Scheer@Helmholtz-Berlin.de
+!
+! -----------------------------------------------------------------------
+!
+!    This program is free software: you can redistribute it and/or modify
+!    it under the terms of the GNU General Public License as published by
+!    the Free Software Foundation, either version 3 of the License, or
+!    (at your option) any later version.
+!
+!    This program is distributed in the hope that it will be useful,
+!    but WITHOUT ANY WARRANTY; without even the implied warranty of
+!    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!    GNU General Public License for more details.
+!
+!    You should have received a copy (wave_gpl.txt) of the GNU General Public
+!    License along with this program.
+!    If not, see <http://www.gnu.org/licenses/>.
+!
+!    Dieses Programm ist Freie Software: Sie koennen es unter den Bedingungen
+!    der GNU General Public License, wie von der Free Software Foundation,
+!    Version 3 der Lizenz oder (nach Ihrer Option) jeder spaeteren
+!    veroeffentlichten Version, weiterverbreiten und/oder modifizieren.
+!
+!    Dieses Programm wird in der Hoffnung, dass es nuetzlich sein wird, aber
+!    OHNE JEDE GEWAEHRLEISTUNG, bereitgestellt; sogar ohne die implizite
+!    Gewaehrleistung der MARKTFAEHIGKEIT oder EIGNUNG FueR EINEN BESTIMMTEN ZWECK.
+!    Siehe die GNU General Public License fuer weitere Details.
+!
+!    Sie sollten eine Kopie (wave_gpl.txt) der GNU General Public License
+!    zusammen mit diesem Programm erhalten haben. Wenn nicht,
+!    siehe <http://www.gnu.org/licenses/>.
+!
+!******************************************************************************
 *KEND.
 
 C---  CALCULATES RUNNING INTERGRAL OF Y(X) VIA SPLINES
@@ -531,6 +793,46 @@ C--- INTEGRATION
 *-- Author :    Michael Scheer   10/05/2012
       subroutine util_g1_static(y,g1)
 *KEEP,gplhint.
+!******************************************************************************
+!
+!      Copyright 2013 Helmholtz-Zentrum Berlin (HZB)
+!      Hahn-Meitner-Platz 1
+!      D-14109 Berlin
+!      Germany
+!
+!      Author Michael Scheer, Michael.Scheer@Helmholtz-Berlin.de
+!
+! -----------------------------------------------------------------------
+!
+!    This program is free software: you can redistribute it and/or modify
+!    it under the terms of the GNU General Public License as published by
+!    the Free Software Foundation, either version 3 of the License, or
+!    (at your option) any later version.
+!
+!    This program is distributed in the hope that it will be useful,
+!    but WITHOUT ANY WARRANTY; without even the implied warranty of
+!    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!    GNU General Public License for more details.
+!
+!    You should have received a copy (wave_gpl.txt) of the GNU General Public
+!    License along with this program.
+!    If not, see <http://www.gnu.org/licenses/>.
+!
+!    Dieses Programm ist Freie Software: Sie koennen es unter den Bedingungen
+!    der GNU General Public License, wie von der Free Software Foundation,
+!    Version 3 der Lizenz oder (nach Ihrer Option) jeder spaeteren
+!    veroeffentlichten Version, weiterverbreiten und/oder modifizieren.
+!
+!    Dieses Programm wird in der Hoffnung, dass es nuetzlich sein wird, aber
+!    OHNE JEDE GEWAEHRLEISTUNG, bereitgestellt; sogar ohne die implizite
+!    Gewaehrleistung der MARKTFAEHIGKEIT oder EIGNUNG FueR EINEN BESTIMMTEN ZWECK.
+!    Siehe die GNU General Public License fuer weitere Details.
+!
+!    Sie sollten eine Kopie (wave_gpl.txt) der GNU General Public License
+!    zusammen mit diesem Programm erhalten haben. Wenn nicht,
+!    siehe <http://www.gnu.org/licenses/>.
+!
+!******************************************************************************
 *KEND.
 
 c calculates G1(y) with an estimated precision of about 1.5e-3 for y<=30,
@@ -659,15 +961,10 @@ c and 1.5e-2 for y>30.
       return
 9999  stop '*** File wave-g1.dat not found ***'
       end
-*CMZ :  3.05/05 12/07/2018  13.19.00  by  Michael Scheer
-*CMZ :  2.70/12 01/03/2013  16.28.24  by  Michael Scheer
-*CMZ :  2.15/00 28/04/2000  10.32.37  by  Michael Scheer
-*CMZ :  1.00/00 06/06/97  16.44.06  by  Michael Scheer
-*CMZ : 00.01/07 08/03/95  10.05.45  by  Michael Scheer
-*-- Author : Michael Scheer
+*CMZ : 00.00/15 05/01/2012  13.52.39  by  Michael Scheer
+*CMZ : 00.00/00 11/01/95  11.41.04  by  Michael Scheer
+*-- Author :
       SUBROUTINE UTIL_SORT_FUNC(N,RA,YA)
-*KEEP,gplhint.
-*KEND.
 
 C--- HEAPSORT ROUTINE; SEE NUMERICAL RECIPES 8.2 S 231
 C--- ARRAY YA IS FUNCTION OF RA AND SORTED ACCORDINGLY
@@ -676,14 +973,13 @@ C--- ARRAY YA IS FUNCTION OF RA AND SORTED ACCORDINGLY
 
       INTEGER N,L,IR,I,J
 
-      DOUBLE PRECISION RA(N),RRA
-      DOUBLE PRECISION YA(N),YYA
+      REAL*8 RA(N),RRA
+      REAL*8 YA(N),YYA
 
-      IF (N.LT.2) RETURN
+      if (n.lt.2) return
 
       L=N/2+1
       IR=N
-
 10    CONTINUE
         IF(L.GT.1)THEN
           L=L-1
@@ -721,6 +1017,7 @@ C--- ARRAY YA IS FUNCTION OF RA AND SORTED ACCORDINGLY
         YA(I)=YYA
       GO TO 10
       END
+*CMZ :  4.01/05 15/04/2024  15.07.21  by  Michael Scheer
 *CMZ :  4.01/02 11/05/2023  12.10.27  by  Michael Scheer
 *-- Author :    Michael Scheer   08/05/2023
       subroutine util_get_electron(xbeta,betah,alphah,betav,alphav,emith,emitv,
@@ -745,32 +1042,51 @@ C--- ARRAY YA IS FUNCTION OF RA AND SORTED ACCORDINGLY
 
       integer :: modebunch
 
-      s1v=xbeta
-      s2v=xelec
-      beta1v=betav
-      betap1v=-2.0d0*alphav
+      if (emith.ne.0.0d0) then
 
-      s1h=xbeta
-      s2h=xelec
-      beta1h=betah
-      betap1h=-2.0d0*alphah
+        s1h=xbeta
+        s2h=xelec
+        beta1h=betah
+        betap1h=-2.0d0*alphah
 
-      call util_beta_function_drift(
-     &  s0v,beta0v,gamma0v,
-     &  s1v,beta1v,betap1v,alpha1v,gamma1v,pvase1v,
-     &  s2v,beta2v,betap2v,alpha2v,gamma2v,pvase2v)
+        call util_beta_function_drift(
+     &    s0h,beta0h,gamma0h,
+     &    s1h,beta1h,betap1h,alpha1h,gamma1h,phase1h,
+     &    s2h,beta2h,betap2h,alpha2h,gamma2h,phase2h)
 
-      call util_beta_function_drift(
-     &  s0h,beta0h,gamma0h,
-     &  s1h,beta1h,betap1h,alpha1h,gamma1h,phase1h,
-     &  s2h,beta2h,betap2h,alpha2h,gamma2h,phase2h)
+        sigz=sqrt(emith*beta0h)
+        sigzp=sqrt(emith/beta0h)
+
+      else
+
+        sigz=0.0d0
+        sigzp=0.0d0
+
+      endif
+
+      if (emitv.ne.0.0d0) then
+
+        s1v=xbeta
+        s2v=xelec
+        beta1v=betav
+        betap1v=-2.0d0*alphav
+
+        call util_beta_function_drift(
+     &    s0v,beta0v,gamma0v,
+     &    s1v,beta1v,betap1v,alpha1v,gamma1v,pvase1v,
+     &    s2v,beta2v,betap2v,alpha2v,gamma2v,pvase2v)
+
+        sigy=sqrt(emitv*beta0v)
+        sigyp=sqrt(emitv/beta0v)
+
+      else
+
+        sigy=0.0d0
+        sigyp=0.0d0
+
+      endif
 
       call util_random_gauss(ng,g,rr)
-
-      sigz=sqrt(emith*beta0h)
-      sigzp=sqrt(emith/beta0h)
-      sigy=sqrt(emitv*beta0v)
-      sigyp=sqrt(emitv/beta0v)
 
       deelec=g(1)*espread
       xelec=xelec+g(2)*bunchlen
@@ -864,75 +1180,330 @@ c util_random_get_seed.
 
       return
       end
-*CMZ :          17/05/2023  11.24.58  by  Michael Scheer
+*CMZ :  4.02/00 03/08/2025  10.05.09  by  Michael Scheer
+*CMZ :  4.01/03 17/05/2023  11.24.58  by  Michael Scheer
 *CMZ :  4.01/02 12/05/2023  11.49.33  by  Michael Scheer
 *CMZ : 00.00/16 21/11/2014  14.53.59  by  Michael Scheer
 *-- Author :    Michael Scheer   21/11/2014
-      subroutine util_spline_integral_2d(nx,ny,x,y,f,result,istat,kalloc)
+      subroutine util_spline_integral_2d(nx,ny,x,y,f,result,istat)
 *KEEP,gplhint.
+!******************************************************************************
+!
+!      Copyright 2013 Helmholtz-Zentrum Berlin (HZB)
+!      Hahn-Meitner-Platz 1
+!      D-14109 Berlin
+!      Germany
+!
+!      Author Michael Scheer, Michael.Scheer@Helmholtz-Berlin.de
+!
+! -----------------------------------------------------------------------
+!
+!    This program is free software: you can redistribute it and/or modify
+!    it under the terms of the GNU General Public License as published by
+!    the Free Software Foundation, either version 3 of the License, or
+!    (at your option) any later version.
+!
+!    This program is distributed in the hope that it will be useful,
+!    but WITHOUT ANY WARRANTY; without even the implied warranty of
+!    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!    GNU General Public License for more details.
+!
+!    You should have received a copy (wave_gpl.txt) of the GNU General Public
+!    License along with this program.
+!    If not, see <http://www.gnu.org/licenses/>.
+!
+!    Dieses Programm ist Freie Software: Sie koennen es unter den Bedingungen
+!    der GNU General Public License, wie von der Free Software Foundation,
+!    Version 3 der Lizenz oder (nach Ihrer Option) jeder spaeteren
+!    veroeffentlichten Version, weiterverbreiten und/oder modifizieren.
+!
+!    Dieses Programm wird in der Hoffnung, dass es nuetzlich sein wird, aber
+!    OHNE JEDE GEWAEHRLEISTUNG, bereitgestellt; sogar ohne die implizite
+!    Gewaehrleistung der MARKTFAEHIGKEIT oder EIGNUNG FueR EINEN BESTIMMTEN ZWECK.
+!    Siehe die GNU General Public License fuer weitere Details.
+!
+!    Sie sollten eine Kopie (wave_gpl.txt) der GNU General Public License
+!    zusammen mit diesem Programm erhalten haben. Wenn nicht,
+!    siehe <http://www.gnu.org/licenses/>.
+!
+!******************************************************************************
 *KEND.
 
       implicit none
 
-      double precision x(nx),y(ny),f(nx,ny),result
-      integer istat,nx,ny,ix,iy,kstat,kalloc
+      double precision x(nx),y(ny),f(nx,ny),result,coef(4,4,nx,ny),a(4,4),dx,dy
+      integer nx,ny,ix,iy,istat,k,l
 
-      double precision, allocatable :: fb(:),fb2(:),coef(:),
-     &  w1(:),w2(:),w3(:),w4(:)
+      call util_coef_spline_2d(nx,ny,f,coef,istat)
+      if (istat.ne.0) return
 
-      save
+      dx=(x(nx)-x(1))/(nx-1)
+      dy=(y(ny)-y(1))/(ny-1)
 
-      if (kalloc.gt.0) then
-        allocate(fb(max(nx,ny)))
-        allocate(fb2(max(nx,ny)))
-        allocate(coef(max(nx,ny)))
-        allocate(w1(max(nx,ny)))
-        allocate(w2(max(nx,ny)))
-        allocate(w3(max(nx,ny)))
-        allocate(w4(max(nx,ny)))
-      else if (kalloc.lt.0) then
-        deallocate(fb)
-        deallocate(fb2)
-        deallocate(coef)
-        deallocate(w1)
-        deallocate(w2)
-        deallocate(w3)
-        deallocate(w4)
-        return
+      result=0.0d0
+
+      do iy=1,ny-1
+        do ix=1,nx-1
+
+          a(1:4,1:4)=coef(1:4,1:4,ix,iy)
+          do k=1,4
+            do l=1,4
+              result=result+a(k,l)/k/l
+            enddo
+          enddo
+
+        enddo
+      enddo
+
+c      a(1:4,1:4)=coef(1:4,1:4,1,1)
+c      do k=1,4
+c        do l=1,4
+c          result=result-a(k,l)/k/l
+c        enddo
+c      enddo
+
+      result=result*dx*dy
+
+      end
+*CMZ :  4.02/00 03/08/2025  10.08.49  by  Michael Scheer
+*-- Author :    Michael Scheer   17/03/2024
+      subroutine util_coef_spline_2d(nx,ny,f,coef,istat)
+
+      implicit none
+
+      integer nx,ny
+
+      real*8 f(nx,ny),coef(4,4,nx,ny),
+     &  fx(nx,ny),fy(nx,ny),fxy(nx,ny)
+
+      real*8, dimension(16) :: a16=[
+     &  1.0d0,0.0d0,-3.0d0,2.0d0,
+     &  0.0d0,0.0d0,3.0d0,-2.0d0,
+     &  0.0d0,1.0d0,-2.0d0,1.0d0,
+     &  0.0d0,0.0d0,-1.0d0,1.0d0
+     &  ]
+
+      real*8, dimension(4,4) :: ar,al,fm,a
+      equivalence (al,a16)
+
+      real*8, dimension(:), allocatable :: t
+      real*8 ::
+     &  p(max(nx,ny)),p1(max(nx,ny)),p2(max(nx,ny))
+
+      integer :: istat,ix,iy,ifail,nxyo=0,nxy,i,j
+
+      save nxyo,t
+
+      istat=0
+      ifail=0
+
+      nxy=max(nx,ny)
+
+      if (nxy.gt.nxyo) then
+        deallocate(t,stat=istat)
+        allocate(t(nxy))
+        do i=1,nxy
+          t(i)=dble(i)
+        enddo
       endif
 
-      kstat=0
+      do iy=1,ny
+        p(1:nx)=f(1:nx,iy)
+        call util_coef_spline(nx,t,p,0.0d0,0.0d0,p1,p2,istat)
+        if (istat.ne.0) return
+        fx(1:nx,iy)=p1(1:nx)
+      enddo
 
-      if (ny.gt.nx) then
-        do ix=1,nx
-          fb(1:ny)=f(ix,1:ny)
-          call util_spline_integral_stat(y,fb,ny,fb2(ix)
-     &      ,coef,w1,w2,w3,w4,istat)
-          kstat=kstat+istat
+      do ix=1,nx
+        p(1:ny)=f(ix,1:ny)
+        call util_coef_spline(ny,t,p,0.0d0,0.0d0,p1,p2,istat)
+        if (istat.ne.0) return
+        fy(ix,1:ny)=p1(1:ny)
+      enddo
+
+      do ix=1,nx
+        p(1:ny)=fx(ix,1:ny)
+        call util_coef_spline(ny,t,p,0.0d0,0.0d0,p1,p2,istat)
+        if (istat.ne.0) return
+        fxy(ix,1:ny)=p1(1:ny)
+      enddo
+
+      ar=transpose(al)
+
+      do ix=1,nx-1
+        do iy=1,ny-1
+
+          fm(1,1:2)=f(ix,iy:iy+1)
+          fm(1,3:4)=fy(ix,iy:iy+1)
+
+          fm(2,1:2)=f(ix+1,iy:iy+1)
+          fm(2,3:4)=fy(ix+1,iy:iy+1)
+
+          fm(3,1:2)=fx(ix,iy:iy+1)
+          fm(3,3:4)=fxy(ix,iy:iy+1)
+
+          fm(4,1:2)=fx(ix+1,iy:iy+1)
+          fm(4,3:4)=fxy(ix+1,iy:iy+1)
+
+          a=matmul(fm,ar)
+          coef(1:4,1:4,ix,iy)=matmul(al,a)
+
         enddo
-        call util_spline_integral_stat(x,fb2,nx,result
-     &    ,coef,w1,w2,w3,w4,istat)
-        kstat=kstat+istat
-      else !nx.gt.ny?
-        do iy=1,ny
-          fb(1:nx)=f(1:nx,iy)
-          call util_spline_integral_stat(x,fb,nx,fb2(iy)
-     &      ,coef,w1,w2,w3,w4,istat)
-          kstat=kstat+istat
+      enddo
+
+      coef(1:4,1:4,nx,1:ny)=-1.0d0
+      coef(1:4,1:4,1:nx,ny)=-2.0d0
+
+      do ix=1,nx
+        do i=1,4
+          do j=1,4
+            coef(i,j,ix,ny)=2.0d0*coef(i,j,ix,ny-1)-coef(i,j,ix,ny-2)
+          enddo
         enddo
-        call util_spline_integral_stat(y,fb2,ny,result
-     &    ,coef,w1,w2,w3,w4,istat)
-        kstat=kstat+istat
-      endif !nx.gt.ny
+        coef(1,1,ix,ny)=f(ix,ny)
+      enddo
+
+      do iy=1,ny
+        do i=1,4
+          do j=1,4
+            coef(i,j,nx,iy)=2.0d0*coef(i,j,nx-1,iy)-coef(i,j,nx-2,iy)
+          enddo
+        enddo
+        coef(1,1,nx,iy)=f(nx,iy)
+      enddo
+
+      do i=1,4
+        do j=1,4
+          coef(i,j,nx,ny)=2.0d0*coef(i,j,nx-1,ny-1)-coef(i,j,nx-2,ny-2)
+        enddo
+      enddo
+
+      coef(1,1,nx,ny)=f(nx,ny)
+
+      nxyo=nxy
+      istat=ifail
 
       return
       end
-*CMZ :          16/05/2023  19.38.31  by  Michael Scheer
+*CMZ :  4.01/05 17/03/2024  10.34.16  by  Michael Scheer
+*CMZ : 00.00/07 07/05/2008  14.02.20  by  Michael Scheer
+*CMZ : 00.00/02 14/04/2004  14.25.24  by  Michael Scheer
+*CMZ : 00.00/00 10/01/95  15.27.48  by  Michael Scheer
+*-- Author : Michael Scheer
+      SUBROUTINE UTIL_coef_SPLINE(n,X,Y,YP1,YPN,YP,Y2,istatus)
+
+C--- CALCULATES SPLINE COEFFICIENTS
+
+C--   INPUT:
+
+C-       N: NUMBER OF X,Y-VALUES
+C-       X: ARRAY OF X-VALUES
+C-       Y: ARRAY OF Y-VALUES
+C-       YP1:  SECOND DERIVATIVE AT FIRST X-VALUE
+C-       YPN:  SECOND DERIVATIVE AT LAST X-VALUE
+
+C--   OUPUT:
+
+C-       YP:   DERIVATIVES AT XA
+C-       Y2:   SPLINE-COEFFICIENTS
+C-  ISTATUS:   EXIT-CODE
+
+
+      IMPLICIT NONE
+
+      INTEGER N,J,I,I1,istatus
+
+      REAL*8  X(N),Y(N),YP(N),Y2(N),AA(N),BB(N),CC(N),C(N)
+      REAL*8 YP1,YPN
+
+      double precision xx(3),yy(3),a(3),yp3(3),xopt,yopt
+      INTEGER ifail
+
+      istatus=0
+
+      IF (N.LT.3) then
+        istatus=-1
+        RETURN
+      endif
+
+      if (abs(yp1).eq.9999.0d0) then
+        xx=x(1:3)
+        yy=y(1:3)
+        call UTIL_PARABEL(xx,yy,A,YP3,XOPT,yopt,IFAIL)
+        if (ifail.eq.0) then
+          y2(1)=2.0d0*a(3)
+        else
+          y2(1)=0.0d0
+        endif
+      else
+        Y2(1)=YP1
+      endif
+
+      if (abs(ypn).eq.9999.0d0) then
+        xx=x(n-2:n)
+        yy=y(n-2:n)
+        call UTIL_PARABEL(xx,yy,A,YP3,XOPT,yopt,IFAIL)
+        if (ifail.eq.0) then
+          y2(n)=2.0d0*a(3)
+        else
+          y2(N)=0.0d0
+        endif
+      else
+        Y2(N)=YPN
+      endif
+
+      C(1)=Y2(1)
+      C(N)=y2(n)
+
+      BB(1)=1.D0
+      CC(1)=0.D0
+      CC(N)=1.D0
+
+      DO J=2,N-1
+        AA(J)=(X(J  )-X(J-1))/6.D0
+        BB(J)=(X(J+1)-X(J-1))/3.D0
+        CC(J)=(X(J+1)-X(J  ))/6.D0
+        C(J)=(Y(J+1)-Y(J  ))/(X(J+1)-X(J  ))
+     &    -(Y(J  )-Y(J-1))/(X(J  )-X(J-1))
+      ENDDO !J
+
+      DO J=2,N-1
+
+        BB(J)=BB(J)-AA(J)*CC(J-1)
+        C(J)= C(J)-AA(J)* C(J-1)
+
+        CC(J)=CC(J)/BB(J)
+        C(J)= C(J)/BB(J)
+        BB(J)=1.D0
+
+      ENDDO !J
+
+      DO J=N-1,2,-1
+        Y2(J)=C(J)-CC(J)*Y2(J+1)
+      ENDDO
+
+      DO I=1,N-1
+        I1=I+1
+        YP(I)=(Y(I1)-Y(I))/(X(I1)-X(I))-
+     &    (Y2(I1)+2.D0*Y2(I))/6.D0*(X(I1)-X(I))
+      ENDDO
+
+      I1=N
+      I=N-1
+
+      YP(N)=(Y(I1)-Y(I))/(X(I1)-X(I))+
+     &  (2.D0*Y2(I1)+Y2(I))/6.D0*(X(I1)-X(I))
+
+      RETURN
+      END
+*CMZ :  4.02/00 03/08/2025  09.42.28  by  Michael Scheer
+*CMZ :  4.01/07 16/08/2024  14.55.31  by  Michael Scheer
+*CMZ :  4.01/03 16/05/2023  19.38.31  by  Michael Scheer
 *CMZ : 00.00/02 17/08/2004  09.47.26  by  Michael Scheer
 *CMZ : 00.00/00 10/01/95  15.25.29  by  Michael Scheer
 *-- Author :
       SUBROUTINE UTIL_SPLINE_INTEGRAL_STAT(X,Y,N,RESULT
-     &                                 ,COEF,WORK1,WORK2,WORK3,WORK4,ISTAT)
+     &  ,COEF,WORK1,WORK2,WORK3,WORK4,ISTAT)
 
 C---  CALCULATES INTERGRAL OF Y(X) VIA SPLINES
 
@@ -944,8 +1515,8 @@ C---  CALCULATES INTERGRAL OF Y(X) VIA SPLINES
 
 C---  SPLINE-COEFFICIENTS
 
-      CALL UTIL_SPLINE_COEF_STATus(X,Y,N,-9999.0d0,-9999.0d0,COEF,
-     &  WORK1,WORK2,WORK3,WORK4,ISTAT)
+      CALL UTIL_SPLINE_COEF_STATus(X,Y,N,0.0d0,0.0d0,COEF,WORK1,WORK2,WORK3,WORK4,ISTAT)
+      if (istat.ne.0) return
 
 C--- INTEGRATION
 
@@ -962,7 +1533,7 @@ C--- INTEGRATION
 
       RETURN
       END
-*CMZ :          17/05/2023  11.21.58  by  Michael Scheer
+*CMZ :  4.01/03 17/05/2023  11.21.58  by  Michael Scheer
 *CMZ : 00.00/20 18/11/2016  15.04.18  by  Michael Scheer
 *CMZ : 00.00/19 19/11/2015  13.56.50  by  Michael Scheer
 *CMZ :  2.70/12 01/03/2013  16.28.24  by  Michael Scheer
@@ -1119,6 +1690,160 @@ c So be careful!
 
       return
       end
+*CMZ :  4.01/04 22/01/2018  16.49.42  by  Michael Scheer
+*CMZ : 00.00/20 19/08/2016  15.08.19  by  Michael Scheer
+*CMZ : 00.00/15 04/01/2013  12.22.07  by  Michael Scheer
+*CMZ : 00.00/05 27/02/2007  16.32.04  by  Michael Scheer
+*CMZ : 00.00/02 04/08/2006  14.56.41  by  Michael Scheer
+*CMZ : 00.00/00 10/01/95  15.25.58  by  Michael Scheer
+*-- Author : Michael Scheer
+      subroutine util_zeit_kommentar(lun,comment)
+
+c to determine date and time and write it to logical unit lun
+
+      implicit none
+
+      integer lun
+
+      character(*) comment
+
+      character spacer(50)
+      character(10) dtday,dttime,dtzone
+      integer idatetime(8),ilast
+
+      data spacer/50*' '/
+
+      call date_and_time(dtday,dttime,dtzone,idatetime)
+
+      ilast=len_trim(comment)
+
+      write(lun,*)
+      write(lun,*)
+      if (ilast.gt.0) then
+        write(lun,*)comment(1:ilast),spacer,dttime(1:2),':',dttime(3:4),':',dttime(5:6),' '
+     &    ,dtday(7:8),'.',dtday(5:6),'.',dtday(3:4)
+      else
+        write(lun,*)spacer,dttime(1:2),':',dttime(3:4),':',dttime(5:6),' '
+     &    ,dtday(7:8),'.',dtday(5:6),'.',dtday(3:4)
+      endif
+      write(lun,*)
+
+      return
+      end
+*CMZ :  4.01/05 16/04/2024  12.38.45  by  Michael Scheer
+*CMZ :  2.05/04 16/12/2023  12.06.33  by  Michael Scheer
+*CMZ :  2.04/19 16/09/2023  16.33.50  by  Michael Scheer
+*CMZ :  2.03/00 26/07/2022  07.55.50  by  Michael Scheer
+*CMZ :  2.02/02 01/07/2022  17.30.28  by  Michael Scheer
+*CMZ :  2.02/00 29/03/2021  09.26.44  by  Michael Scheer
+*CMZ :  1.00/00 19/08/2016  18.24.11  by  Michael Scheer
+*CMZ : 00.00/15 04/01/2013  12.22.07  by  Michael Scheer
+*CMZ : 00.00/05 27/02/2007  16.32.04  by  Michael Scheer
+*CMZ : 00.00/02 04/08/2006  14.56.41  by  Michael Scheer
+*CMZ : 00.00/00 10/01/95  15.25.58  by  Michael Scheer
+*-- Author : Michael Scheer
+      subroutine util_zeit_kommentar_delta(lun,comment,iset)
+
+c to determine date and time and write it to logical unit lun
+
+      implicit none
+
+      integer lun,ilast
+
+      character(*) comment
+
+      character spacer(30)
+      character(10) dtday,dttime,dtzone
+      character(32) c32
+      character(2048) :: cblank=''
+      character(2048) cline
+
+      real :: seconds=0.0,secondso=0.0
+      integer idatetime(8),iyear,imonth,iday,ihour,iminute,isec
+      integer iyearo,imontho,idayo,ihouro,iminuteo,iseco,kday,khour,kminit,ksec
+
+      integer :: ical=0,linlen,iset,iseconds,isecondso
+
+      data spacer/30*' '/
+
+      save
+
+      call date_and_time(dtday,dttime,dtzone,idatetime)
+
+      iyear=idatetime(1)
+      imonth=idatetime(2)
+      iday=idatetime(3)
+      ihour=idatetime(5)
+      iminute=idatetime(6)
+      isec=idatetime(7)
+
+      ilast=len_trim(comment)
+
+      write(lun,*)
+      if (ilast.gt.0) then
+        write(cline,*)comment(1:ilast),spacer,dttime(1:2),':',dttime(3:4),':',
+     &    dttime(5:6),' ',dtday(7:8),'.',dtday(5:6),'.',dtday(3:4)
+      else
+        write(cline,*)spacer,dttime(1:2),':',dttime(3:4),':',dttime(5:6),' '
+     &    ,dtday(7:8),'.',dtday(5:6),'.',dtday(3:4)
+      endif
+
+      ilast=len_trim(cline)
+
+      if (ilast.lt.64) then
+        write(lun,'(a)') cblank(1:64-ilast) // cline(1:ilast)
+      else
+        write(lun,'(a)') trim(cline)
+      endif
+
+      if (ical.gt.0.and.iset.eq.0) then
+        cline='  delta time: '
+        seconds=secnds(secondso)
+        iseconds=nint(seconds)
+        kday=0
+        khour=0
+        kminit=0
+        ksec=0
+        if (iseconds.ge.3600*24) then
+          kday=iseconds/(3600*24)
+          iseconds=iseconds-kday*3600*24
+          write(c32,*)kday
+          cline=trim(cline) // trim(c32) // ' days '
+        endif
+        if (iseconds.ge.3600) then
+          khour=iseconds/3600
+          iseconds=iseconds-khour*3600
+          write(c32,*)khour
+          cline=trim(cline) // trim(c32) // ' hours '
+        endif
+        if (iseconds.ge.60) then
+          kminit=iseconds/60
+          iseconds=iseconds-kminit*60
+          write(c32,*)kminit
+          cline=trim(cline) // trim(c32) // ' minutes '
+        endif
+        write(c32,*)iseconds
+        cline=trim(cline) // trim(c32) // ' seconds'
+        write(lun,*) trim(cline)
+      endif
+
+      write(lun,*)''
+
+      if (ical.eq.0.or.iset.ne.0) then
+        secondso=secnds(0.0)
+        isecondso=nint(secondso)
+        iyearo=iyear
+        imontho=imonth
+        idayo=iday
+        ihouro=ihour
+        iminuteo=iminute
+        iseco=isec
+      endif
+
+      ical=1
+
+      return
+      end
 *CMZ :  3.03/02 17/11/2015  14.46.41  by  Michael Scheer
 *CMZ :  3.02/03 05/09/2014  12.38.49  by  Michael Scheer
 *-- Author :    Michael Scheer   05/09/2014
@@ -1173,4 +1898,1838 @@ c     &    ,isize
       isize=n
 
       return
+      end
+*CMZ :  4.01/07 16/05/2024  10.08.43  by  Michael Scheer
+*CMZ : 00.00/02 21/08/2006  11.07.41  by  Michael Scheer
+*-- Author :    Michael Scheer   21/08/2006
+      subroutine util_simpson_integral(n,x,f,sum)
+
+      implicit none
+
+      double precision x(n),f(n),sum
+      integer n,i
+
+      sum=0.0d0
+
+      do i=1,n-1
+        sum=sum+(f(i+1)+f(i))*(x(i+1)-x(i))/2.d0
+      enddo
+
+      return
+      end
+*CMZ :  4.01/05 28/03/2024  11.30.43  by  Michael Scheer
+*CMZ : 00.00/02 22/04/99  17.27.52  by  Michael Scheer
+*CMZ : 00.00/00 10/01/95  15.25.29  by  Michael Scheer
+*-- Author : Michael Scheer
+      subroutine util_fourier_linear_complex(nx,x,y,nom,om,ft,ifail)
+
+c---  calculates integral(f(x)*sin(omega*x)) and integral(f(x)*cos(omega*x))
+
+      implicit none
+
+      integer nx,nom,iom,ix,ifail,ic
+
+      real*8, parameter :: pi1=3.141592653589793d0
+
+      complex*16 :: y(nx),fw,ci=(0.0d0,1.0d0),ex0oma,ft(nom),cn,dexpomx,dexpom,ex00,
+     &  ddexpomx
+
+      real*8 x(nx),om(nom),const,a0,yr(nx),oma,dom,dx
+
+      ifail=0
+      const=1.0d0/sqrt(2.0d0*pi1)
+
+      dx=x(2)-x(1)
+      dom=om(2)-om(1)
+
+      dexpomx=exp(-ci*dx*om(1))
+      ddexpomx=exp(-ci*dx*dom)
+
+      do ic=1,2
+
+        if (ic.eq.1) then
+          yr(1:nx)=dreal(y(1:nx))
+        else
+          yr(1:nx)=dimag(y(1:nx))
+        endif
+
+        ex00=exp(-ci*x(1)*om(1))
+        dexpom=exp(-ci*x(1)*dom)
+
+        do iom=1,nom
+
+          oma=om(iom)
+
+          if (abs(oma).lt.1.0d-9) then
+            a0=0.0d0
+            do ix=1,nx-1
+              a0=a0+(yr(ix)+yr(ix+1))/2.0d0*dx
+            enddo
+            if (ic.eq.1) then
+              ft(iom)=dcmplx(a0*const,0.0d0)
+            else
+              ft(iom)=ft(iom)+dcmplx(0.0d0,a0*const)
+            endif
+            ex00=ex00*dexpom
+            dexpomx=dexpomx*ddexpomx
+            cycle
+          endif
+
+          ex0oma=ex00
+
+          cn=yr(1)*ex0oma/2.0d0
+          fw=cn*dx
+          ex0oma=ex0oma*dexpomx
+
+          do ix=2,nx-1
+            cn=yr(ix)*ex0oma
+            fw=fw+cn*dx
+            ex0oma=ex0oma*dexpomx
+          enddo !ix
+
+          cn=yr(nx)*ex0oma/2.0d0
+          fw=fw+cn*dx
+
+          if (ic.eq.1) then
+            ft(iom)=fw*const
+          else
+            ft(iom)=ft(iom)+ci*fw*const
+          endif
+
+          ex00=ex00*dexpom
+          dexpomx=dexpomx*ddexpomx
+
+        enddo !oma
+
+      enddo !ic
+
+      return
+      end
+*CMZ :  4.01/05 28/03/2024  14.33.20  by  Michael Scheer
+*CMZ : 00.00/02 22/04/99  17.27.52  by  Michael Scheer
+*CMZ : 00.00/00 10/01/95  15.25.29  by  Michael Scheer
+*-- Author : Michael Scheer
+      subroutine util_fourier_linear_complex_2d(nx,ny,x,y,f,nomx,nomy,omx,omy,ft,ifail)
+
+      implicit none
+
+      integer nx,ny,nomx,nomy,ix,iy,ifail,jfail
+
+      complex*16 :: f(nx,ny),ft(nomx,nomy),fxy(max(nx,ny)),ftxy(max(nx,ny)),ftx(nomx,ny)
+
+      real*8 x(nx),y(ny),omx(nomx),omy(nomy)
+
+      ifail=0
+
+      do iy=1,ny
+        fxy(1:nx)=f(1:nx,iy)
+        call util_fourier_linear_complex(nx,x,fxy,nomx,omx,ftxy,jfail)
+        ftx(1:nomx,iy)=ftxy(1:nomx)
+        ifail=ifail+jfail
+      enddo !ny
+
+      do ix=1,nomx
+        fxy(1:ny)=ftx(ix,1:ny)
+        call util_fourier_linear_complex(ny,y,fxy,nomy,omy,ftxy,jfail)
+        ft(ix,1:nomy)=ftxy(1:nomy)
+        ifail=ifail+jfail
+      enddo !ny
+
+      return
+      end
+*CMZ :  4.01/07 16/05/2024  11.37.20  by  Michael Scheer
+*-- Author : Michael Scheer
+      subroutine util_wigner(ndime,nx,nt,x,t,om,er,ei,wig,istat)
+
+      implicit none
+
+      real*8, parameter :: CLIGHT1=2.99792458D8
+
+      integer :: ndime,nx,nt,istat,ix,it,ixp,l,kp,km,iw
+
+      real*8 :: x(ndime),t(nt),er(ndime),ei(ndime),sim(ndime),om
+      complex*16 cex(ndime),cee(ndime),wig(nx,nt)
+
+      real*8 omc,erp,xp,xxpm,xxpp,wr,wi,erm,eip,eim,dx
+      complex*16 :: czero=(0.0d0,0.0d0)
+
+      if (ndime.le.1) then
+        istat=-1
+        wig=czero
+        return
+      endif
+
+      dx=(x(ndime)-x(1))/(ndime-1)
+      omc=om/clight1
+
+      do it=1,nt
+        do ixp=1,ndime
+          cex(ixp)=cdexp(dcmplx(0.0d0,omc*t(it)*x(ixp)))
+        enddo !ixp
+        iw=0
+        do ix=1,ndime
+          l=0
+          do ixp=1,ndime
+            xp=x(ixp)
+            xxpp=x(ix)+xp/2.0d0
+            if (xxpp.gt.x(ndime).or.xxpp.lt.x(1)) cycle
+            xxpm=x(ix)-xp/2.0d0
+            if (xxpm.gt.x(ndime).or.xxpm.lt.x(1)) cycle
+            kp=int((xxpp-x(1))/dx)+1
+            if (kp.ge.ndime) kp=ndime-1
+            km=int((xxpm-x(1))/dx)+1
+            if (km.ge.ndime) km=ndime-1
+            erp=er(kp)+(er(kp+1)-er(kp))/dx*(xxpp-x(kp))
+            eip=ei(kp)+(ei(kp+1)-ei(kp))/dx*(xxpp-x(kp))
+            erm=er(km)+(er(km+1)-er(km))/dx*(xxpm-x(km))
+            eim=ei(km)+(ei(km+1)-ei(km))/dx*(xxpm-x(km))
+            l=l+1
+            cee(l)=dcmplx(erp,-eip)*dcmplx(erm,eim)*cex(ixp)
+          enddo !ixp
+          if (l.eq.ndime) then
+            sim=dreal(cee)
+            call util_simpson_integral(ndime,x,sim,wr)
+            sim=dimag(cee)
+            call util_simpson_integral(ndime,x,sim,wi)
+            iw=iw+1
+            wig(iw,it)=dcmplx(wr,wi)
+          endif
+        enddo !ix
+      enddo !it
+
+      istat=0
+      if (iw.ne.nx) istat=-2
+
+      end
+*CMZ :          16/12/2025  16.15.53  by  Michael Scheer
+*-- Author :    Michael Scheer   15/12/2025
+      subroutine util_read_wigner(filwig)
+
+      use uradphasemod
+      use wignermod
+
+      implicit none
+
+      double precision :: propx,propy,propz,ythe,zthe,e2r,e2i,e3r,e3i,w
+
+      integer :: kpola,iz,iy,itz,ity,nz,ny,ntz,nty,lpola(5),kerr,npola,ipola,iepho,ifound,lunwig,
+     &  ie,ly,lz,ltz,lty,nefold
+
+      character(*) filwig
+
+      open(newunit=lunwig,file=trim(filwig),status='old',iostat=kerr)
+      if (kerr.ne.0) then
+        print*,"*** Error in util_read_wigner: Cound not read "//trim(filwig)
+        return
+      endif
+
+      do while (.true.)
+        read(lunwig,*,end=9) kpola,nz,ny,ntz,nty,propx,propy,propz,ythe,zthe,nepho_u
+        ifound=0
+        do ipola=1,5
+          if (kpola.eq.lpola(ipola)) then
+            ifound=1
+            exit
+          endif
+        enddo
+        if (ifound.eq.0) then
+          npola=npola+1
+          lpola(npola)=kpola
+        endif
+      enddo
+ 9    rewind(lunwig)
+
+      do ipola=1,npola
+        do ie=1,nepho_u
+          do ly=1,ny
+            do lz=1,nz
+              do ltz=1,ntz
+                do lty=1,nty
+                  read(lunwig,*)
+     &              kpola,iz,iy,itz,ity,
+     &              obsvprop_u(1,1),
+     &              ywig(iy),zwig(iz),thetaywig(ity),thetazwig(itz),
+     &              iepho,nefold,epho_u(iepho),ebeam_u,e2r,e2i,e3r,e3i,w
+                  if (kpola.gt.0) then
+                    wigr(iz,iy,itz,ity,iepho,kpola)=w
+                  else
+                    wigr(iz,iy,itz,ity,iepho,-kpola)=w
+                  endif
+c                  esourzye(2,iz,iy,iepho)=dcmplx(e2r,e2i)
+c                  esourzye(3,iz,iy,iepho)=dcmplx(e3r,e3i)
+                enddo
+              enddo
+            enddo
+          enddo
+        enddo
+      enddo
+
+      end
+*CMZ :  4.01/07 05/06/2024  12.03.37  by  Michael Scheer
+*-- Author : Michael Scheer
+      subroutine util_wigner_2d(
+     &  ndimez,nz,ntz,z,tz,
+     &  ndimey,ny,nty,y,ty,
+     &  om,er,ei,wig,mthreads,istat)
+
+      implicit none
+
+      real*8, parameter :: CLIGHT1=2.99792458D8
+
+      integer ::
+     &  ndimez,nz,ntz,ndimey,ny,nty,mthreads,istat,
+     &  iz,itz,izp,ith,
+     &  iy,ity,iyp,iyl,iyh,izl,izr,
+     &  l,kpz,kmz,kmy,kpy,iwz,iwy,ly,lz,itzty,ly1,ly2,lz1,lz2
+
+      integer OMP_GET_THREAD_NUM
+
+      real*8 ::
+     &  ze(ndimez/2*4+1),ye(ndimey/2*4+1)
+      integer nze,nye
+      complex*16 cex(ndimez/2*4+1,ndimey/2*4+1),wig(nz,ny,ntz,nty),sim
+
+      real*8 ::
+     &  z(ndimez),tz(ntz),y(ndimey),ty(nty),
+     &  er(ndimez,ndimey),ei(ndimez,ndimey)
+
+      real*8 omc,erp,zp,zzpm,zzpp,wr,wi,erm,eip,eim,dz,om,ph,pw,
+     &  fb,ft,fpr,fpi,fmr,fmi,dzz,dyy,dzy,dy,yp,yypp,yypm,simfac
+
+      if (ndimez.le.1.or.ndimey.le.1) then
+        istat=-1
+        return
+      endif
+
+      dy=(y(ndimey)-y(1))/(ndimey-1)
+      dz=(z(ndimez)-z(1))/(ndimez-1)
+      dzy=dz*dy
+
+      nze=ndimez/2*4+1
+      nye=ndimey/2*4+1
+
+      ye(1)=2.0d0*y(1)
+      do iy=2,nye
+        ye(iy)=ye(iy-1)+dy
+        if (abs(ye(iy)).lt.1.0d-9) ye(iy)=0.0d0
+      enddo
+
+      ze(1)=2.0d0*z(1)
+      do iz=2,nze
+        ze(iz)=ze(iz-1)+dz
+        if (abs(ze(iz)).lt.1.0d-9) ze(iz)=0.0d0
+      enddo
+
+      omc=om/clight1
+      wig=(0.0d0,0.0d0)
+
+!$OMP PARALLEL NUM_THREADS(mthreads) DEFAULT(PRIVATE)
+!$OMP& SHARED(ndimez,z,ndimey,y,nze,nz,ntz,ze,tz,nye,ny,nty,ye,ty,omc,er,ei,wig,mthreads,dz,dy,dzy)
+
+      izl=(ndimez/2+1)/2+1
+      izr=ndimez-izl+1
+      iyl=(ndimey/2+1)/2+1
+      iyh=ndimey-iyl+1
+
+      ity=1
+      itz=0
+      ith=OMP_GET_THREAD_NUM()+1
+
+!$OMP DO
+      do itzty=1,nty*ntz
+
+        itz=mod(itzty-1,ntz)+1
+        ity=(itzty-1)/ntz+1
+
+        do izp=1,nze
+          do iyp=1,nye
+            cex(izp,iyp)=cdexp(dcmplx(0.0d0,2.0d0*omc*(tz(itz)*ze(izp)+ty(ity)*ye(iyp))))*4.0d0*dzy
+          enddo !iyp
+        enddo !izp
+
+        iwy=0
+        ly=0
+
+        do iy=iyl,iyh
+
+          iwy=iwy+1
+          iwz=0
+
+          do iz=izl,izr
+
+            iwz=iwz+1
+
+            do iyp=1,nye
+
+              yp=ye(iyp)
+              yypp=y(iy)+yp
+              if (yypp.gt.y(ndimey).or.yypp.lt.y(1)) cycle
+              yypm=y(iy)-yp
+              if (yypm.gt.y(ndimey).or.yypm.lt.y(1)) cycle
+
+              kpy=int((yypp-y(1))/dy)+1
+              kmy=int((yypm-y(1))/dy)+1
+
+              ly=ly+1
+              lz=0
+
+              do izp=1,nze
+
+                zp=ze(izp)
+                zzpp=z(iz)+zp
+                if (zzpp.gt.z(ndimez).or.zzpp.lt.z(1)) cycle
+                zzpm=z(iz)-zp
+                if (zzpm.gt.z(ndimez).or.zzpm.lt.z(1)) cycle
+
+                kpz=int((zzpp-z(1))/dz)+1
+                kmz=int((zzpm-z(1))/dz)+1
+
+                lz=lz+1
+
+                dzz=zzpm-z(kmz)
+                if (abs(dzz-dz).le.1.0d-15) then
+                  kmz=kmz+1
+                endif
+
+                dyy=yypm-y(kmy)
+                if (abs(dyy-dy).le.1.0d-15) then
+                  kmy=kmy+1
+                endif
+
+                dzz=zzpp-z(kpz)
+                if (abs(dzz-dz).le.1.0d-15) then
+                  kpz=kpz+1
+                endif
+
+                dyy=yypp-y(kpy)
+                if (abs(dyy-dy).le.1.0d-15) then
+                  kpy=kpy+1
+                endif
+
+                dzz=zzpp-z(kpz)
+                if (abs(dzz-dz).le.1.0d-15) then
+                  kpz=kpz+1
+                endif
+
+                dyy=yypp-y(kpy)
+                if (abs(dyy-dy).le.1.0d-15) then
+                  kpy=kpy+1
+                endif
+
+                fmr=er(kmz,kmy)
+                fmi=ei(kmz,kmy)
+                fpr=er(kpz,kpy)
+                fpi=ei(kpz,kpy)
+
+                simfac=1.0d0
+                if (ly.eq.1) simfac=simfac/2.0d0
+                if (lz.eq.1) simfac=simfac/2.0d0
+
+                sim=dcmplx(fpr,-fpi)*dcmplx(fmr,fmi)*cex(izp,iyp)
+                wig(iwz,iwy,itz,ity)=wig(iwz,iwy,itz,ity)+sim*simfac
+
+              enddo !izp
+
+              wig(iwz,iwy,itz,ity)=wig(iwz,iwy,itz,ity)-sim*simfac/2.0d0
+
+            enddo !iyp
+
+            wig(iwz,iwy,itz,ity)=wig(iwz,iwy,itz,ity)-sim*simfac/4.0d0
+
+          enddo !iz
+        enddo !iy
+
+      enddo !itzty
+
+!$OMP END DO
+!$OMP END PARALLEL
+
+      istat=0
+
+      end
+*CMZ :  4.01/07 08/06/2024  07.58.46  by  Michael Scheer
+*-- Author : Michael Scheer
+      subroutine util_wigner_2d_kernel(
+     &  nz,ny,
+     &  er,ei,wkern,istat)
+
+      implicit none
+
+      integer ::
+     &  nz,ny,istat,iyl,iyh,izl,izr,
+     &  iz,izp,iy,iyp,kpy,kmy,kpz,kmz,izc,iyc
+
+      complex*16 wkern(nz,ny,nz,ny)
+
+      real*8 :: fpi,fpr,fmi,fmr,
+     &  er(nz,ny),ei(nz,ny)
+
+      if (nz.le.1.or.ny.le.1) then
+        istat=-1
+        return
+      endif
+
+      wkern=(0.0d0,0.0d0)
+      iyc=ny/2+1
+      izc=nz/2+1
+
+      do iy=-ny/2,ny/2
+
+        do iz=-nz/2,nz/2
+
+          do iyp=-ny/2,ny/2
+
+            kpy=iy+iyp+iyc
+            if (kpy.gt.ny.or.kpy.lt.1) cycle
+            kmy=iy-iyp+iyc
+            if (kmy.gt.ny.or.kmy.lt.1) cycle
+
+            do izp=-nz/2,nz/2
+
+              kpz=iz+izp+izc
+              if (kpz.gt.nz.or.kpz.lt.1) cycle
+              kmz=iz-izp+izc
+              if (kmz.gt.nz.or.kmz.lt.1) cycle
+
+              fmr=er(kmz,kmy)
+              fmi=ei(kmz,kmy)
+              fpr=er(kpz,kpy)
+              fpi=ei(kpz,kpy)
+
+              wkern(iz+izc,iy+iyc,izp+izc,iyp+iyc)=dcmplx(fpr,-fpi)*dcmplx(fmr,fmi)
+c              if (iz.eq.izc.and.iy.eq.iyc) print*,iz,iy,izp,iyp
+
+            enddo !izp
+
+          enddo !iyp
+
+        enddo !iz
+      enddo !iy
+
+      istat=0
+
+      end
+*CMZ :  4.01/07 04/06/2024  11.51.30  by  Michael Scheer
+*-- Author : Michael Scheer
+      subroutine util_wigner_2d_oldwig(
+     &  ndimez,nz,ntz,z,tz,
+     &  ndimey,ny,nty,y,ty,
+     &  om,er,ei,wig,mthreads,istat)
+
+      implicit none
+
+      real*8, parameter :: CLIGHT1=2.99792458D8
+
+      integer ::
+     &  ndimez,nz,ntz,ndimey,ny,nty,mthreads,istat,
+     &  iz,itz,izp,ith,
+     &  iy,ity,iyp,iyl,iyh,izl,izr,
+     &  l,kpz,kmz,kmy,kpy,iwz,iwy,ly,lz,itzty,ly1,ly2,lz1,lz2
+
+      integer OMP_GET_THREAD_NUM
+      integer nze,nye
+
+      real*8 ::
+     &  ze(ndimez/2*4+1),ye(ndimey/2*4+1)
+
+      complex*16 cex(ndimez/2*4+1,ndimey/2*4+1),wig(nz,ny,ntz,nty),sim
+
+      real*8 ::
+     &  z(ndimez),tz(ntz),y(ndimey),ty(nty),
+     &  er(ndimez,ndimey),ei(ndimez,ndimey)
+
+      real*8 omc,erp,zp,zzpm,zzpp,wr,wi,erm,eip,eim,dz,om,ph,pw,
+     &  fb,ft,fpr,fpi,fmr,fmi,dzz,dyy,dzy,dy,yp,yypp,yypm,simfac
+
+      if (ndimez.le.1.or.ndimey.le.1) then
+        istat=-1
+        return
+      endif
+
+      dy=(y(ndimey)-y(1))/(ndimey-1)
+      dz=(z(ndimez)-z(1))/(ndimez-1)
+      dzy=dz*dy
+
+      nze=ndimez/2*4+1
+      nye=ndimey/2*4+1
+
+      ye(1)=2.0d0*y(1)
+      do iy=2,nye
+        ye(iy)=ye(iy-1)+dy
+        if (abs(ye(iy)).lt.1.0d-9) ye(iy)=0.0d0
+      enddo
+
+      ze(1)=2.0d0*z(1)
+      do iz=2,nze
+        ze(iz)=ze(iz-1)+dz
+        if (abs(ze(iz)).lt.1.0d-9) ze(iz)=0.0d0
+      enddo
+
+      omc=om/clight1
+      wig=(0.0d0,0.0d0)
+
+c!$OMP& FIRSTPRIVATE(cex)
+!$OMP PARALLEL NUM_THREADS(mthreads) DEFAULT(PRIVATE)
+!$OMP& SHARED(ndimez,z,ndimey,y,nze,nz,ntz,ze,tz,nye,ny,nty,ye,ty,omc,er,ei,wig,mthreads,dz,dy,dzy)
+
+      izl=(ndimez/2+1)/2+1
+      izr=ndimez-izl+1
+      iyl=(ndimey/2+1)/2+1
+      iyh=ndimey-iyl+1
+
+      ity=1
+      itz=0
+      ith=OMP_GET_THREAD_NUM()+1
+
+!$OMP DO
+      do itzty=1,nty*ntz
+
+        itz=mod(itzty-1,nty)+1
+        ity=(itzty-1)/ntz+1
+
+        do izp=1,nze
+          do iyp=1,nye
+            cex(izp,iyp)=cdexp(dcmplx(0.0d0,omc*(tz(itz)*ze(izp)+ty(ity)*ye(iyp))))*dzy
+          enddo !iyp
+        enddo !izp
+
+        iwy=0
+        ly=0
+
+        do iy=iyl,iyh
+
+          iwy=iwy+1
+          iwz=0
+
+          do iz=izl,izr
+
+            iwz=iwz+1
+
+            do iyp=1,nye
+
+              yp=ye(iyp)
+              yypp=y(iy)+yp/2.0d0
+              if (yypp.gt.y(ndimey).or.yypp.lt.y(1)) cycle
+              yypm=y(iy)-yp/2.0d0
+              if (yypm.gt.y(ndimey).or.yypm.lt.y(1)) cycle
+
+              kpy=int((yypp-y(1))/dy)+1
+              if (kpy.ge.ndimey) kpy=ndimey-1
+              kmy=int((yypm-y(1))/dy)+1
+              if (kmy.ge.ndimey) kmy=ndimey-1
+
+              ly=ly+1
+              lz=0
+
+              do izp=1,nze
+
+                zp=ze(izp)
+                zzpp=z(iz)+zp/2.0d0
+                if (zzpp.gt.z(ndimez).or.zzpp.lt.z(1)) cycle
+                zzpm=z(iz)-zp/2.0d0
+                if (zzpm.gt.z(ndimez).or.zzpm.lt.z(1)) cycle
+
+                kpz=int((zzpp-z(1))/dz)+1
+                if (kpz.ge.ndimez) kpz=ndimez-1
+                kmz=int((zzpm-z(1))/dz)+1
+                if (kmz.ge.ndimez) kmz=ndimez-1
+
+                lz=lz+1
+
+                dyy=yypp-y(kpy)
+                dzz=zzpp-z(kpz)
+
+                fb=er(kpz,kpy)+(er(kpz+1,kpy)-er(kpz,kpy))/dz*dzz
+                ft=er(kpz,kpy+1)+(er(kpz+1,kpy+1)-er(kpz,kpy+1))/dz*dzz
+                fpr=fb+(ft-fb)/dy*dyy
+
+                fb=ei(kpz,kpy)+(ei(kpz+1,kpy)-ei(kpz,kpy))/dz*dzz
+                ft=ei(kpz,kpy+1)+(ei(kpz+1,kpy+1)-ei(kpz,kpy+1))/dz*dzz
+                fpi=fb+(ft-fb)/dy*dyy
+
+                dyy=yypm-y(kmy)
+                dzz=zzpm-z(kmz)
+
+                fb=er(kmz,kmy)+(er(kmz+1,kmy)-er(kmz,kmy))/dz*dzz
+                ft=er(kmz,kmy+1)+(er(kmz+1,kmy+1)-er(kmz,kmy+1))/dz*dzz
+                fmr=fb+(ft-fb)/dy*dyy
+
+                fb=ei(kmz,kmy)+(ei(kmz+1,kmy)-ei(kmz,kmy))/dz*dzz
+                ft=ei(kmz,kmy+1)+(ei(kmz+1,kmy+1)-ei(kmz,kmy+1))/dz*dzz
+                fmi=fb+(ft-fb)/dy*dyy
+
+                simfac=1.0d0
+c                if (ly.eq.1.or.ly.eq.ndimey) simfac=simfac/2.0d0
+c                if (lz.eq.1.or.lz.eq.ndimez) simfac=simfac/2.0d0
+                if (ly.eq.1) simfac=simfac/2.0d0
+                if (lz.eq.1) simfac=simfac/2.0d0
+
+                sim=dcmplx(fpr,-fpi)*dcmplx(fmr,fmi)*cex(izp,iyp)
+                wig(iwz,iwy,itz,ity)=wig(iwz,iwy,itz,ity)+sim*simfac
+
+c                if (lz.eq.ndimez) then
+c                  exit
+c                endif
+
+              enddo !izp
+
+              wig(iwz,iwy,itz,ity)=wig(iwz,iwy,itz,ity)-sim*simfac/2.0d0
+
+c              if (ly.eq.ndimey) then
+c                print*,ith,iwz,iwy,itz,ity,wig(iwz,iwy,itz,ity)
+c                exit
+c              endif
+
+            enddo !iyp
+
+            wig(iwz,iwy,itz,ity)=wig(iwz,iwy,itz,ity)-sim*simfac/4.0d0
+
+          enddo !iz
+        enddo !iy
+
+      enddo !itzty
+
+!$OMP END DO
+!$OMP END PARALLEL
+
+      istat=0
+
+      end
+*CMZ :  4.01/07 05/06/2024  10.42.57  by  Michael Scheer
+*-- Author : Michael Scheer
+      subroutine util_wigner_2d_good(
+     &  ndimez,nz,ntz,z,tz,
+     &  ndimey,ny,nty,y,ty,
+     &  om,er,ei,wig,mthreads,istat)
+
+      implicit none
+
+      real*8, parameter :: CLIGHT1=2.99792458D8
+
+      integer ::
+     &  ndimez,nz,ntz,ndimey,ny,nty,mthreads,istat,
+     &  iz,itz,izp,ith,
+     &  iy,ity,iyp,iyl,iyh,izl,izr,
+     &  l,kpz,kmz,kmy,kpy,iwz,iwy,ly,lz,itzty,ly1,ly2,lz1,lz2
+
+      integer OMP_GET_THREAD_NUM
+
+      real*8 ::
+     &  ze(ndimez/2*4+1),ye(ndimey/2*4+1)
+      integer nze,nye
+      complex*16 cex(ndimez/2*4+1,ndimey/2*4+1),wig(nz,ny,ntz,nty),sim
+
+      real*8 ::
+     &  z(ndimez),tz(ntz),y(ndimey),ty(nty),
+     &  er(ndimez,ndimey),ei(ndimez,ndimey)
+
+      real*8 omc,erp,zp,zzpm,zzpp,wr,wi,erm,eip,eim,dz,om,ph,pw,
+     &  fb,ft,fpr,fpi,fmr,fmi,dzz,dyy,dzy,dy,yp,yypp,yypm,simfac
+
+      if (ndimez.le.1.or.ndimey.le.1) then
+        istat=-1
+        return
+      endif
+
+      dy=(y(ndimey)-y(1))/(ndimey-1)
+      dz=(z(ndimez)-z(1))/(ndimez-1)
+      dzy=dz*dy
+
+      nze=ndimez/2*4+1
+      nye=ndimey/2*4+1
+
+      ye(1)=2.0d0*y(1)
+      do iy=2,nye
+        ye(iy)=ye(iy-1)+dy
+        if (abs(ye(iy)).lt.1.0d-9) ye(iy)=0.0d0
+      enddo
+
+      ze(1)=2.0d0*z(1)
+      do iz=2,nze
+        ze(iz)=ze(iz-1)+dz
+        if (abs(ze(iz)).lt.1.0d-9) ze(iz)=0.0d0
+      enddo
+
+      omc=om/clight1
+      wig=(0.0d0,0.0d0)
+
+!$OMP PARALLEL NUM_THREADS(mthreads) DEFAULT(PRIVATE)
+!$OMP& SHARED(ndimez,z,ndimey,y,nze,nz,ntz,ze,tz,nye,ny,nty,ye,ty,omc,er,ei,wig,mthreads,dz,dy,dzy)
+
+      izl=(ndimez/2+1)/2+1
+      izr=ndimez-izl+1
+      iyl=(ndimey/2+1)/2+1
+      iyh=ndimey-iyl+1
+
+      ity=1
+      itz=0
+      ith=OMP_GET_THREAD_NUM()+1
+
+!$OMP DO
+      do itzty=1,nty*ntz
+
+        itz=mod(itzty-1,ntz)+1
+        ity=(itzty-1)/ntz+1
+
+        do izp=1,nze
+          do iyp=1,nye
+            cex(izp,iyp)=cdexp(dcmplx(0.0d0,2.0d0*omc*(tz(itz)*ze(izp)+ty(ity)*ye(iyp))))*2.0d0*dzy
+          enddo !iyp
+        enddo !izp
+
+        iwy=0
+        ly=0
+
+        do iy=iyl,iyh
+
+          iwy=iwy+1
+          iwz=0
+
+          do iz=izl,izr
+
+            iwz=iwz+1
+
+            do iyp=1,nye
+
+              yp=ye(iyp)
+              yypp=y(iy)+yp
+              if (yypp.gt.y(ndimey).or.yypp.lt.y(1)) cycle
+              yypm=y(iy)-yp
+              if (yypm.gt.y(ndimey).or.yypm.lt.y(1)) cycle
+
+              kpy=int((yypp-y(1))/dy)+1
+              kmy=int((yypm-y(1))/dy)+1
+
+              ly=ly+1
+              lz=0
+
+              do izp=1,nze
+
+                zp=ze(izp)
+                zzpp=z(iz)+zp
+                if (zzpp.gt.z(ndimez).or.zzpp.lt.z(1)) cycle
+                zzpm=z(iz)-zp
+                if (zzpm.gt.z(ndimez).or.zzpm.lt.z(1)) cycle
+
+                kpz=int((zzpp-z(1))/dz)+1
+                kmz=int((zzpm-z(1))/dz)+1
+
+                lz=lz+1
+
+                dzz=zzpm-z(kmz)
+                if (abs(dzz-dz).le.1.0d-15) then
+                  kmz=kmz+1
+                endif
+
+                dyy=yypm-y(kmy)
+                if (abs(dyy-dy).le.1.0d-15) then
+                  kmy=kmy+1
+                endif
+
+                dzz=zzpp-z(kpz)
+                if (abs(dzz-dz).le.1.0d-15) then
+                  kpz=kpz+1
+                endif
+
+                dyy=yypp-y(kpy)
+                if (abs(dyy-dy).le.1.0d-15) then
+                  kpy=kpy+1
+                endif
+
+                dzz=zzpp-z(kpz)
+                if (abs(dzz-dz).le.1.0d-15) then
+                  kpz=kpz+1
+                endif
+
+                dyy=yypp-y(kpy)
+                if (abs(dyy-dy).le.1.0d-15) then
+                  kpy=kpy+1
+                endif
+
+                fmr=er(kmz,kmy)
+                fmi=ei(kmz,kmy)
+                fpr=er(kpz,kpy)
+                fpi=ei(kpz,kpy)
+
+                simfac=1.0d0
+                if (ly.eq.1) simfac=simfac/2.0d0
+                if (lz.eq.1) simfac=simfac/2.0d0
+
+                sim=dcmplx(fpr,-fpi)*dcmplx(fmr,fmi)*cex(izp,iyp)
+                wig(iwz,iwy,itz,ity)=wig(iwz,iwy,itz,ity)+sim*simfac
+
+              enddo !izp
+
+              wig(iwz,iwy,itz,ity)=wig(iwz,iwy,itz,ity)-sim*simfac/2.0d0
+
+            enddo !iyp
+
+            wig(iwz,iwy,itz,ity)=wig(iwz,iwy,itz,ity)-sim*simfac/4.0d0
+
+          enddo !iz
+        enddo !iy
+
+      enddo !itzty
+
+!$OMP END DO
+!$OMP END PARALLEL
+
+      istat=0
+
+      end
+*CMZ :  4.01/05 12/01/2024  16.28.35  by  Michael Scheer
+*-- Author :    Michael Scheer   11/11/2023
+
+      SUBROUTINE util_CFT(A,B,NTOT,N,NSPAN,ISN,maxf,maxp,at,ck,bt,sk,np)
+      ! based on cft.F of cernlib D702
+
+C
+C     MULTIVARIATE COMPLEX FOURIER TRANSFORM, COMPUTED IN PLACE
+C     USING MIXED-RADIX FAST FOURIER TRANSFORM ALGORITHM.
+C     BY R. C. SINGLETON, STANFORD RESEARCH INSTITUTE, OCT. 1968
+C     ARRAYS A AND B ORIGINALLY HOLD THE REAL AND IMAGINARY
+C     COMPONENTS OF THE DATA, AND RETURN THE REAL AND
+C     IMAGINARY COMPONENTS OF THE RESULTING FOURIER COEFFICIENTS.
+C     MULTIVARIATE DATA IS INDEXED ACCORDING TO THE FORTRAN
+C     ARRAY ELEMENT SUCCESSOR FUNCTION, WITHOUT LIMIT
+C     ON THE NUMBER OF IMPLIED MULTIPLE SUBSCRIPTS.
+C     THE SUBROUTINE IS CALLED ONCE FOR EACH VARIATE.
+C     THE CALLS FOR A MULTIVARIATE TRANSFORM MAY BE IN ANY ORDER.
+C     NTOT IS THE TOTAL NUMBER OF COMPLEX DATA VALUES.
+C     N IS THE DIMENSION OF THE CURRENT VARIABLE.
+C     NSPAN/N IS THE SPACING OF CONSUCUTIVE DATA VALUES
+C     WHILE INDEXING THE CURRENT VARIABLE.
+C     THE SIGN OF ISN DETERMINES THE SIGN OF THE COMPLEX
+C     EXPONENTIAL, AND THE MAGNITUDE OF ISN IS NORMALLY ONE.
+C
+C     FOR A SINGLE-VARIATE TRANSFORM,
+C     NTOT = N = NSPAN = (NUMBER OF COMPLEX DATA VALUES), F.G.
+C     CALL CFT(A,B,N,N,N,1)
+C
+C     A TRI-VARIATE TRANSFORM WITH A(N1,N2,N3), B(N1,N2,N3)
+C     IS COMPUTED BY
+C     CALL CFT(A,B,N1*N2*N3,N1,N1,1)
+C     CALL CFT(A,B,N1*N2*N3,N2,N1*N2,1)
+C     CALL CFT(A,B,N1*N2*N3,N3,N1*N2*N3,1)
+C
+C     THE DATA MAY ALTERNATIVELY BE STORED IN A SINGLE COMPLEX
+C     ARRAY A, THEN THE MAGNITUDE OF ISN CHANGED TO TWO TO
+C     GIVE THE CORRECT INDEXING INCREMENT AND THE SECOND PARAMETER
+C     USED TO PASS THE INITIAL ADDRESS FOR THE SEQUENCE OF
+C     IMAGINARY VALUES, E.G.
+C
+C        REAL S(2)
+C        EQUIVALENCE (A,S)
+C        ....
+C        ....
+C        CALL CFT(A,S(2),NTOT,N,NSPAN,2)
+C
+C     ARRAYS AT(MAXF), CK(MAXF), BT(MAXF), SK(MAXF), AND NP(MAXP)
+C     ARE USED FOR TEMPORARY STORAGE. IF THE AVAILABLE STORAGE
+C     IS INSUFFICIENT, THE PROGRAM IS TERMINATED BY A STOP.
+C     MAXF MUST BE .GE. THE MAXIMUM PRIME FACTOR OF N.
+C     MAXP MUST BE .GT. THE NUMBER OF PRIME FACTORS OF N.
+C     IN ADDITION, IF THE SQUARE-FREE PORTION K CF N HAS TWO OR
+C     MORE PRIME FACTORS, THEN MAXP MUST BE .GE. K-1.
+C     ARRAY STORAGE IN NFAC FOR A MAXIMUM OF 11 FACTORS OF N.
+C     IF N HAS MORE THAN ONE SQUARE-FREE FACTOR, THE PRODUCT OF THE
+C     SQUARE-FREE FACTORS MUST BE .LE. 210
+C
+      implicit none
+
+      double precision A(ntot),B(ntot)
+      double precision  AT(maxf),CK(maxf),BT(maxf),SK(maxf),
+     &  rad,s72,c72,s120,sd,s3,aa,aj,ajm,ajp,ak,akm,akp,bb,bj,bjm,bjp,bk,bkm,
+     &  bkp,c1,cd,c2,c3,radf,s1,s2
+cmsh      integer NFAC(11),NP(209)
+      integer maxp,maxf,n,inc,isn,nspan,i,ii,ntot,j,jc,jf,jj,k,k1,k2,k3,
+     &  k4,kk,ks,kspan,kspnn,kt,m,nn,nt
+      integer NFAC(11),NP(maxp)
+C     ARRAY STORAGE FOR MAXIMUM PRIME FACTOR OF 23
+cmsh      double precision  AT(23),CK(23),BT(23),SK(23)
+      EQUIVALENCE (I,II)
+C     THE FOLLOWING TWO CONSTANTS SHOULD AGREE WITH THE ARRAY DIMENSIONS
+cmsh      MAXF=23
+cmsh      MAXP=209
+      IF(N .LT. 2) RETURN
+      INC=ISN
+C     THE FOLLOWING CONSTANTS ARE RAD = 2.*PI , S72 = SIN(0.4*PI) ,
+C     C72 = COS(0.4*PI) AND S120 = SQRT(0.75)
+      RAD = 6.2831853071796
+      S72 = 0.95105651629515
+      C72 = 0.30901699437495
+      S120 = 0.86602540378444
+      IF(ISN .GE. 0) GO TO 10
+      S72=-S72
+      S120=-S120
+      RAD=-RAD
+      INC=-INC
+   10 NT=INC*NTOT
+      KS=INC*NSPAN
+      KSPAN=KS
+      NN=NT-INC
+      JC=KS/N
+      RADF=RAD*JC*0.5
+      I=0
+      JF=0
+C     DETERMINE THE FACTORS OF N
+      M=0
+      K=N
+      GO TO 20
+   15 M=M+1
+      NFAC(M)=4
+      K=K/16
+   20 IF(K-(K/16)*16 .EQ. 0) GO TO 15
+      J=3
+      JJ=9
+      GO TO 30
+   25 M=M+1
+      NFAC(M)=J
+      K=K/JJ
+   30 IF(MOD(K,JJ) .EQ. 0) GO TO 25
+      J=J+2
+      JJ=J**2
+      IF(JJ .LE. K) GO TO 30
+      IF(K .GT. 4) GO TO 40
+      KT=M
+      NFAC(M+1)=K
+      IF(K .NE. 1) M=M+1
+      GO TO 80
+   40 IF(K-(K/4)*4 .NE. 0) GO TO 50
+      M=M+1
+      NFAC(M)=2
+      K=K/4
+   50 KT=M
+      J=2
+   60 IF(MOD(K,J) .NE. 0) GO TO 70
+      M=M+1
+      NFAC(M)=J
+      K=K/J
+   70 J=((J+1)/2)*2+1
+      IF(J .LE. K) GO TO 60
+   80 IF(KT .EQ. 0) GO TO 100
+      J=KT
+   90 M=M+1
+      NFAC(M)=NFAC(J)
+      J=J-1
+      IF(J .NE. 0) GO TO 90
+C     COMPUTE FOURIER TRANSFORM
+  100 SD=RADF/KSPAN
+      CD=2.0*SIN(SD)**2
+      SD=SIN(SD+SD)
+      KK=1
+      I=I+1
+      IF(NFAC(I) .NE. 2) GO TO 400
+C     TRANSFORM FOR FACTOR OF 2 (INCLUDING ROTATION FACTOR)
+      KSPAN=KSPAN/2
+      K1=KSPAN+2
+  210 K2=KK+KSPAN
+      AK=A(K2)
+      BK=B(K2)
+      A(K2)=A(KK)-AK
+      B(K2)=B(KK)-BK
+      A(KK)=A(KK)+AK
+      B(KK)=B(KK)+BK
+      KK=K2+KSPAN
+      IF(KK .LE. NN) GO TO 210
+      KK=KK-NN
+      IF(KK .LE. JC) GO TO 210
+      IF(KK .GT. KSPAN) GO TO 800
+  220 C1=1.0-CD
+      S1=SD
+  230 K2=KK+KSPAN
+      AK=A(KK)-A(K2)
+      BK=B(KK)-B(K2)
+      A(KK)=A(KK)+A(K2)
+      B(KK)=B(KK)+B(K2)
+      A(K2)=C1*AK-S1*BK
+      B(K2)=S1*AK+C1*BK
+      KK=K2+KSPAN
+      IF(KK .LT. NT) GO TO 230
+      K2=KK-NT
+      C1=-C1
+      KK=K1-K2
+      IF(KK .GT. K2) GO TO 230
+      AK=C1-(CD*C1+SD*S1)
+      S1=(SD*C1-CD*S1)+S1
+C     THE FOLLOWING THREE STATEMENTS COMPENSATE FOR TRUNCATION
+C     ERROR. IF ROUNDED ARITHMETIC IS USED, THEY MAY BE DELETED.
+C     C1=0.5/(AK**2+S1**2)+0.5
+C     S1=C1*S1
+C     C1=C1*AK
+C     NEXT STATEMENT SHOULD BE DELETED IF NON-ROUNDED ARITHMETIC IS USED
+      C1=AK
+      KK=KK+JC
+      IF(KK .LT. K2) GO TO 230
+      K1=K1+INC+INC
+      KK=(K1-KSPAN)/2+JC
+      IF(KK .LE. JC+JC) GO TO 220
+      GO TO 100
+C     TRANSFORM FOR FACTOR OF 3 (OPTIONAL CODE)
+  320 K1=KK+KSPAN
+      K2=K1+KSPAN
+      AK=A(KK)
+      BK=B(KK)
+      AJ=A(K1)+A(K2)
+      BJ=B(K1)+B(K2)
+      A(KK)=AK+AJ
+      B(KK)=BK+BJ
+      AK=-0.5*AJ+AK
+      BK=-0.5*BJ+BK
+      AJ=(A(K1)-A(K2))*S120
+      BJ=(B(K1)-B(K2))*S120
+      A(K1)=AK-BJ
+      B(K1)=BK+AJ
+      A(K2)=AK+BJ
+      B(K2)=BK-AJ
+      KK=K2+KSPAN
+      IF(KK .LT. NN) GO TO 320
+      KK=KK-NN
+      IF(KK .LE. KSPAN) GO TO 320
+      GO TO 700
+C     TRANSFORM FOR FACTOR OF 4
+  400 IF(NFAC(I) .NE. 4) GO TO 600
+      KSPNN=KSPAN
+      KSPAN=KSPAN/4
+  410 C1=1.0
+      S1=0
+  420 K1=KK+KSPAN
+      K2=K1+KSPAN
+      K3=K2+KSPAN
+      AKP=A(KK)+A(K2)
+      AKM=A(KK)-A(K2)
+      AJP=A(K1)+A(K3)
+      AJM=A(K1)-A(K3)
+      A(KK)=AKP+AJP
+      AJP=AKP-AJP
+      BKP=B(KK)+B(K2)
+      BKM=B(KK)-B(K2)
+      BJP=B(K1)+B(K3)
+      BJM=B(K1)-B(K3)
+      B(KK)=BKP+BJP
+      BJP=BKP-BJP
+      IF(ISN .LT. 0) GO TO 450
+      AKP=AKM-BJM
+      AKM=AKM+BJM
+      BKP=BKM+AJM
+      BKM=BKM-AJM
+      IF(S1 .EQ. 0.0) GO TO 460
+  430 A(K1)=AKP*C1-BKP*S1
+      B(K1)=AKP*S1+BKP*C1
+      A(K2)=AJP*C2-BJP*S2
+      B(K2)=AJP*S2+BJP*C2
+      A(K3)=AKM*C3-BKM*S3
+      B(K3)=AKM*S3+BKM*C3
+      KK=K3+KSPAN
+      IF(KK .LE. NT) GO TO 420
+  440 C2=C1-(CD*C1+SD*S1)
+      S1=(SD*C1-CD*S1)+S1
+C     THE FOLLOWING THREE STATEMENTS COMPENSATE FOR TRUNCATION
+C     ERROR. IF ROUNDED ARITHMETIC IS USED, THEY MAY BE DELETED.
+C     C1=0.5/(C2**2+S1**2)+0.5
+C     S1=C1*S1
+C     C1=C1*C2
+C     NEXT STATEMENT SHOULD BE DELETED IF NON-ROUNDED ARITHMETIC IS USED
+      C1=C2
+      C2=C1**2-S1**2
+      S2=2.0*C1*S1
+      C3=C2*C1-S2*S1
+      S3=C2*S1+S2*C1
+      KK=KK-NT+JC
+      IF(KK .LE. KSPAN) GO TO 420
+      KK=KK-KSPAN+INC
+      IF(KK .LE. JC) GO TO 410
+      IF(KSPAN .EQ. JC) GO TO 800
+      GO TO 100
+  450 AKP=AKM+BJM
+      AKM=AKM-BJM
+      BKP=BKM-AJM
+      BKM=BKM+AJM
+      IF(S1 .NE. 0.0) GO TO 430
+  460 A(K1)=AKP
+      B(K1)=BKP
+      A(K2)=AJP
+      B(K2)=BJP
+      A(K3)=AKM
+      B(K3)=BKM
+      KK=K3+KSPAN
+      IF(KK .LE. NT) GO TO 420
+      GO TO 440
+C     TRANSFORM FOR FACTOR OF 5 (OPTIONAL CODE)
+  510 C2=C72**2-S72**2
+      S2=2.0*C72*S72
+  520 K1=KK+KSPAN
+      K2=K1+KSPAN
+      K3=K2+KSPAN
+      K4=K3+KSPAN
+      AKP=A(K1)+A(K4)
+      AKM=A(K1)-A(K4)
+      BKP=B(K1)+B(K4)
+      BKM=B(K1)-B(K4)
+      AJP=A(K2)+A(K3)
+      AJM=A(K2)-A(K3)
+      BJP=B(K2)+B(K3)
+      BJM=B(K2)-B(K3)
+      AA=A(KK)
+      BB=B(KK)
+      A(KK)=AA+AKP+AJP
+      B(KK)=BB+BKP+BJP
+      AK=AKP*C72+AJP*C2+AA
+      BK=BKP*C72+BJP*C2+BB
+      AJ=AKM*S72+AJM*S2
+      BJ=BKM*S72+BJM*S2
+      A(K1)=AK-BJ
+      A(K4)=AK+BJ
+      B(K1)=BK+AJ
+      B(K4)=BK-AJ
+      AK=AKP*C2+AJP*C72+AA
+      BK=BKP*C2+BJP*C72+BB
+      AJ=AKM*S2-AJM*S72
+      BJ=BKM*S2-BJM*S72
+      A(K2)=AK-BJ
+      A(K3)=AK+BJ
+      B(K2)=BK+AJ
+      B(K3)=BK-AJ
+      KK=K4+KSPAN
+      IF(KK .LT. NN) GO TO 520
+      KK=KK-NN
+      IF(KK .LE. KSPAN) GO TO 520
+      GO TO 700
+C     TRANSFORM FOR ODD FACTORS
+  600 K=NFAC(I)
+      KSPNN=KSPAN
+      KSPAN=KSPAN/K
+      IF(K .EQ. 3) GO TO 320
+      IF(K .EQ. 5) GO TO 510
+      IF(K .EQ. JF) GO TO 640
+      JF=K
+      S1=RAD/K
+      C1=COS(S1)
+      S1=SIN(S1)
+      IF(JF .GT. MAXF) GO TO 998
+      CK(JF)=1.0
+      SK(JF)=0.0
+      J=1
+  630 CK(J)=CK(K)*C1+SK(K)*S1
+      SK(J)=CK(K)*S1-SK(K)*C1
+      K=K-1
+      CK(K)=CK(J)
+      SK(K)=-SK(J)
+      J=J+1
+      IF(J .LT. K) GO TO 630
+  640 K1=KK
+      K2=KK+KSPNN
+      AA=A(KK)
+      BB=B(KK)
+      AK=AA
+      BK=BB
+      J=1
+      K1=K1+KSPAN
+  650 K2=K2-KSPAN
+      J=J+1
+      AT(J)=A(K1)+A(K2)
+      AK=AT(J)+AK
+      BT(J)=B(K1)+B(K2)
+      BK=BT(J)+BK
+      J=J+1
+      AT(J)=A(K1)-A(K2)
+      BT(J)=B(K1)-B(K2)
+      K1=K1+KSPAN
+      IF(K1 .LT. K2) GO TO 650
+      A(KK)=AK
+      B(KK)=BK
+      K1=KK
+      K2=KK+KSPNN
+      J=1
+  660 K1=K1+KSPAN
+      K2=K2-KSPAN
+      JJ=J
+      AK=AA
+      BK=BB
+      AJ=0.0
+      BJ=0.0
+      K=1
+  670 K=K+1
+      AK=AT(K)*CK(JJ)+AK
+      BK=BT(K)*CK(JJ)+BK
+      K=K+1
+      AJ=AT(K)*SK(JJ)+AJ
+      BJ=BT(K)*SK(JJ)+BJ
+      JJ=JJ+J
+      IF(JJ .GT. JF) JJ=JJ-JF
+      IF(K .LT. JF) GO TO 670
+      K=JF-J
+      A(K1)=AK-BJ
+      B(K1)=BK+AJ
+      A(K2)=AK+BJ
+      B(K2)=BK-AJ
+      J=J+1
+      IF(J .LT. K) GO TO 660
+      KK=KK+KSPNN
+      IF(KK .LE. NN) GO TO 640
+      KK=KK-NN
+      IF(KK .LE. KSPAN) GO TO 640
+C     MULTIPLY BY ROTATION FACTOR (EXCEPT FOR FACTORS OF 2 AND 4)
+  700 IF(I .EQ. M) GO TO 800
+      KK=JC+1
+  710 C2=1.0-CD
+      S1=SD
+  720 C1=C2
+      S2=S1
+      KK=KK+KSPAN
+  730 AK=A(KK)
+      A(KK)=C2*AK-S2*B(KK)
+      B(KK)=S2*AK+C2*B(KK)
+      KK=KK+KSPNN
+      IF(KK .LE. NT) GO TO 730
+      AK=S1*S2
+      S2=S1*C2+C1*S2
+      C2=C1*C2-AK
+      KK=KK-NT+KSPAN
+      IF(KK .LE. KSPNN) GO TO 730
+      C2=C1-(CD*C1+SD*S1)
+      S1=S1+(SD*C1-CD*S1)
+C     THE FOLLOWING THREE STATEMENTS COMPENSATE FOR TRUNCATION
+C     ERROR. IF ROUNDED ARITHMETIC IS USED, THEY MAY
+C     BE DELETED.
+C     C1=0.5/(C2**2+S1**2)+0.5
+C     S1=C1*S1
+C     C2=C1*C2
+      KK=KK-KSPNN+JC
+      IF(KK .LE. KSPAN) GO TO 720
+      KK=KK-KSPAN+JC+INC
+      IF(KK .LE. JC+JC) GO TO 710
+      GO TO 100
+C     PERMUTE THE RESULTS TO NORMAL ORDER---DONE IN TWO STAGES
+C     PERMUTATION FOR SQUARE FACTORS OF N
+  800 NP(1)=KS
+      IF(KT .EQ. 0) GO TO 890
+      K=KT+KT+1
+      IF(M .LT. K) K=K-1
+      J=1
+      NP(K+1)=JC
+  810 NP(J+1)=NP(J)/NFAC(J)
+      NP(K)=NP(K+1)*NFAC(J)
+      J=J+1
+      K=K-1
+      IF(J .LT. K) GO TO 810
+      K3=NP(K+1)
+      KSPAN=NP(2)
+      KK=JC+1
+      K2=KSPAN+1
+      J=1
+      IF(N .NE. NTOT) GO TO 850
+C     PERMUTATION FOR SINGLE-VARIATE TRANSFORM (OPTIONAL CODE)
+  820 AK=A(KK)
+      A(KK)=A(K2)
+      A(K2)=AK
+      BK=B(KK)
+      B(KK)=B(K2)
+      B(K2)=BK
+      KK=KK+INC
+      K2=KSPAN+K2
+      IF(K2 .LT. KS) GO TO 820
+  830 K2=K2-NP(J)
+      J=J+1
+      K2=NP(J+1)+K2
+      IF(K2 .GT. NP(J)) GO TO 830
+      J=1
+  840 IF(KK .LT. K2) GO TO 820
+      KK=KK+INC
+      K2=KSPAN+K2
+      IF(K2 .LT. KS) GO TO 840
+      IF(KK .LT. KS) GO TO 830
+      JC=K3
+      GO TO 890
+C     PERMUTATION FOR MULTIVARIATE TRANSFORM
+  850 K=KK+JC
+  860 AK=A(KK)
+      A(KK)=A(K2)
+      A(K2)=AK
+      BK=B(KK)
+      B(KK)=B(K2)
+      B(K2)=BK
+      KK=KK+INC
+      K2=K2+INC
+      IF(KK .LT. K) GO TO 860
+      KK=KK+KS-JC
+      K2=K2+KS-JC
+      IF(KK .LT. NT) GO TO 850
+      K2=K2-NT+KSPAN
+      KK=KK-NT+JC
+      IF(K2 .LT. KS) GO TO 850
+  870 K2=K2-NP(J)
+      J=J+1
+      K2=NP(J+1)+K2
+      IF(K2 .GT. NP(J)) GO TO 870
+      J=1
+  880 IF(KK .LT. K2) GO TO 850
+      KK=KK+JC
+      K2=KSPAN+K2
+      IF(K2 .LT. KS) GO TO 880
+      IF(KK .LT. KS) GO TO 870
+      JC=K3
+  890 IF(2*KT+1 .GE. M) RETURN
+      KSPNN=NP(KT+1)
+C     PERMUTATION FOR SQUARE-FREE FACTORS OF N
+      J=M-KT
+      NFAC(J+1)=1
+  900 NFAC(J)=NFAC(J)*NFAC(J+1)
+      J=J-1
+      IF(J .NE. KT) GO TO 900
+      KT=KT+1
+      NN=NFAC(KT)-1
+      IF(NN .GT. MAXP) GO TO 998
+      JJ=0
+      J=0
+      GO TO 906
+  902 JJ=JJ-K2
+      K2=KK
+      K=K+1
+      KK=NFAC(K)
+  904 JJ=KK+JJ
+      IF(JJ .GE. K2) GO TO 902
+      NP(J)=JJ
+  906 K2=NFAC(KT)
+      K=KT+1
+      KK=NFAC(K)
+      J=J+1
+      IF(J .LE. NN) GO TO 904
+C     DETERMINE THE PERMUTATION CYCLES OF LENGTH GREATER THAN 1
+      J=0
+      GO TO 914
+  910 K=KK
+      KK=NP(K)
+      NP(K)=-KK
+      IF(KK .NE. J) GO TO 910
+      K3=KK
+  914 J=J+1
+      KK=NP(J)
+      IF(KK .LT. 0) GO TO 914
+      IF(KK .NE. J) GO TO 910
+      NP(J)=-J
+      IF(J .NE. NN) GO TO 914
+      MAXF=INC*MAXF
+C     REORDER A AND B, FOLLOWING THE PERMUTATION CYCLES
+      GO TO 950
+  924 J=J-1
+      IF(NP(J) .LT. 0) GO TO 924
+      JJ=JC
+  926 KSPAN=JJ
+      IF(JJ .GT. MAXF) KSPAN=MAXF
+      JJ=JJ-KSPAN
+      K=NP(J)
+      KK=JC*K+II+JJ
+      K1=KK+KSPAN
+      K2=0
+  928 K2=K2+1
+      AT(K2)=A(K1)
+      BT(K2)=B(K1)
+      K1=K1-INC
+      IF(K1 .NE. KK) GO TO 928
+  932 K1=KK+KSPAN
+      K2=K1-JC*(K+NP(K))
+      K=-NP(K)
+  936 A(K1)=A(K2)
+      B(K1)=B(K2)
+      K1=K1-INC
+      K2=K2-INC
+      IF(K1 .NE. KK) GO TO 936
+      KK=K2
+      IF(K .NE. J) GO TO 932
+      K1=KK+KSPAN
+      K2=0
+  940 K2=K2+1
+      A(K1)=AT(K2)
+      B(K1)=BT(K2)
+      K1=K1-INC
+      IF(K1 .NE. KK) GO TO 940
+      IF(JJ .NE. 0) GO TO 926
+      IF(J .NE. 1) GO TO 924
+  950 J=K3+1
+      NT=NT-KSPNN
+      II=NT-INC+1
+      IF(NT .GE. 0) GO TO 924
+      RETURN
+C     ERROR FINISH, INSUFFICIENT ARRAY STORAGE
+  998 ISN=0
+      WRITE(6,999)
+  999 FORMAT('*** Error in util_cft: ARRAY BOUNDS EXCEEDED, change number of points to avoid too big a prime factor')
+      END
+*CMZ :  3.03/04 02/01/2018  14.56.04  by  Michael Scheer
+*CMZ :  3.01/07 23/06/2014  15.51.32  by  Michael Scheer
+*CMZ : 00.00/07 21/07/2009  14.58.29  by  Michael Scheer
+*CMZ : 00.00/06 12/07/2007  15.45.32  by  Michael Scheer
+*-- Author :    Michael Scheer   12/07/2007
+      subroutine util_file_delete(file,istat)
+*KEEP,gplhint.
+!******************************************************************************
+!
+!      Copyright 2013 Helmholtz-Zentrum Berlin (HZB)
+!      Hahn-Meitner-Platz 1
+!      D-14109 Berlin
+!      Germany
+!
+!      Author Michael Scheer, Michael.Scheer@Helmholtz-Berlin.de
+!
+! -----------------------------------------------------------------------
+!
+!    This program is free software: you can redistribute it and/or modify
+!    it under the terms of the GNU General Public License as published by
+!    the Free Software Foundation, either version 3 of the License, or
+!    (at your option) any later version.
+!
+!    This program is distributed in the hope that it will be useful,
+!    but WITHOUT ANY WARRANTY; without even the implied warranty of
+!    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!    GNU General Public License for more details.
+!
+!    You should have received a copy (wave_gpl.txt) of the GNU General Public
+!    License along with this program.
+!    If not, see <http://www.gnu.org/licenses/>.
+!
+!    Dieses Programm ist Freie Software: Sie koennen es unter den Bedingungen
+!    der GNU General Public License, wie von der Free Software Foundation,
+!    Version 3 der Lizenz oder (nach Ihrer Option) jeder spaeteren
+!    veroeffentlichten Version, weiterverbreiten und/oder modifizieren.
+!
+!    Dieses Programm wird in der Hoffnung, dass es nuetzlich sein wird, aber
+!    OHNE JEDE GEWAEHRLEISTUNG, bereitgestellt; sogar ohne die implizite
+!    Gewaehrleistung der MARKTFAEHIGKEIT oder EIGNUNG FueR EINEN BESTIMMTEN ZWECK.
+!    Siehe die GNU General Public License fuer weitere Details.
+!
+!    Sie sollten eine Kopie (wave_gpl.txt) der GNU General Public License
+!    zusammen mit diesem Programm erhalten haben. Wenn nicht,
+!    siehe <http://www.gnu.org/licenses/>.
+!
+!******************************************************************************
+*KEND.
+
+      integer istat,lun
+
+      character(*) file
+      logical lexist,isopen
+
+      istat=-1
+
+      inquire(file=file,exist=lexist)
+
+      if (lexist.eqv..false.) then
+        istat=1
+        return
+      endif
+
+      lun=1234567
+      itry=0
+1     itry=itry+1
+      lun=lun+1
+      inquire(unit=lun,opened=isopen)
+      if (itry.gt.10) then
+        istat=2
+        return
+      endif
+      if (isopen) goto 1
+
+      open(unit=lun,file=file,status='old')
+      close(lun,status='delete')
+
+      istat=0
+
+      return
+      end
+*CMZ :  4.01/05 12/01/2024  18.00.46  by  Michael Scheer
+*-- Author :    Michael Scheer   11/11/2023
+      subroutine util_cft_2d(nx,ny,arin,aiin,arout,aiout,isn)
+      implicit none
+
+      integer, parameter :: maxfp=23,maxpp=209
+
+      integer :: nx,ny,np(maxpp),maxf=maxfp,maxp=maxpp,isn,ksn
+      double precision :: arin(nx,ny),aiin(nx,ny),arout(nx,ny),aiout(nx,ny)
+      double precision :: at(maxfp),ck(maxfp),bt(maxfp),sk(maxfp)
+
+      if (isn.ge.0) then
+        ksn=1
+      else
+        ksn=-1 !backward transformation
+      endif
+
+      arout=arin
+      aiout=aiin
+
+      ! Check cernlib.pdf, D702
+      call util_cft(arout,aiout,nx*ny,nx,nx,ksn,maxf,maxp,at,ck,bt,sk,np)
+      if (ksn.eq.0) then
+        isn=ksn
+        return
+      endif
+      call util_cft(arout,aiout,nx*ny,ny,nx*ny,ksn,maxf,maxp,at,ck,bt,sk,np)
+      isn=ksn
+
+      return
+      end
+*CMZ :          26/09/2025  13.16.41  by  Michael Scheer
+*-- Author :    Michael Scheer   26/09/2025
+      subroutine util_e_to_stokes(e,specnor,s)
+
+      implicit none
+
+      complex(8), dimension(4,3), parameter ::
+     &  vstokes=reshape([
+     &  ( 0.0000000000000000d0,  0.0000000000000000d0),
+     &  ( 0.0000000000000000d0,  0.0000000000000000d0),
+     &  ( 0.0000000000000000d0,  0.0000000000000000d0),
+     &  ( 0.0000000000000000d0,  0.0000000000000000d0),
+     &  ( 0.0000000000000000d0,  0.0000000000000000d0),
+     &  ( 0.0000000000000000d0, -0.70710678118654746d0),
+     &  ( 0.0000000000000000d0, -0.70710678118654746d0),
+     &  ( 0.70710678118654746d0, 0.0000000000000000d0),
+     &  (-0.70710678118654746d0,-0.70710678118654746d0),
+     &  ( 0.70710678118654746d0, 0.0000000000000000d0),
+     &  (-0.70710678118654746d0, 0.0000000000000000d0),
+     &  (-0.70710678118654746d0, 0.0000000000000000d0)
+     &  ],[4,3])
+
+
+      complex(8) e(3),apolh,apolr,apoll,apol45
+      real(8) s(4),s1,s2,s3,s4,specnor
+
+      apolh=
+     &  e(1)*conjg(vstokes(1,1))
+     &  +e(2)*conjg(vstokes(1,2))
+     &  +e(3)*conjg(vstokes(1,3))
+
+      apolr=
+     &  e(1)*conjg(vstokes(2,1))
+     &  +e(2)*conjg(vstokes(2,2))
+     &  +e(3)*conjg(vstokes(2,3))
+
+      apoll=
+     &  e(1)*conjg(vstokes(3,1))
+     &  +e(2)*conjg(vstokes(3,2))
+     &  +e(3)*conjg(vstokes(3,3))
+
+      apol45=
+     &  e(1)*conjg(vstokes(4,1))
+     &  +e(2)*conjg(vstokes(4,2))
+     &  +e(3)*conjg(vstokes(4,3))
+
+      s1=dreal(apolr*conjg(apolr)+apoll*conjg(apoll))
+      s2=dreal(-s1+2.0d0*apolh*conjg(apolh))
+      s3=dreal(2.0d0*apol45*conjg(apol45)-s1)
+      s4=dreal(apolr*conjg(apolr)-apoll*conjg(apoll))
+
+      s=[s1,s2,s3,s4]*specnor
+
+      end
+*CMZ :  4.01/07 16/08/2024  09.21.28  by  Michael Scheer
+*-- Author :    Michael Scheer   15/08/2024
+*CMZ :          15/08/2024  11.02.29  by  Michael Scheer
+      subroutine util_fold_gauss_lin_2d(nx,ny,x,y,fin,rnsigx,sigx,rnsigy,sigy,fold)
+
+      implicit none
+
+      integer ix,iy,nx,ny
+
+      real*8 fin(nx,ny),x(nx),y(ny),sigx,sigy,fold(nx,ny),rnsigx,rnsigy,
+     &  fxf(nx,ny),f(max(nx,ny)),fg(max(nx,ny)),ws1(max(nx,ny)),ws2(max(nx,ny))
+
+      do iy=1,ny
+        f(1:nx)=fin(1:nx,iy)
+        if (sigx.gt.0.0d0) then
+          call util_fold_function_gauss_lin(nx,x,f,sigx,rnsigx,fg,ws1,ws2)
+          fxf(1:nx,iy)=fg(1:nx)
+        else
+          fxf(1:nx,iy)=fin(1:nx,iy)
+        endif
+      enddo
+
+      do ix=1,nx
+        if (sigy.gt.0.0d0) then
+          f(1:ny)=fxf(ix,1:ny)
+          call util_fold_function_gauss_lin(ny,y,f,sigy,rnsigy,fg,ws1,ws2)
+          fold(ix,1:ny)=fg(1:ny)
+        else
+          fold(ix,1:ny)=fxf(ix,1:ny)
+        endif
+      enddo
+
+      return
+      end
+*CMZ :  4.02/00 06/03/2025  18.47.11  by  Michael Scheer
+*CMZ :  4.01/07 23/08/2024  14.52.21  by  Michael Scheer
+*CMZ : 00.00/15 07/12/2012  20.04.19  by  Michael Scheer
+*-- Author :    Michael Scheer   06/12/2012
+      subroutine util_fold_gauss_2d(nx,ny,x,y,f,sigx,rnsigx,sigy,rnsigy,fg,ispline,istat)
+
+c Folding of f(x(ix),y(iy)) with a 2D Gaussian.
+c The Gaussian is considered from -rnsig*sig -> +rnsig*sig
+C IT'S ONLY CORRECT FOR X,Y FAR ENOUGH FROM THE EDGES!!
+
+c Dimensions f(nx,ny), fg(nx,ny)
+
+      implicit none
+
+      double precision, dimension(:), allocatable :: wf,wfg,w1,w2,w3,w4,coef
+
+      double precision
+     &  sigx,rnsigx,sigy,rnsigy,x(nx),y(ny),f(nx,ny),fg(nx,ny)
+
+      integer nx,ny,istat,ix,iy,ispline
+      integer :: nallox=0,nalloy=0
+
+      save
+
+      if (2.0d0*rnsigx*sigx.ge.x(nx)-x(1).or.2.0d0*rnsigy*sigy.ge.y(ny)-y(1)) then
+        istat=-1
+        fg=0.0d0
+        return
+      endif
+
+      if (ispline.eq.0) then
+        call util_fold_gauss_lin_2d(nx,ny,x,y,f,rnsigx,sigx,rnsigy,sigy,fg)
+        istat=0
+        return
+      endif
+
+      if (nx.gt.0.and.istat.lt.0) deallocate(wf,wfg,w1,w2,w3,w4,coef)
+
+      istat=0
+      fg=0.0d0
+
+      if (nx.lt.3.or.ny.lt.3) then
+        istat=-1
+        return
+      endif
+
+      if (nx.gt.nallox.or.ny.gt.nalloy) then
+        if (nx.eq.0) deallocate(wf,wfg,w1,w2,w3,w4,coef)
+        allocate(wf(max(nx,ny)))
+        allocate(wfg(max(nx,ny)))
+        allocate(w1(max(nx,ny)))
+        allocate(w2(max(nx,ny)))
+        allocate(w3(max(nx,ny)))
+        allocate(w4(max(nx,ny)))
+        allocate(coef(max(nx,ny)))
+        nallox=nx
+        nalloy=ny
+      endif
+
+      do iy=1,ny
+        wf=f(1:nx,iy)
+        call util_fold_function_gauss(nx,x,wf,sigx,rnsigx,wfg,coef,w1,w2,w3,w4)
+        fg(1:nx,iy)=wfg(1:nx)
+      enddo !iy
+
+      do ix=1,nx
+        wf=fg(ix,1:ny)
+        call util_fold_function_gauss(ny,y,wf,sigy,rnsigy,wfg,coef,w1,w2,w3,w4)
+        fg(ix,1:ny)=wfg(1:ny)
+      enddo !iy
+
+      return
+      end
+*CMZ :          14/02/2026  08.46.53  by  Michael Scheer
+*-- Author :    Michael Scheer   05/01/2026
+      subroutine util_linear_inter_4d_real(nx,ny,nz,nt,xa,ya,za,ta,fa,x,y,z,t,f,istat)
+
+      implicit none
+
+      integer :: istat,nx,ny,nz,iz1,iz2,ix1,ix2,iy1,iy2,it1,it2,nt,ix,iy,iz,it
+
+      real :: xa(nx),ya(ny),za(nz),ta(nt),x,y,z,t,fa(nx,ny,nz,nt),
+     &  dz,dx,dy,dt,f,wx1,wy1,wz1,wt1,wx2,wy2,wz2,wt2,w(2,2,2,2)
+
+      istat=0
+
+      if (nx.gt.1) then
+        dx=xa(2)-xa(1)
+        ix1=int((x-xa(1))/dx)+1
+        if (ix1.ge.nx) then
+          ix1=nx-1
+        else if (ix1.lt.1) then
+          ix1=1
+        endif
+        ix2=ix1+1
+        wx2=(x-xa(ix1))/dx
+      else
+        wx2=0.0
+      endif
+
+      if (ny.gt.1) then
+        dy=ya(2)-ya(1)
+        iy1=int((y-ya(1))/dy)+1
+        if (iy1.ge.ny) then
+          iy1=ny-1
+        else if (iy1.lt.1) then
+          iy1=1
+        endif
+        iy2=iy1+1
+        wy2=(y-ya(iy1))/dy
+      else
+        wy2=0.0
+      endif
+
+      if (nz.gt.1) then
+        dz=za(2)-za(1)
+        iz1=int((z-za(1))/dz)+1
+        if (iz1.ge.nz) then
+          iz1=nz-1
+        else if (iz1.lt.1) then
+          iz1=1
+        endif
+        iz2=iz1+1
+        wz2=(z-za(iz1))/dz
+      else
+        wz2=0.0
+      endif
+
+      if (nt.gt.1) then
+        dt=ta(2)-ta(1)
+        it1=int((t-ta(1))/dt)+1
+        if (it1.ge.nt) then
+          it1=nt-1
+        else if (it1.lt.1) then
+          it1=1
+        endif
+        it2=it1+1
+        wt2=(t-ta(it1))/dt
+      else
+        wt2=0.0
+      endif
+
+      wx1=1.0-wx2
+      wy1=1.0-wy2
+      wz1=1.0-wz2
+      wt1=1.0-wt2
+
+      w(1,1,1,1)=wx1*wy1*wz1*wt1
+      w(2,1,1,1)=wx2*wy1*wz1*wt1
+      w(1,2,1,1)=wx1*wy2*wz1*wt1
+      w(2,2,1,1)=wx2*wy2*wz1*wt1
+      w(1,1,2,1)=wx1*wy1*wz2*wt1
+      w(2,1,2,1)=wx2*wy1*wz2*wt1
+      w(1,2,2,1)=wx1*wy2*wz2*wt1
+      w(2,2,2,1)=wx2*wy2*wz2*wt1
+
+      w(1,1,1,2)=wx1*wy1*wz1*wt2
+      w(2,1,1,2)=wx2*wy1*wz1*wt2
+      w(1,2,1,2)=wx1*wy2*wz1*wt2
+      w(2,2,1,2)=wx2*wy2*wz1*wt2
+      w(1,1,2,2)=wx1*wy1*wz2*wt2
+      w(2,1,2,2)=wx2*wy1*wz2*wt2
+      w(1,2,2,2)=wx1*wy2*wz2*wt2
+      w(2,2,2,2)=wx2*wy2*wz2*wt2
+
+      f=0.0
+      do ix=1,2
+        do iy=1,2
+          do iz=1,2
+            do it=1,2
+              f=f+fa(ix,iy,iz,it)*w(ix,iy,iz,it)
+            enddo
+          enddo
+        enddo
+      enddo
+
       end

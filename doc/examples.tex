@@ -1,0 +1,283 @@
+
+%+PATCH,//BRILL/TEX
+%+DECK,examples,T=LATEX.
+
+\renewcommand*\thesection{\Roman{section}}
+\section{Examples}
+
+There exsists  in the \gti{input} directory a file for every given example.
+
+You may copy this file to
+
+\cbox{.pybrill\_last.dat}
+
+in the working directory, start \pB and trigger the calculations
+by pressing \gti{Brilliance/Calculate} or \gtie{Spectra/Calculate}.
+However, it is recommended to start with the first example and use
+\git{Set-Up} to preceed to the next example.
+
+\subsection{Basic Beam Electron Monte-Carlo}
+
+\begin{figure}[htb]
+   \centering
+   \includegraphics[width=0.55\textwidth]
+   {pictures/ex1\_setup.png}
+   \vspace*{-0.2cm}
+   \caption{\gti{Set-Up/Spectra} for example 1}
+   \label{ex1fig1}
+\end{figure}
+
+Before we start, we clean up the working directory to have a well defined, reproducable
+setting:
+
+\cbox{
+rm .pybrill\_last.dat\\
+rm urad\_phase.bun\\
+rm urad\_phase.fld\\
+rm urad\_phase.flx\\
+rm urad\_phase.geo\\
+rm urad\_phase.nor\\
+rm urad\_phase.pin\\
+rm urad\_phase.run
+}
+
+We start \pBe, press \gti{Set-Up}, and set:
+
+\cbox{
+Nelec = 1000\\
+Number of Photon Energies = 11\\
+Min. Photon Energy = 695.0\\
+Max. Photon Energy = 705.0 \\
+Width of Pinhole = 1.0 \\
+Height of Pinhole = 1.0
+}
+
+We close the menu and click
+
+\cbox{Spectra/Calculate}
+
+We see, that the calculations take about a minute, depending on your
+computer.
+
+\cbox{Spectra/Plot/Flux}
+
+\begin{figure}[htb]
+   \centering
+   \includegraphics[width=0.5\textwidth]
+   {pictures/ex1\_flx.pdf}
+   \vspace*{-0.2cm}
+   \caption{\gti{Flux spectrum}}
+   \label{ex1fig2}
+\end{figure}
+
+The flux spectrum we see, stems from 1000 electrons randomly chosen in
+there phase-space. Thus, the result will probably change, when we
+rerun the calculations. However, in the set-up you find an option to
+fix the starting seed of the random number generator. This allows to
+reproduce results of a program run.
+
+We have a look on the flux-density distribution in the pinhole (Fig.
+\ref{ex1fig2}:
+
+\cbox{Spectra/Plot/Distribution in Pinhole/Stokes/S0}
+
+\begin{figure}[htb]
+   \centering
+   \includegraphics[width=0.5\textwidth]
+   {pictures/ex1\_scat2d.pdf}
+   \vspace*{-0.2cm}
+   \caption{\gti{Flux spectrum, plotted with option 'scat2d'}}
+   \label{ex1fig3}
+\end{figure}
+
+\begin{figure}[htb]
+   \centering
+   \includegraphics[width=0.5\textwidth]
+   {pictures/ex1\_inter.pdf}
+   \vspace*{-0.2cm}
+   \caption{\gti{Flux spectrum, plotted with option 'inter'}}
+   \label{ex1fig4}
+\end{figure}
+
+We change the plotting options by selecting:
+
+\cbox{Spectra/Plotting Options}
+
+and choosing 'inter' and plot the distribution again
+(Fig. \ref{ex1fig3}
+).
+
+\subsection{Combining Beam Electron and Observation Point Monte-Carlo}
+
+For a large number of electrons and many grid points, the calculation
+time can increase drastically. To speed up the calculations of the
+flux through the pinhole,
+we select in \gti{Set-Up/Spectra}
+
+\cbox{
+Nelec = 100000\\
+Each n\_th electron is recorded = 100 \\
+Number of Photons Energies = 1}
+
+We close the menu and start the calculations.
+
+\begin{figure}[htb]
+   \centering
+   \includegraphics[width=0.5\textwidth]
+   {pictures/ex2\_flux.pdf}
+   \vspace*{-0.2cm}
+   \caption{\gti{Flux through pinhole with one sigma confidence level}}
+   \label{ex2flux}
+\end{figure}
+
+Now, we only have to wait some seconds due to
+
+\cbox{Number of Photons Energies = 1}
+
+In this mode, for each electron a single observation point is
+randomly choosen in the pinhole. We see that flux spectrum shows only small statistical
+uncertainty (Fig. \ref{ex2flux}).
+
+\begin{figure}[htb]
+   \centering
+   \includegraphics[width=0.5\textwidth]
+   {pictures/ex2\_fdpin.pdf}
+   \vspace*{-0.2cm}
+   \caption{\gti{Flux-density in pinhole, plotted with option 'boxes'}}
+   \label{ex2fdpin}
+\end{figure}
+
+However, when we look at the distribution of the flux-density in the
+pinhole, we see clearly fluctions due to this special Monte-Carlo mode (Fig.
+\ref{ex2fdpin}).
+
+But in many cases, only the spetra of the flux, the flux-density, or
+the profiles of the distributions (Fig. \ref{ex2fdprof}) are of interest.
+
+\begin{figure}[htb]
+   \centering
+   \includegraphics[width=0.5\textwidth]
+   {pictures/ex2\_fdprof.pdf}
+   \vspace*{-0.2cm}
+   \caption{\gti{Profile of flux-density in pinhole}}
+   \label{ex2fdprof}
+\end{figure}
+
+Also the reduced number of sampled
+electrons speeds up the calculations, since the I/O is reduced.
+
+\begin{figure}[htb]
+%   \vspace*{-2.5cm}
+   \centering
+   \includegraphics[width=0.5\textwidth]
+   {pictures/ex2\_zzp.pdf}
+   \vspace*{-0.2cm}
+   \caption{
+   \gti{Horizontal phase-space of beam electrons sample}}
+   \label{ex2zzp}
+\end{figure}
+
+To check the phase-space a sample of 1000 electrons is certainly
+sufficient (Fig. \ref{ex2zzp}).
+
+\subsection{Back Propagation of the Radiation to the Source Plane}
+
+To calculate the source size, we propagate the radiation back to the
+source plane by selecting in \gti{Set-Up/Spectra}\\
+
+\cbox{
+Nelec = 1\\
+Number of Photons Energies = 0 \\
+Width of Pinhole = 2.0 \\
+Height of Pinhole = 2.0 \\
+Number of hori. points = 101 \\
+Number of vert. points = 101 \\
+Propagate radiation field back to origin = 1 \\
+Width of Pinhole in Plane = 0.1 \\
+Height of Pinhole in Plane = 0.1 \\
+Number of hori. points in Plane = 51 \\
+Number of vert. points in Plane = 51
+}\\
+
+and starting the calculations. Then we switch on the statistic option in
+the menu
+
+\cbox{Spectra/Plotting options}
+
+and plot the horizontal cut of the Stokes
+$S_0$ in the menu
+
+\cbox{Plot/Distributions of Propagated Fields}
+
+\begin{figure}[htb]
+   \centering
+   \includegraphics[width=0.5\textwidth]
+   {pictures/ex3\_pinhcut.pdf}
+   \vspace*{-0.2cm}
+   \caption{
+   \gti{Horizontal cut of $S_0$ in observation plane}}
+   \label{ex3pinh}
+\end{figure}
+
+For the product of the RMS values of the two plots
+
+\begin{eqnarray*}
+\sigma_r \times \sigma_{r'} &=&
+\frac{\lambda}{4 \pi}
+\end{eqnarray*}
+	
+we find
+
+\begin{figure}[htb]
+   \centering
+   \includegraphics[width=0.5\textwidth]
+   {pictures/ex3\_prophcut.pdf}
+   \vspace*{-0.2cm}
+   \caption{
+   \gti{Horizontal cut of $S_0$ in source plane}}
+   \label{ex3proph}
+\end{figure}
+
+\begin{eqnarray*}
+0.1074 ~mm \times 0.01846 ~mm / 10~m &=&
+0.1982604 ~nm
+\end{eqnarray*}
+
+We have $\lambda = 1.77 ~nm$ for $700 ~eV$, thus
+
+\begin{eqnarray*}
+\frac{1.77~nm}{4 \pi} &=& 0.141 ~ nm
+\end{eqnarray*}
+
+which underestimates the numerical value by a factor of $\sqrt{2}$.
+
+\subsection{Generating Photons from Undulator Source for Ray-tracing}
+
+\PyB uses the cross product of the calculated electric and magnetic
+fields to generate photons as input for ray-tracing codes.
+
+\begin{figure}[htb]
+   \centering
+   \includegraphics[width=0.5\textwidth]
+   {pictures/ex4\_ztz.pdf}
+   \vspace*{-0.2cm}
+   \caption{
+   \gti{Horizontal phase-space of generated photons}}
+   \label{ex4ztz.pdf}
+\end{figure}
+
+Due to the applied algorithm
+in this examples the photons are generated for an exact beam energy,
+i.e. without energy-spread.
+
+To generate photons for electrons with energy-spread the program must
+sample the beam energy in discrete steps. The number of steps can
+be set in the set-up menu.
+
+Note, if you run the program for another beam energy by hand, to see
+the effect of beam energy deviations, make shure that the undulater is
+set-up such that the fields are not adjusted according to the actual
+energy,
+as it is done, when a fixed harmonic is selected in the undulator
+set-up menu.
+

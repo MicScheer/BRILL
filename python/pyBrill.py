@@ -1565,9 +1565,10 @@ def _nPlot():
 
 
   global FillColor
-  print("_Plot!")
-  breakpoint()
-  print(WavesMode)
+  #print("_Plot!")
+  #reakpoint()
+  #print(WavesMode)
+
   if not len(Nhead):
     nError("  No Ntuple defined so far!  ")
     return
@@ -1686,6 +1687,23 @@ import matplotlib.pyplot as plt
 import m_hbook as m
 from m_hbook import *
 
+m.WaveFilePrefix = ''
+
+def _combomod3d(ev):
+  global combomod3d
+  setmode3d(combomod3d.get())
+#enddef
+
+
+#+seq,pybrillalias.
+
+def _saveplot(prefix='pyBrill_plot_'):
+#  global WaveFilePrefix
+  m.WaveFilePrefix = prefix
+  showplot(kpdf=1)
+  m.WaveFilePrefix = ''
+#enddef _saveplot()
+
 global Kdebug
 # not zero: Debugging with debugbreak(...)
 # Kdebug = 2: Run urad_phase_debug.exe under gdb
@@ -1696,6 +1714,9 @@ if fexist('.pybrill.debug'):
 else: Kdebug = 0
 #endif
 
+global IEbeam
+IEbeam = -1
+
 global ClearCanvas
 ClearCanvas = 0
 set_ClearCanvas(ClearCanvas)
@@ -1704,7 +1725,7 @@ def _clear_Canvas(kclear=0):
   global Dsetup, ClearCanvas
   if kclear or Dsetup['ClearCanvas'][1]:
     window_clear()
-    showplot(False)
+    plt.show(block=False)
     ClearCanvas = 0
     Dsetup['ClearCanvas'][1] = ClearCanvas
     set_ClearCanvas(ClearCanvas)
@@ -2046,9 +2067,10 @@ Disph,Dispph,Dispv,Disppv,Pherror,Ifixseed,ScreenWidth, ScreenHeight,Vsetup_Plot
 
 global Esel
 global BeamPar,UnduPar,SpecPar,BrillPar,PlotPar
+global nSigE
 
 
-global EbeamMin, EbeamMax, dEbeam, nEfold
+global EbeamMin, EbeamMax, dEbeam, nEfold, EbeamList
 
 global Unamelist,Useed
 global LastPlot; LastPlot = ['','']
@@ -2130,7 +2152,12 @@ def _spec_key_press(ev):
       if IEsel < 1: IEsel = Nepho
     #endif
 
-    Esel = EphMin + (IEsel-1)*dE
+    if Nepho > 1:
+      Esel = EphMin + (IEsel-1)*dE
+    else:
+      Esel = (EphMin + EphMax) / 2.
+    #endif
+
     S_IEsel.set(IEsel)
     S_Esel.set(Esel)
 
@@ -2151,8 +2178,10 @@ def _set_uname():
   'Harm','Beffv','Beffh','Ianalytic','Nepho','EphMin','EphMax','Espread','BetaH', \
   'BetaV','EmitH','EmitV','Disph','Dispph','Dispv','Disppv','Modeph','Pherror', \
   'IFieldProp','PinXprop','PinWprop','PinHprop','NpinYprop','NpinZprop', \
-  'IfixPhase','PhGshift','IWigner','NyTheWig','TheYWig','NzTheWig','TheZWig', \
-  'nEfold','NoSplineEfold']
+  'PhGshift','IWigner','NyTheWig','TheYWig','NzTheWig','TheZWig', \
+  'nEfold','NoSplineEfold', \
+  'nElecAmpGenPho','iGenPho','iPhaseSpace','Npho','ModeRan', \
+  ]
 
   Useed = [376577121, 52147852, -1273034815, -1963249100, 1195262240, \
   -1718716574, -224354675, 432587481, 1692325775, 1934175653, \
@@ -2173,7 +2202,7 @@ def _set_uname():
   Dsetup['BunchCharge'] = ['Not yet',0.0]
   Dsetup['Bunchlen'] = ['Not yet',0.0]
   Dsetup['BunchCharge'] = ['Not yet',0.0]
-  Dsetup['Ihbunch'] = ['Each Ihbunch_th bunch is recorded',1]
+  Dsetup['Ihbunch'] = ['Each n_th electron is recorded',1]
   Dsetup['Modebunch'] = ['Not yet',0]
   Dsetup['Modeph'] = ['Mode for phase-error',0]
   Dsetup['Noranone'] = ['No random change for first e-',1]
@@ -2182,13 +2211,25 @@ def _set_uname():
   Dsetup['PhGshift'] = ['Global phase shift. 9999.: Hori. amplitude is zero for (PinX,PinY,PinZ)) ',9999.]
   Dsetup['GlobPhaseProp'] = ['Global phase shift. of prop. fields. 9999.: Hori. amplitude is zero for (PinX,PinY,PinZ)) ',0.0]
 
+  #reakpoint()
   Dsetup['IWigner'] = ['Calculate Wigner Distributions [-4,-3,-2,-1,0,1]',0]
-  Dsetup['NyTheWig'] = ['Number of vert. angle steps',51]
-  Dsetup['TheYWig'] = ['Vert. angle range',0.05]
-  Dsetup['NzTheWig'] = ['Number of hori. angle steps',51]
-  Dsetup['TheZWig'] = ['Hori. angle range',0.05]
-  Dsetup['nEfold'] = ['Number of E-spread steps',0]
-  Dsetup['NoSplineEfold'] = ['Suppress splines for E-spread folding',0]
+  Dsetup['IWigNoFile'] = ['   Wigner Distribution is not written to file [0,1]',0]
+  Dsetup['NyTheWig'] = ['   Number of vert. angle steps',51]
+  Dsetup['TheYWig'] = ['   Vert. angle range',0.05]
+  Dsetup['NzTheWig'] = ['   Number of hori. angle steps',51]
+  Dsetup['TheZWig'] = ['   Hori. angle range',0.05]
+  Dsetup['NoSplineEfold'] = ['   Suppress splines for E-spread folding',0]
+  Dsetup['iGenPho'] = ['   Generate photons from Wigner-Distribution [-1,0,1]',0]
+  #reakpoint()
+  Dsetup['iPhaseSpace'] = ['   Pattern of five bits to generate photons (Option iGenPho)',1111]
+
+  Dsetup['nElecAmpGenPho'] = ['Number of electrons to generated photons from field amplitude',0]
+  Dsetup['Npho'] = ['Number of photons per electron to be generated',1]
+  Dsetup['ModeRan'] = ['All grid points (zero) or Npho random grid points (not zero)','1']
+  Dsetup['nEfold'] = ['Number of E-spread steps for Wigner Dist. and photon generation',1]
+  #Dsetup[''] = ['',]
+
+  Dsetup['Statistic'] = ['Statistic on plots',getstat()]
 
 #enddef _set_uname()
 
@@ -2202,65 +2243,74 @@ global Kellip
 
 debugbreak('Main 1')
 
-BeamPar = ['Ebeam','Curr','EmitH','EmitV','BetaH','BetaV','SigE', \
+BeamPar = ['Ebeam','Curr','EmitH','EmitV','BetaH','BetaV','Espread', \
 'Disph','Dispph','Dispv','Disppv']
 
 UnduPar = ['Perlen','Nper','Beffv','Beffh','Ianalytic','Nharm','Harmonic','Shift']
 
 BrillPar = ['nKvals','Kmin','Kmax','Nmin','Nmax','Mode']
 
-SpecPar = ['Nelec','Modepin','Noranone','ModeSphere','Nepho','EphMin','EphMax','PinX', \
+SpecPar = ['Mthreads','Nelec','Ihbunch','Modepin','Noranone','ModeSphere','Nepho','EphMin','EphMax','PinX', \
 'PinY','PinZ','PinW','PinH','NpinZ','NpinY','Step','Pherror', \
 'IFieldProp','PinXprop','PinWprop','PinHprop','NpinYprop','NpinZprop', \
-'IfixPhase','PhGshift','IWigner','NyTheWig','TheYWig','NzTheWig','TheZWig','nEfold','NoSplineEfold', \
-'Ifixseed']
+'IfixPhase','PhGshift','IWigner','IWigNoFile','NyTheWig','TheYWig','NzTheWig','TheZWig', \
+'NoSplineEfold', 'iGenPho','iPhaseSpace','nElecAmpGenPho','Npho','ModeRan','nEfold','Ifixseed']
 
-PlotPar = ['Mode3d','Markersize','Linewidth','Linecolor','NxZones','NyZones','ClearCanvas']
+PlotPar = ['Mode3d','Markersize','Linewidth','Linecolor','NxZones','NyZones','ClearCanvas','Statistic']
 
 global LastSetUp_Esel
 LastSetUp_Esel = 0
+
+def _ebeamlist():
+
+  global Dsetup, EbeamMin, EbeamMax, dEbeam, nEfold, EbeamList, Ebeam, IEbeam, nSigE
+
+  nEfold = int(Dsetup['nEfold'][1])
+
+  EbeamMin = float(Dsetup['EbeamMin'][1])
+  EbeamMax = float(Dsetup['EbeamMax'][1])
+
+  if nEfold > 1:
+    dEbeam = (EbeamMax-EbeamMin)/(nEfold-1)
+  else:
+    dEbeam = 0
+  #endif
+
+  if Ebeam <= 0.0:
+    IEbeam = 1
+    Ebeam = EphMin
+  elif Ebeam > EbeamMax:
+    IEbeam = nEfold
+    Ebeam = EbeamMax
+  #endif
+
+  if nEfold > 1:
+    IEbeam = int((Ebeam-EbeamMin)/dEbeam)+1
+    if IEbeam <=0:
+      IEbeam = 1
+    elif IEbeam > nEfold:
+      IEbeam = nEfold
+    #endif
+  else:
+    IEbeam = 1
+  #endif
+
+  EbeamList = []
+
+  for ie in range(nEfold):
+    EbeamList.append(EbeamMin + ie * dEbeam)
+  #endfor
+
+  Ebeam = EbeamMin + (IEbeam-1)*dEbeam
+
+  S_IEbeam.set(IEbeam)
+#enddef _ebeamlist()
 
 def webeam(ev):
 
   global Canbeam, Wbeam
 
-  global Ebeam,IEbeam,S_Ebeam,S_IEbeamsel,nEfold,dEbeam
-
-  nEfold = int(Dsetup['nEfold'][1])
-  EbeamMin = float(Dsetup['EbeamMin'][1])
-  EbeamMax = float(Dsetup['EbeamMax'][1])
-
-  Ebeam = ev.xdata
-
-  if nEfold > 1:
-    dEbeam = (EBeamMax-EBeamMin)/(nEfold-1)
-  else:
-    dEbeam = 0
-  #endif
-
-  if Ebeamsel <= 0.0:
-    IEbeamsel = 1
-    Ebeamsel = EphMin
-  elif Ebeamsel > EbeamMax:
-    IEbeamsel = nEfold
-    Ebeamsel = EbeamMax
-  #endif
-
-  if nEfold > 1:
-    IEbeamsel = int((Ebeamsel-EbeamMin)/dEbeam)+1
-    if IEbeamsel <=0:
-      IEbeamsel = 1
-    elif IEbeamsel > nEfold:
-      IEbeamsel = nEfold
-    #endif
-  else:
-    IEbeamsel = 1
-  #endif
-
-  Ebeamsel = EbeamMin + (IEbeamsel-1)*dEbeam
-
-  S_IEbeamsel.set(IEbeamsel)
-  S_Ebeamsel.set(Esbeamel)
+  _ebeamlist()
 
   Webeam.canvas.mpl_disconnect(CanWebeam)
   window_close()
@@ -2305,6 +2355,11 @@ def _wesel(ev):
   #endif
 
   Esel = EphMin + (IEsel-1)*dE
+  if Nepho > 1:
+    Esel = EphMin + (IEsel-1)*dE
+  else:
+    Esel = (EphMin + EphMax) / 2.
+  #endif
 
   S_IEsel.set(IEsel)
   S_Esel.set(Esel)
@@ -2336,6 +2391,7 @@ def _sel_Esel():
 
   global nsto,nfld,nflx,nbun,Esel
   global BeamPar,UnduPar,SpecPar,BrillPar,PlotPar
+  global nSigE
 
 
   global CanWesel, Wesel,nEfold
@@ -2349,6 +2405,7 @@ def _sel_Esel():
 
   Nepho = int(Dsetup['Nepho'][1])
   nEfold = int(Dsetup['nEfold'][1])
+
   iefold = int(nEfold/2) + 1
 
   EphMin = float(Dsetup['EphMin'][1])
@@ -2364,13 +2421,16 @@ def _sel_Esel():
   wm = Wmaster.winfo_width()
   hm = Wmaster.winfo_height()
 
-  if xm <= ScreenWidth/2:
-    window_geometry(str(int(wm*0.75)) + 'x' + str(int(hm*0.75)) + '+' + str(int(xm+wm*1.1)) + '+' + str(int(ym-hm*0.1)))
-  else:
-    window_geometry(str(int(wm*0.75)) + 'x' + str(int(hm*0.75)) + '+' + str(int(xm-wm*1.1)) + '+' + str(int(ym-hm*0.1)))
-  #endif
+#  if xm <= ScreenWidth/2:
+#    window_geometry(str(int(wm*0.75)) + 'x' + str(int(hm*0.75)) + '+' + str(int(xm+wm*1.1)) + '+' + str(int(ym-hm*0.1)))
+#  else:
+#    window_geometry(str(int(wm*0.75)) + 'x' + str(int(hm*0.75)) + '+' + str(int(xm-wm*1.1)) + '+' + str(int(ym-hm*0.1)))
+#  #endif
 
-  optnstat()
+  window_geometry(str(int(wm*0.75)) + 'x' + str(int(hm*0.75)) + '+' + str(int(wm*0.2)) + '+' + str(int(hm*0.2)))
+
+  kstat = getstat()
+  #ptnstat()
 
   if Modepin != 0:
     zone(1,1)
@@ -2406,13 +2466,13 @@ def _sel_Esel():
   #endif
 
   if Nepho > 1:
-    npl(nflx,"egam:s0",plopt='line')
+    npl(nflx,"egam:s0*g",plopt='line')
   else:
-    npl(nflx,"egam:s0")
+    npl(nflx,"egam:s0*g")
   #endif
 
   if Nepho < 100:
-    npl(nflx,"egam:s0",plopt='markersame')
+    npl(nflx,"egam:s0*g",plopt='markersame')
 
   xtit="photon energy [eV]"
 
@@ -2432,12 +2492,43 @@ def _sel_Esel():
   Vsetup_Plot[3][1][1] = lco
   setmarkersize(mso)
 
+  #ptstat(kstat)
+
 #enddef _sel_Esel()
+
+def _SetUpIn_Ebeam(event,kvar):
+  global LastSetUp_IEbeam
+  LastSetUp_IEbeam = [event,kvar]
+#enddef _SetUpInSpec(event,kvar)
 
 def _SetUpIn_Esel(event,kvar):
   global LastSetUp_Esel
   LastSetUp_Esel = [event,kvar]
 #enddef _SetUpInSpec(event,kvar)
+
+def _SetUpOut_Ebeam(event,kvar):
+
+  global SetUp_Ebeam,LastSetUp_IEbeam, IEbeam, S_IEbeam, nEfold
+
+  ev = LastSetUp_IEbeam[0].widget
+  val = ev.get()
+  if len(val.split('.')) > 1:
+    val = float(val)
+  else:
+    val = int(val)
+  #endif
+
+  if kvar == 1:
+    IEbeam = int(S_IEbeam.get())
+    if IEbeam <=0:
+      IEbeam = 1
+    elif IEbeam > nEfold:
+      IEbeam = nEfold
+    #endif
+  #endif
+
+  S_IEbeam.set(IEbeam)
+#enddef _SetUpOut_Ebeam(event,kvar)
 
 def _SetUpOut_Esel(event,kvar):
 
@@ -2463,14 +2554,19 @@ def _SetUpOut_Esel(event,kvar):
   #endif
 
   if kvar == 1:
+
     IEsel = int(S_IEsel.get())
+
     if IEsel <=0:
       IEsel = 1
     elif IEsel > Nepho:
       IEsel = Nepho
     #endif
+
   elif kvar == 2:
+
     Esel = float(S_Esel.get())
+
     if Esel <= 0.0:
       IEsel = 1
       Esel = EphMin
@@ -2478,6 +2574,13 @@ def _SetUpOut_Esel(event,kvar):
       IEsel = Nepho
       Esel = EphMax
     #endif
+
+    if Nepho > 1:
+      dE = (EphMax-EphMin)/(Nepho-1)
+    else:
+      dE = 0
+    #endif
+
     if Nepho > 1:
       IEsel = int((Esel-EphMin)/dE)+1
       if IEsel <=0:
@@ -2488,11 +2591,33 @@ def _SetUpOut_Esel(event,kvar):
     else:
       IEsel = 1
     #endif
+
   #endif
+
+  if Nepho > 1:
+    dE = (EphMax-EphMin)/(Nepho-1)
+  else:
+    dE = 0
+  #endif
+
   Esel = EphMin + (IEsel-1)*dE
+  if Nepho > 1:
+    Esel = EphMin + (IEsel-1)*dE
+  else:
+    Esel = (EphMin + EphMax) / 2.
+  #endif
+
   S_Esel.set(Esel)
   S_IEsel.set(IEsel)
-#enddef _SetUpOutSpec(event,kvar)
+
+#enddef _SetUpOut_Esel(event,kvar)
+
+def _closeSetUp_Ebeam():
+  global SetUp_Ebeam,LastSetUp_IEbeam,IEbeam,EbeamList,S_IEbeam
+  LastSetUp_IEbeam = 0
+  IEbeam = int(S_IEbeam.get())
+  SetUp_Ebeam.destroy()
+#def _closeSetUp_Ebeam
 
 def _closeSetUp_Esel():
   global SetUp_Esel,LastSetUp_Esel,IEsel,Esel,S_Esel,S_IEsel
@@ -2501,6 +2626,56 @@ def _closeSetUp_Esel():
   Esel = float(S_Esel.get())
   SetUp_Esel.destroy()
 #def _closeSetUp_Esel
+
+def _setup_ebeam():
+
+  global Dsetup
+  global Vsetup_Beam, LastSetUp_Beam,  SetUp_Beam, \
+  Vsetup_Undu, LastSetUp_Undu, SetUp_Undu, \
+  Vsetup_Brill, LastSetUp_Brill, SetUp_Brill, Vsetup_Plot, \
+  Vsetup_Spec, LastSetUp_Spec, SetUp_Spec, ScreenWidth, ScreenHeight
+
+  global Mthreads,Step,Nelec,Noranone,Icohere,Ihbunch,Bunchlen, \
+  Bunchcharge,Modebunch,PinX,PinY,PinZ,PinW,PinH,NpinY,NpinZ,modepin,modesphere, \
+  Shift,Nper,Nharm,Harm,Beffv,Beffh,Nepho,EphMin,EphMax, \
+  Disph,Dispph,Dispv,Disppv,Pherror,Ifixseed,Ianalytic
+
+  global nsto,nfld,nflx,nbun,Esel
+  global BeamPar,UnduPar,SpecPar,BrillPar,PlotPar
+  global nSigE
+
+
+
+  global Ebeam, EbeamMin, EbeamMax, dEbeam, nEfold, EbeamList
+  global SetUp_Ebeam,IEbeam,Ebeam,S_IEbeam, Espread
+
+  #reakpoint()
+
+  _ebeamlist()
+
+  SetUp_Ebeam = Toplevel()
+  SetUp_Ebeam.title('Select Beam Energy')
+  SetUp_Ebeam.attributes('-topmost',1)
+  xm = Wmaster.winfo_x()
+  ym = Wmaster.winfo_y()
+  wm = Wmaster.winfo_width()
+  hm = Wmaster.winfo_height()
+  SetUp_Ebeam.geometry('+' + str(int(xm+wm/2)) + '+' + str(int(ym+hm*0.7)))
+
+  f = Frame(SetUp_Ebeam)
+  flab = Label(f,text="Index of E_Beam (max. " + str(nEfold) + ")",font=('arial',MyLabel_font_size))
+  fent =  Entry(f,text=S_IEbeam)
+  flab.pack(side=LEFT)
+  fent.pack(side=RIGHT)
+  fent.bind('<FocusIn>',lambda event,kvar=1:_SetUpIn_Ebeam(event,kvar))
+  fent.bind('<FocusOut>',lambda event,kvar=1:_SetUpOut_Ebeam(event,kvar))
+  fent.bind('<Return>',lambda event,kvar=1:_SetUpOut_Ebeam(event,kvar))
+  f.pack(fill='x')
+
+  bClose = Button(SetUp_Ebeam,text='Close',font=MyLabel_font_size,command=_closeSetUp_Ebeam)
+  bClose.pack()
+
+#enddef _setup_ebeam()
 
 def _setup_esel():
 
@@ -2517,6 +2692,7 @@ def _setup_esel():
 
   global nsto,nfld,nflx,nbun,Esel
   global BeamPar,UnduPar,SpecPar,BrillPar,PlotPar
+  global nSigE
 
 
 
@@ -2525,15 +2701,17 @@ def _setup_esel():
   SetUp_Esel = Toplevel()
   SetUp_Esel.title('Select Photon Energy')
   SetUp_Esel.attributes('-topmost',1)
+
   xm = Wmaster.winfo_x()
   ym = Wmaster.winfo_y()
   wm = Wmaster.winfo_width()
   hm = Wmaster.winfo_height()
+
   SetUp_Esel.geometry('+' + str(int(xm+wm/2)) + '+' + str(int(ym+hm*0.7)))
 
   f = Frame(SetUp_Esel)
   flab = Label(f,text="Index of E_photon",font=('arial',MyLabel_font_size))
-  fent =  Entry(f,text=S_IEsel)
+  fent =  Entry(f,text=S_IEsel,font=('arial',MyLabel_font_size))
   flab.pack(side=LEFT)
   fent.pack(side=RIGHT)
   fent.bind('<FocusIn>',lambda event,kvar=1:_SetUpIn_Esel(event,kvar))
@@ -2558,6 +2736,49 @@ def _setup_esel():
 
 #enddef _setup_esel()
 
+def _ini_Ebeam():
+
+  global Dsetup
+  global Vsetup_Beam, LastSetUp_Beam,  SetUp_Beam, \
+  Vsetup_Undu, LastSetUp_Undu, SetUp_Undu, \
+  Vsetup_Brill, LastSetUp_Brill, SetUp_Brill, Vsetup_Plot, \
+  Vsetup_Spec, LastSetUp_Spec, SetUp_Spec, ScreenWidth, ScreenHeight
+
+  global Mthreads,Step,Nelec,Noranone,Icohere,Ihbunch,Bunchlen, \
+  Bunchcharge,Modebunch,PinX,PinY,PinZ,PinW,PinH,NpinY,NpinZ,modepin,modesphere, \
+  Shift,Nper,Nharm,Harm,Beffv,Beffh,Nepho,EphMin,EphMax, \
+  Disph,Dispph,Dispv,Disppv,Pherror,Ifixseed,Ianalytic
+
+  global nsto,nfld,nflx,nbun,Esel
+  global BeamPar,UnduPar,SpecPar,BrillPar,PlotPar
+  global nSigE
+
+
+  global Ebeam,IEbeam,S_IEbeam
+
+  Nepho = int(Dsetup['Nepho'][1])
+  EphMin = float(Dsetup['EphMin'][1])
+  EphMax = float(Dsetup['EphMax'][1])
+
+  if nexist("nbun"):
+    s0max = nflx.s0.max()
+    EphMaxS0 = nflx.query("s0=="+str(s0max)).egam.max()
+    Ebeam = EphMaxS0
+    IEbeam = int(nflx.query("abs(egam-"+str(EphMaxS0)+")<1.e-10").iegam.max())
+  else:
+    IEbeam = int((Nepho+1)/2)
+    if IEbeam > 1:
+      Ebeam = EphMin + (EphMax-EphMax)/(IEbeam-1)
+    else:
+      Ebeam = EphMin
+    #endif
+  #endif
+
+  S_IEbeam.set(IEbeam)
+
+#enddef _ini_Ebeam()
+
+
 def _ini_Esel():
 
   global Dsetup
@@ -2573,10 +2794,12 @@ def _ini_Esel():
 
   global nsto,nfld,nflx,nbun,Esel
   global BeamPar,UnduPar,SpecPar,BrillPar,PlotPar
+  global nSigE
 
 
   global Esel,IEsel,S_Esel,S_IEsel
 
+  #reakpoint()
   Nepho = int(Dsetup['Nepho'][1])
   EphMin = float(Dsetup['EphMin'][1])
   EphMax = float(Dsetup['EphMax'][1])
@@ -2593,6 +2816,18 @@ def _ini_Esel():
     else:
       Esel = EphMin
     #endif
+  #endif
+
+  if Nepho > 1:
+    dE = (EphMax-EphMin)/(Nepho-1)
+  else:
+    dE = 0
+  #endif
+
+  if Nepho > 1:
+    Esel = EphMin + (IEsel-1)*dE
+  else:
+    Esel = (EphMin + EphMax) / 2.
   #endif
 
   S_IEsel.set(IEsel)
@@ -2615,6 +2850,7 @@ def _pFdProp(key='s0'):
 
   global nsto,nfld,nflx,nbun,Esel
   global BeamPar,UnduPar,SpecPar,BrillPar,PlotPar
+  global nSigE
 
 
 
@@ -2622,18 +2858,22 @@ def _pFdProp(key='s0'):
   global LastPlot; LastPlot = ['FdProp',key]
   global nfdp
 
-  if Calculated_Spec == False or nexist("nbun") == 0 \
+  if Calculated_Spec == False or (Modepin != 0 and nexist("nbun") == 0) \
   or nexist("nfdp") == 0: _calc_spec()
+
+  spinx = str(Dsetup['PinXprop'][1] / 1000) + 'm'
 
   s0max = nfdp.s0.max()
   if np.isnan(s0max) == True: return
 
   #getzone()
-  optnstat()
+  #ptnstat()
   _set_plot_spec()
 
   keyu = key.upper()
-  keyl = key.lower()
+  keyl = key.lower() + '*g'
+
+  #reakpoint()
 
   if Esel <= 0 : _ini_Esel()
   elif Esel < EphMin :
@@ -2642,6 +2882,18 @@ def _pFdProp(key='s0'):
   elif Esel > nfld.egam.max() :
     Esel = EphMax
     IEsel = Nepho
+  #endif
+
+  if Nepho > 1:
+    dE = (EphMax-EphMin)/(Nepho-1)
+  else:
+    dE = 0
+  #endif
+
+  if Nepho > 1:
+    Esel = EphMin + (IEsel-1)*dE
+  else:
+    Esel = (EphMin + EphMax) / 2.
   #endif
 
   S_IEsel.set(IEsel)
@@ -2659,11 +2911,11 @@ def _pFdProp(key='s0'):
 
   if keyu == 'S0' or keyu == 'S1' or keyu == 'S2' or keyu == 'S3' or keyu == 'P':
 
-    if keyu == 'S0': htit = 'Distribution of S$_0$'
-    elif keyu == 'S1': htit = 'Distribution of S$_1$'
-    elif keyu == 'S2': htit = 'Distribution of S$_2$'
-    elif keyu == 'S3': htit = 'Distribution of S$_3$'
-    elif keyu == 'P': htit = 'Distribution of Power'
+    if keyu == 'S0': htit = 'Distribution at x = ' + spinx + '  S$_0$'
+    elif keyu == 'S1': htit = 'Distribution at x = ' + spinx + '  S$_1$'
+    elif keyu == 'S2': htit = 'Distribution at x = ' + spinx + '  S$_2$'
+    elif keyu == 'S3': htit = 'Distribution at x = ' + spinx + '  S$_3$'
+    elif keyu == 'P': htit = 'Distribution at x = ' + spinx + '  Power'
 
     plopt = Vsetup_Plot[0][1][1]
 
@@ -2710,24 +2962,54 @@ def _pFdProp(key='s0'):
       zunit = tunit
     #endif
     if keyu == 'S0':
-      txyz("Dens. of S$_0$ for E$_{\\gamma}$  = " + pg5(Esel) + " eV","z [mm]","y [mm]",zunit)
+      txyz("Dens. at x = " + spinx + "  of S$_0$ for E$_{\\gamma}$  = " + pg5(Esel) + " eV","z [mm]","y [mm]",zunit)
     elif keyu == 'S1':
-      txyz("Dens. of S$_1$ for E$_{\\gamma}$  = " + pg5(Esel) + " eV","z [mm]","y [mm]",zunit)
+      txyz("Dens. at x = " + spinx + "  of S$_1$ for E$_{\\gamma}$  = " + pg5(Esel) + " eV","z [mm]","y [mm]",zunit)
     elif keyu == 'S2':
-      txyz("Dens. of S$_2$ for E$_{\\gamma}$  = " + pg5(Esel) + " eV","z [mm]","y [mm]",zunit)
+      txyz("Dens. at x = " + spinx + "  of S$_2$ for E$_{\\gamma}$  = " + pg5(Esel) + " eV","z [mm]","y [mm]",zunit)
     elif keyu == 'S3':
-      txyz("Dens. of S$_3$ for E$_{\\gamma}$  = " + pg5(Esel) + " eV","z [mm]","y [mm]",zunit)
+      txyz("Dens. at x = " + spinx + "  of S$_3$ for E$_{\\gamma}$  = " + pg5(Esel) + " eV","z [mm]","y [mm]",zunit)
     elif keyu == 'P':
       xuni = 1.0 + cbp
       yuni = 1.05
       auni = 0.0
       zunit = '[W/mm$^2$]'
-      txyz("Dens. of Power for E$_{\\gamma}$  = " + pg5(Esel) + " eV","z [mm]","y [mm]",zunit)
+      txyz("Dens. at x = " + spinx + " of Power for E$_{\\gamma}$  = " + pg5(Esel) + " eV","z [mm]","y [mm]",zunit)
     #endif
 
     if type(ax) == Tax2d:
       text(xuni,yuni,tunit,halign='left',angle=auni)
     #endif
+
+  elif keyu == 'VCS0' or keyu == 'VCS1' or keyu == 'VCS2' or keyu == 'VCS3':
+
+    htit = 'Vertical Cut at x = ' + spinx + ' of S$_' + keyu[-1] + '$'
+
+    #    if Modepin != 0:
+    #      nprof(nbun,"z:" + keyl[2:],selgam)
+    #    else:
+    npl(nfdp,"y:" + keyl[2:],selgam + ' and z==0',plopt='line')
+    #    #endif
+
+    tunit = 'N$_{\\gamma}$' + '/mm$^2$/s/0.1' + '%BW/' + str(int(Curr*1000)) + "mA"
+    txyz(htit + " for E$_{\\gamma}$  = " + pg5(Esel) + " eV","y [mm]",tunit)
+
+  elif keyu == 'HCS0' or keyu == 'HCS1' or keyu == 'HCS2' or keyu == 'HCS3':
+
+    htit = 'Horizontal Cut at x = ' + spinx + ' of S$_' + keyu[-1] + '$'
+
+    #    if Modepin != 0:
+    #      nprof(nbun,"z:" + keyl[2:],selgam)
+    #    else:
+
+#    scom = "z:" + keyl[2:],selgam + ' and y==0'
+#    print(scom)
+    #reakpoint()
+    npl(nfdp,"z:" + keyl[2:],selgam + ' and y==0',plopt='line')
+    #    #endif
+
+    tunit = 'N$_{\\gamma}$' + '/mm$^2$/s/0.1' + '%BW/' + str(int(Curr*1000)) + "mA"
+    txyz(htit + " for E$_{\\gamma}$  = " + pg5(Esel) + " eV","z [mm]",tunit)
 
   elif keyu == 'EYI' or keyu == 'EYR' or keyu == 'EZR' or keyu == 'EZI':
 
@@ -2851,6 +3133,8 @@ def _pFdProp(key='s0'):
 
   #endif key
 
+  _saveplot()
+
 #enddef _pFdProp()
 
 def _pFdPin(key='s0'):
@@ -2868,23 +3152,25 @@ def _pFdPin(key='s0'):
 
   global nsto,nfld,nflx,nbun,Esel
   global BeamPar,UnduPar,SpecPar,BrillPar,PlotPar
+  global nSigE
 
 
   global Esel,IEsel,S_Esel,S_IEsel
   global LastPlot; LastPlot = ['FdPin',key]
 
-  if Calculated_Spec == False or nexist("nbun") == 0 \
+  if Calculated_Spec == False or (Modepin != 0 and nexist("nbun") == 0) \
   or nexist("nfld") == 0: _calc_spec()
 
   s0max = nflx.s0.max()
   if np.isnan(s0max) == True: return
 
   #getzone()
-  optnstat()
+  #ptnstat()
   _set_plot_spec()
 
   keyu = key.upper()
-  keyl = key.lower()
+  keyl = key.lower() + '*g'
+  keylp = key.lower() + '*g*whit'
 
   if Esel <= 0 : _ini_Esel()
   elif Esel < EphMin :
@@ -2893,6 +3179,18 @@ def _pFdPin(key='s0'):
   elif Esel > nfld.egam.max() :
     Esel = EphMax
     IEsel = Nepho
+  #endif
+
+  if Nepho > 1:
+    dE = (EphMax-EphMin)/(Nepho-1)
+  else:
+    dE = 0
+  #endif
+
+  if Nepho > 1:
+    Esel = EphMin + (IEsel-1)*dE
+  else:
+    Esel = (EphMin + EphMax) / 2.
   #endif
 
   S_IEsel.set(IEsel)
@@ -2908,37 +3206,98 @@ def _pFdPin(key='s0'):
 
   set_plot_params_3d()
 
-  if keyu == 'S0' or keyu == 'S1' or keyu == 'S2' or keyu == 'S3' or keyu == 'P':
+  #reakpoint()
 
-    if keyu == 'S0': htit = 'Distribution of S$_0$'
-    elif keyu == 'S1': htit = 'Distribution of S$_1$'
-    elif keyu == 'S2': htit = 'Distribution of S$_2$'
-    elif keyu == 'S3': htit = 'Distribution of S$_3$'
-    elif keyu == 'P': htit = 'Distribution of Power'
+  spinx = str(Dsetup['PinX'][1] / 1000) + 'm'
+
+  if keyu == 'VPS0' or keyu == 'VPS1' or keyu == 'VPS2' or keyu == 'VPS3':
+
+    htit = 'Vertical Profile at x = ' + spinx + ' of S$_' + keyu[-1] + '$'
+
+    #    if Modepin != 0:
+    #      nprof(nbun,"y:" + keyl[2:],selgam)
+    #    else:
+    nprof(nfld,"y:" + keylp[2:],selgam)
+    #    #endif
+
+    tunit = 'N$_{\\gamma}$' + '/mm$^2$/s/0.1' + '%BW/' + str(int(Curr*1000)) + "mA"
+    txyz(htit + " for E$_{\\gamma}$  = " + pg5(Esel) + " eV","y [mm]",tunit)
+
+  elif keyu == 'VCS0' or keyu == 'VCS1' or keyu == 'VCS2' or keyu == 'VCS3':
+
+    htit = 'Vertical Cut at x = ' + spinx + ' of S$_' + keyu[-1] + '$'
+
+    #    if Modepin != 0:
+    #      nprof(nbun,"z:" + keyl[2:],selgam)
+    #    else:
+    npl(nfld,"y:" + keylp[2:],selgam + ' and z==0',plopt='line')
+    #    #endif
+
+    tunit = 'N$_{\\gamma}$' + '/mm$^2$/s/0.1' + '%BW/' + str(int(Curr*1000)) + "mA"
+    txyz(htit + " for E$_{\\gamma}$  = " + pg5(Esel) + " eV","y [mm]",tunit)
+
+  elif keyu == 'HCS0' or keyu == 'HCS1' or keyu == 'HCS2' or keyu == 'HCS3':
+
+    htit = 'Horizontal Cut at x = ' + spinx + ' of S$_' + keyu[-1] + '$'
+
+    #    if Modepin != 0:
+    #      nprof(nbun,"z:" + keyl[2:],selgam)
+    #    else:
+    print(nfld.whit.max(),keylp[2:])
+    npl(nfld,"z:" + keylp[2:],selgam + ' and y==0',plopt='line')
+    #    #endif
+
+    tunit = 'N$_{\\gamma}$' + '/mm$^2$/s/0.1' + '%BW/' + str(int(Curr*1000)) + "mA"
+    txyz(htit + " for E$_{\\gamma}$  = " + pg5(Esel) + " eV","z [mm]",tunit)
+
+  elif keyu == 'HPS0' or keyu == 'HPS1' or keyu == 'HPS2' or keyu == 'HPS3':
+
+    htit = 'Horizontal Profile at x = ' + spinx + ' of S$_' + keyu[-1] + '$'
+
+    #    if Modepin != 0:
+    #      nprof(nbun,"z:" + keyl[2:],selgam)
+    #    else:
+    nprof(nfld,"z:" + keylp[2:],selgam)
+    #    #endif
+
+    tunit = 'N$_{\\gamma}$' + '/mm$^2$/s/0.1' + '%BW/' + str(int(Curr*1000)) + "mA"
+    txyz(htit + " for E$_{\\gamma}$  = " + pg5(Esel) + " eV","z [mm]",tunit)
+
+  elif keyu == 'S0' or keyu == 'S1' or keyu == 'S2' or keyu == 'S3' or keyu == 'P':
+
+    if keyu == 'S0': htit = 'Distribution at x = ' + spinx + '  S$_0$'
+    elif keyu == 'S1': htit = 'Distribution at x = ' + spinx + '  S$_1$'
+    elif keyu == 'S2': htit = 'Distribution at x = ' + spinx + '  S$_2$'
+    elif keyu == 'S3': htit = 'Distribution at x = ' + spinx + '  S$_3$'
+    elif keyu == 'P': htit = 'Distribution at x = ' + spinx + '  Power'
 
     plopt = Vsetup_Plot[0][1][1]
 
+    #reakpoint()
     if plopt == 'surf' or plopt == 'boxes' or plopt == 'inter':
+      dzh = (zmax-zmin)/(max(1,NpinZ-1))/2.
+      dyh = (ymax-ymin)/(max(1,NpinY-1))/2.
       hnam = 'Hpin_' + keyu
+#      hbook2(hnam,htit,NpinZ,zmin-dzh,zmax+dzh,NpinY,ymin-dyh,ymax+dyh,overwrite=1)
       hbook2(hnam,htit,NpinZ,zmin,zmax,NpinY,ymin,ymax,overwrite=1)
-      if Modepin != 0:
-        nproj2(nbun,"z:y",keyl,selgam,idh=hnam,ioverwrite=0)
-      else:
-        nproj2(nfld,"z:y",keyl,selgam,idh=hnam,ioverwrite=0)
-      #endif
+      #      if Modepin != 0:
+      #        nproj2(nbun,"z:y",keyl,selgam,idh=hnam,ioverwrite=0)
+      #      else:
+      nproj2(nfld,"z:y",keyl,selgam,idh=hnam,ioverwrite=0)
+      #      #endif
       hplave(hnam,plopt)
     elif plopt == 'scat3d':
-      if Modepin != 0:
-        nplot(nbun,"z:y:"+keyl+":"+keyl,selgam)
-      else:
-        nplot(nfld,"z:y:"+keyl+":"+keyl,selgam)
-      #endif
+      #      if Modepin != 0:
+      #        nplot(nbun,"z:y:"+keyl+":"+keyl,selgam)
+      #      else:
+      nplot(nfld,"z:y:"+keyl+":"+keyl,selgam)
+      #      #endif
     else:
-      if Modepin != 0:
-        nplot(nbun,"z:y",selgam,keyl)
-      else:
-        nplot(nfld,"z:y",selgam,keyl)
-      #endif
+      #      if Modepin != 0:
+      #        nplot(nbun,"z:y",selgam,keyl)
+      #      else:
+      nplot(nfld,"z:y",selgam,keyl)
+      #      #endif
     #endif
 
     tunit = 'N$_{\\gamma}$' + '/mm$^2$/s/0.1' + '%BW/' + str(int(Curr*1000)) + "mA"
@@ -2954,20 +3313,21 @@ def _pFdPin(key='s0'):
     else:
       zunit = tunit
     #endif
+
     if keyu == 'S0':
-      txyz("Dens. of S$_0$ for E$_{\\gamma}$  = " + pg5(Esel) + " eV","z [mm]","y [mm]",zunit)
+      txyz("Dens. at x = " + spinx + "  of S$_0$ for E$_{\\gamma}$  = " + pg5(Esel) + " eV","z [mm]","y [mm]",zunit)
     elif keyu == 'S1':
-      txyz("Dens. of S$_1$ for E$_{\\gamma}$  = " + pg5(Esel) + " eV","z [mm]","y [mm]",zunit)
+      txyz("Dens. at x = " + spinx + "  of S$_1$ for E$_{\\gamma}$  = " + pg5(Esel) + " eV","z [mm]","y [mm]",zunit)
     elif keyu == 'S2':
-      txyz("Dens. of S$_2$ for E$_{\\gamma}$  = " + pg5(Esel) + " eV","z [mm]","y [mm]",zunit)
+      txyz("Dens. at x = " + spinx + "  of S$_2$ for E$_{\\gamma}$  = " + pg5(Esel) + " eV","z [mm]","y [mm]",zunit)
     elif keyu == 'S3':
-      txyz("Dens. of S$_3$ for E$_{\\gamma}$  = " + pg5(Esel) + " eV","z [mm]","y [mm]",zunit)
+      txyz("Dens. at x = " + spinx + "  of S$_3$ for E$_{\\gamma}$  = " + pg5(Esel) + " eV","z [mm]","y [mm]",zunit)
     elif keyu == 'P':
       xuni = 1.0 + cbp
       yuni = 1.05
       auni = 0.0
       zunit = '[W/mm$^2$]'
-      txyz("Dens. of Power for E$_{\\gamma}$  = " + pg5(Esel) + " eV","z [mm]","y [mm]",zunit)
+      txyz("Dens. at x = " + spinx + "  of Power for E$_{\\gamma}$  = " + pg5(Esel) + " eV","z [mm]","y [mm]",zunit)
     #endif
 
     if type(ax) == Tax2d:
@@ -2976,34 +3336,34 @@ def _pFdPin(key='s0'):
 
   elif keyu == 'EYI' or keyu == 'EYR' or keyu == 'EZI' or keyu == 'EZR':
 
-    if keyu == 'EYR': htit = 'Distribution of Ey_real'
-    elif keyu == 'EYI': htit = 'Distribution of Ey_imag'
-    elif keyu == 'EZR': htit = 'Distribution of Ez_real'
-    elif keyu == 'EZI': htit = 'Distribution of Ez_imag$'
+    if keyu == 'EYR': htit = 'Distribution at x = ' + spinx + '  Ey_real'
+    elif keyu == 'EYI': htit = 'Distribution at x = ' + spinx + '  Ey_imag'
+    elif keyu == 'EZR': htit = 'Distribution at x = ' + spinx + '  Ez_real'
+    elif keyu == 'EZI': htit = 'Distribution at x = ' + spinx + '  Ez_imag$'
 
     plopt = Vsetup_Plot[0][1][1]
 
     if plopt == 'surf' or plopt == 'boxes' or plopt == 'inter':
       hnam = 'Hpin_' + keyu
       hbook2(hnam,htit,NpinZ,zmin,zmax,NpinY,ymin,ymax,overwrite=1)
-      if Modepin != 0:
-        nproj2(nbun,"z:y",keyl,selgam,idh=hnam,ioverwrite=0)
-      else:
-        nproj2(nfld,"z:y",keyl,selgam,idh=hnam,ioverwrite=0)
-      #endif
+      #      if Modepin != 0:
+      #        nproj2(nbun,"z:y",keyl,selgam,idh=hnam,ioverwrite=0)
+      #      else:
+      nproj2(nfld,"z:y",keyl,selgam,idh=hnam,ioverwrite=0)
+      #      #endif
       hplave(hnam,plopt)
     elif plopt == 'scat3d':
-      if Modepin != 0:
-        nplot(nbun,"z:y:"+keyl+":"+keyl,selgam)
-      else:
-        nplot(nfld,"z:y:"+keyl+":"+keyl,selgam)
-      #endif
+      #      if Modepin != 0:
+      #        nplot(nbun,"z:y:"+keyl+":"+keyl,selgam)
+      #      else:
+      nplot(nfld,"z:y:"+keyl+":"+keyl,selgam)
+#      #endif
     else:
-      if Modepin != 0:
-        nplot(nbun,"z:y",selgam,keyl)
-      else:
-        nplot(nfld,"z:y",selgam,keyl)
-      #endif
+      #      if Modepin != 0:
+      #        nplot(nbun,"z:y",selgam,keyl)
+      #      else:
+      nplot(nfld,"z:y",selgam,keyl)
+      #      #endif
     #endif
 
     tunit = 'Sqrt(N$_{\\gamma}$' + '/mm$^2$/s/0.1' + '%BW/' + str(int(Curr*1000)) + "mA)"
@@ -3020,13 +3380,13 @@ def _pFdPin(key='s0'):
       zunit = tunit
     #endif
     if keyu == 'EYR':
-      txyz("Dens. of Ey_real for E$_{\\gamma}$  = " + pg5(Esel) + " eV","z [mm]","y [mm]",zunit)
+      txyz("Dens. at x = " + spinx + "  of Ey_real for E$_{\\gamma}$  = " + pg5(Esel) + " eV","z [mm]","y [mm]",zunit)
     elif keyu == 'EYI':
-      txyz("Dens. of Ey_imag for E$_{\\gamma}$  = " + pg5(Esel) + " eV","z [mm]","y [mm]",zunit)
+      txyz("Dens. at x = " + spinx + "  of Ey_imag for E$_{\\gamma}$  = " + pg5(Esel) + " eV","z [mm]","y [mm]",zunit)
     elif keyu == 'EZR':
-      txyz("Dens. of Ez_real for E$_{\\gamma}$  = " + pg5(Esel) + " eV","z [mm]","y [mm]",zunit)
+      txyz("Dens. at x = " + spinx + "  of Ez_real for E$_{\\gamma}$  = " + pg5(Esel) + " eV","z [mm]","y [mm]",zunit)
     elif keyu == 'EZI':
-      txyz("Dens. of Ez_imag for E$_{\\gamma}$  = " + pg5(Esel) + " eV","z [mm]","y [mm]",zunit)
+      txyz("Dens. at x = " + spinx + "  of Ez_imag for E$_{\\gamma}$  = " + pg5(Esel) + " eV","z [mm]","y [mm]",zunit)
     #endif
 
     if type(ax) == Tax2d:
@@ -3036,9 +3396,9 @@ def _pFdPin(key='s0'):
   elif keyu == 'P0' or keyu == 'P1' or keyu == 'P2' or keyu == 'P3':
     Quit("Baustelle Pspec")
 
-    if keyu == 'P0': htit = 'Distribution of P$_0$'
-    elif keyu == 'P2': htit = 'Distribution of P$_2$'
-    elif keyu == 'P3': htit = 'Distribution of P$_3$'
+    if keyu == 'P0': htit = 'Distribution at x = ' + spinx + '  P$_0$'
+    elif keyu == 'P2': htit = 'Distribution at x = ' + spinx + '  P$_2$'
+    elif keyu == 'P3': htit = 'Distribution at x = ' + spinx + '  P$_3$'
 
     plopt = Vsetup_Plot[0][1][1]
 
@@ -3055,22 +3415,22 @@ def _pFdPin(key='s0'):
       #endfor
       hnam = 'Hpin_' + keyu
       if keyu == 'P1':
-        htit = 'Distribution of P$_1$'
+        htit = 'Distribution at x = ' + spinx + '  P$_1$'
         hdiv('Hpin_S1','Hpin_S0',hnam,htit)
       #endif
       hplave(hnam,plopt)
     elif plopt == 'scat3d':
-      if Modepin != 0:
-        nplot(nbun,"z:y:"+keyl+":"+keyl,selgam)
-      else:
-        nplot(nfld,"z:y:"+keyl+":"+keyl,selgam)
-      #endif
+      #      if Modepin != 0:
+      #        nplot(nbun,"z:y:"+keyl+":"+keyl,selgam)
+      #      else:
+      nplot(nfld,"z:y:"+keyl+":"+keyl,selgam)
+      #      #endif
     else:
-      if Modepin != 0:
-        nplot(nbun,"z:y",selgam,keyl)
-      else:
-        nplot(nfld,"z:y",selgam,keyl)
-      #endif
+      #      if Modepin != 0:
+      #        nplot(nbun,"z:y",selgam,keyl)
+      #      else:
+      nplot(nfld,"z:y",selgam,keyl)
+      #      #endif
     #endif
 
     if keyu == 'P0': \
@@ -3084,7 +3444,100 @@ def _pFdPin(key='s0'):
 
   #endif key
 
+  _saveplot()
+
 #enddef _pFdPin()
+
+def _pElecPhot(key='zy'):
+
+
+  global Dsetup
+  global Vsetup_Beam, LastSetUp_Beam,  SetUp_Beam, \
+  Vsetup_Undu, LastSetUp_Undu, SetUp_Undu, \
+  Vsetup_Brill, LastSetUp_Brill, SetUp_Brill, Vsetup_Plot, \
+  Vsetup_Spec, LastSetUp_Spec, SetUp_Spec, ScreenWidth, ScreenHeight
+
+  global Mthreads,Step,Nelec,Noranone,Icohere,Ihbunch,Bunchlen, \
+  Bunchcharge,Modebunch,PinX,PinY,PinZ,PinW,PinH,NpinY,NpinZ,modepin,modesphere, \
+  Shift,Nper,Nharm,Harm,Beffv,Beffh,Nepho,EphMin,EphMax, \
+  Disph,Dispph,Dispv,Disppv,Pherror,Ifixseed,Ianalytic
+
+  global nsto,nfld,nflx,nbun,Esel
+  global BeamPar,UnduPar,SpecPar,BrillPar,PlotPar
+  global nSigE
+
+
+
+  global MSpecPhot,Dsetup
+  global LastPlot; LastPlot = ['ElecPhot',key]
+
+  #reakpoint()
+
+  MSpec.unpost()
+
+  if Calculated_Spec == False \
+  or nexist("nampele") == 0: _calc_spec()
+
+  if nexist("nampele") == 0: return
+
+  _set_plot_spec()
+
+  keyu = key.upper()
+  keyl = key.lower()
+  keylg = keyl + '*g'
+
+  spinx = ' x = ' + str(Dsetup['PinX'][1]/1000.) + ' m'
+
+  set_plot_params_3d()
+
+  #zone(1,1)
+
+  nampele = nget("nampele")
+  kstat = getstat()
+  #ptnstat()
+
+  if keyl == 'eel':
+    #ptstat(kstat)
+    htit = 'Energy Distribution'
+    npl(nampele,"e*g")
+    txyz(htit,"E[GeV]")
+  elif keyl == 'z':
+    #ptstat(kstat)
+    htit = 'Hori. Beam Profile at' + spinx
+    npl(nampele,"z*g")
+    txyz(htit,"z[mm]")
+  elif keyl == 'zp':
+    #ptstat(kstat)
+    htit = 'Hori. Beam Slope Profile at' + spinx
+    npl(nampele,"zp*g")
+    txyz(htit,"z'[mrad]")
+  elif keyl == 'y':
+    #ptstat(kstat)
+    htit = 'Vert. Beam Profile at' + spinx
+    npl(nampele,"y*g")
+    txyz(htit,"y[mm]")
+  elif keyl == 'yp':
+    #ptstat(kstat)
+    htit = 'Vert. Beam Slope Profile at' + spinx
+    npl(nampele,"yp*g")
+    txyz(htit,"y'[mrad]")
+  elif keyl == 'zzp':
+    nplot(nampele,"z:zp")
+    txyz(spinx,"z[mm]","z'[mrad]")
+  elif keyl == 'zpyp':
+    nplot(nampele,"zp:yp")
+    txyz(spinx,"z'[mrad]","y'[mrad]")
+  elif keyl == 'yyp':
+    nplot(nampele,"y:yp")
+    txyz(spinx,"y[mm]","y'[mrad]")
+  elif keyl == 'zy':
+    nplot(nampele,"z:y")
+    txyz('',"z[mm]","y[mm]")
+  #endif
+
+  _saveplot()
+
+#enddef _pElecPhot()
 
 def _pElec(key='zizpi'):
 
@@ -3101,6 +3554,7 @@ def _pElec(key='zizpi'):
 
   global nsto,nfld,nflx,nbun,Esel
   global BeamPar,UnduPar,SpecPar,BrillPar,PlotPar
+  global nSigE
 
 
   global MSpec
@@ -3108,14 +3562,14 @@ def _pElec(key='zizpi'):
 
   MSpec.unpost()
 
-  if Calculated_Spec == False or nexist("nbun") == 0 \
+  if Calculated_Spec == False or (Modepin != 0 and nexist("nbun") == 0) \
   or nexist("nfld") == 0: _calc_spec()
 
   s0max = nflx.s0.max()
   if np.isnan(s0max) == True: return
 
   #getzone()
-  optnstat()
+  #ptnstat()
   _set_plot_spec()
 
   keyu = key.upper()
@@ -3126,24 +3580,287 @@ def _pElec(key='zizpi'):
   #zone(1,1)
 
   if keyl == 'eel':
+
     htit = 'Energy Distribution'
     npl(nbun,"eel","iegam==1")
     txyz(htit,"E[GeV]")
+
+  elif keyl == 'zfzpf':
+    nplot(nbun,"zf:zpf","iegam==1")
+    txyz('Horizontal Phase-space at Exit',"z[mm]","z'[mrad]")
+  elif keyl == 'zfyf':
+    nplot(nbun,"zf:yf","iegam==1")
+    txyz('Phase-space at Exit',"z[mm]","y[mm]")
+  elif keyl == 'zpfypf':
+    nplot(nbun,"zpf:ypf","iegam==1")
+    txyz('Phase-space at Exit',"z'[mrad]","y'[mrad]")
+  elif keyl == 'yfypf':
+    nplot(nbun,"yf:ypf","iegam==1")
+    txyz('Vertical Phase-space at Exit',"y[mm]","y'[mrad]")
+
   elif keyl == 'zizpi':
-    nplot(nbun,"rzi1:zpi1","iegam==1")
+    nplot(nbun,"zi:zpi","iegam==1")
     txyz('Horizontal Phase-space at Entrance',"z[mm]","z'[mrad]")
   elif keyl == 'ziyi':
-    nplot(nbun,"rzi1:ryi1","iegam==1")
+    nplot(nbun,"zi:yi","iegam==1")
     txyz('Phase-space at Entrance',"z[mm]","y[mm]")
   elif keyl == 'zpiypi':
-    nplot(nbun,"zpi1:ypi1","iegam==1")
+    nplot(nbun,"zpi:ypi","iegam==1")
     txyz('Phase-space at Entrance',"z'[mrad]","y'[mrad]")
   elif keyl == 'yiypi':
-    nplot(nbun,"ryi1:ypi1","iegam==1")
+    nplot(nbun,"yi:ypi","iegam==1")
     txyz('Vertical Phase-space at Entrance',"y[mm]","y'[mrad]")
   #endif
 
+  _saveplot()
+
 #enddef _pElec()
+
+def _pPhot(key='PhzyS0',select=''):
+
+
+  global Dsetup
+  global Vsetup_Beam, LastSetUp_Beam,  SetUp_Beam, \
+  Vsetup_Undu, LastSetUp_Undu, SetUp_Undu, \
+  Vsetup_Brill, LastSetUp_Brill, SetUp_Brill, Vsetup_Plot, \
+  Vsetup_Spec, LastSetUp_Spec, SetUp_Spec, ScreenWidth, ScreenHeight
+
+  global Mthreads,Step,Nelec,Noranone,Icohere,Ihbunch,Bunchlen, \
+  Bunchcharge,Modebunch,PinX,PinY,PinZ,PinW,PinH,NpinY,NpinZ,modepin,modesphere, \
+  Shift,Nper,Nharm,Harm,Beffv,Beffh,Nepho,EphMin,EphMax, \
+  Disph,Dispph,Dispv,Disppv,Pherror,Ifixseed,Ianalytic
+
+  global nsto,nfld,nflx,nbun,Esel
+  global BeamPar,UnduPar,SpecPar,BrillPar,PlotPar
+  global nSigE
+
+
+
+  global LastPlot; LastPlot = ['Photons',key]
+  global Esel,IEsel,S_Esel,S_IEsel,dE, S_IEbeam, IEbeam, EbeamList
+  global EbeamMin, EbeamMax, dEbeam, nEfold, EbeamList
+
+  #reakpoint()
+  debugbreak('_pPhot')
+
+  _ebeamlist()
+  if IEsel < 1: _ini_Esel()
+
+  keyu = key.upper()
+  keyl = key.lower()
+
+  if Calculated_Spec == False or nexist("namppho") == 0: _calc_spec()
+
+  namppho = nget("namppho")
+
+  #selgam = "iegam==" + str(IEsel) + " and iebeam==" + str(IEbeam)
+  selgam = "iegam==" + str(IEsel)
+
+  nz = int(Dsetup['NpinZ'][1])
+  ny = int(Dsetup['NpinY'][1])
+  pinx = float(Dsetup['PinX'][1])
+  pinw = float(Dsetup['PinW'][1])
+  pinh = float(Dsetup['PinH'][1])
+  ymin = -pinh/2.0
+  ymax =  pinh/2.0
+  zmin = -pinw/2.0
+  zmax =  pinw/2.0
+
+  tzmn = namppho.tz.min()
+  tymn = namppho.ty.min()
+  tzmx = namppho.tz.max()
+  tymx = namppho.ty.max()
+
+  if ny > 1:
+    dy = pinh/(ny-1)
+    dty = (tymx-tymn)/(ny-1)
+  else:
+    dy = pinh / 2.
+    dty = tymx / 2.
+  if nz > 1:
+    dz = pinw/(nz-1)
+    dtz = (tzmx-tzmn)/(nz-1)
+  else:
+    dz = pinw / 2.
+    dtz = tzmx / 2.
+  #endif
+
+  a = ' and '
+  sizcut = "iz==" + str(int(nz/2)+1)
+  siycut = "iy==" + str(int(ny/2)+1)
+
+  plopt = Vsetup_Plot[0][1][1]
+  lwo = float(Vsetup_Plot[2][1][1])
+  lco = Vsetup_Plot[3][1][1]
+  mso = getmarkersize()
+
+  colorbarpad = getcolorbarpad()
+
+  kplane = 0
+
+  if keyu == 'PHZYS0' or keyu == 'PHZYS1' or keyu == 'PHZYS2' or keyu == 'PHZYS3':
+    kplane = 1
+  elif keyu == 'PHTZTYS0' or keyu == 'PHTZTYS1' or keyu == 'PHTZTYS2' or keyu == 'PHTZTYS3':
+    kplane = 2
+  elif keyu == 'PHZTZS0' or keyu == 'PHZTZS1' or keyu == 'PHZTZS2' or keyu == 'PHZTZS3':
+    kplane = 3
+  elif keyu == 'PHYTYS0' or keyu == 'PHYTYS1' or keyu == 'PHYTYS2' or keyu == 'PHYTYS3':
+    kplane = 4
+  else:
+    print('\n*** Unknown key:',key)
+    return
+  #endif
+
+  #kstat = getstat()
+  nxzones = Dsetup['NxZones'][1]
+  nyzones = Dsetup['NyZones'][1]
+  kstat = Dsetup['Statistic'][1]
+
+  #ptstat(kstat)
+
+  if len(select):
+    sel = select + a + selgam
+  else:
+    sel = selgam
+  #endif
+
+  if kplane == 1:
+
+    nstok = keyu[-1]
+    sn = str(nstok)
+
+    hnam = 'HPhzyS' + sn
+    htit = 'S' + sn + ' x = ' + str(pinx)
+    stok = 's' + sn +'*g'
+
+    set_plot_params_3d()
+
+    wtit = TeX_gamma + '/s/0.1' + ' %BW/mm$^{2}$/' + str(int(Curr*1000.+0.5)) + "mA"
+
+    #htit += htit + '  (' + str(Esel) + ' eV, ' + str(EbeamList[IEbeam-1]) + ' GeV)'
+    htit = 'S' + sn + ' ( x = ' + str(pinx/1000) + ' m, ' + str(Esel) + ' eV)'
+
+    h = hbook2(hnam,htit,
+               nz,zmin-dz/2.,zmax+dz/2.,
+               ny,ymin-dy/2.,ymax+dy/2.,
+               overwrite=True)
+
+    istat = nproj2(namppho,'z:y',stok,sel,1.0,1.0,1.0,nz,ny,hnam)
+
+    xtit = 'z [mm]'
+    ytit = 'y [mm]'
+
+    if h.y.min() < h.y.max():
+      hplot2d(hnam,plopt,tit=htit,xtit=xtit,ytit=ytit,ztit=wtit)
+    else:
+      npl(namppho,'z:y',sel,stok)
+      txyz(htit,xtit,ytit,' ')
+      #endif
+
+  elif kplane == 2:
+
+    nstok = keyu[-1]
+    sn = str(nstok)
+
+    hnam = 'HPhtztyS' + sn
+    htit = 'S' + sn + ' ( x = ' + str(pinx/1000) + ' m, ' + str(Esel) + ' eV)'
+    stok = 's' + sn +'*g'
+
+    set_plot_params_3d()
+
+    wtit = TeX_gamma + '/s/0.1' + ' %BW/mrad$^{2}$/' + str(int(Curr*1000.+0.5)) + "mA"
+
+    #htit += htit + '  (' + str(Esel) + ' eV, ' + str(EbeamList[IEbeam-1]) + ' GeV)'
+
+    h = hbook2(hnam,htit,
+               nz,tzmn-dtz/2.,tzmx+dtz/2.,
+               ny,tymn-dty/2.,tymx+dty/2.,
+               overwrite=True)
+
+    istat = nproj2(namppho,'tz:ty',stok,sel,1.0,1.0,1.0,nz,ny,hnam)
+
+    xtit = 'Theta_z [mrad]'
+    ytit = 'Theta_y [mrad]'
+
+    if h.y.min() < h.y.max():
+      hplot2d(hnam,plopt,tit=htit,xtit=xtit,ytit=ytit,ztit=wtit)
+    else:
+      npl(namppho,'tz:ty',sel,stok)
+      txyz(htit,xtit,ytit,' ')
+      #endif
+
+  elif kplane == 3:
+
+    nstok = keyu[-1]
+    sn = str(nstok)
+
+    hnam = 'HPztzS' + sn
+    htit = 'S' + sn + ' x = ' + str(pinx)
+    stok = 's' + sn +'*g'
+
+    set_plot_params_3d()
+
+    wtit = TeX_gamma + '/s/0.1' + ' %BW/mm$^{2}$/' + str(int(Curr*1000.+0.5)) + "mA"
+
+    #htit += htit + '  (' + str(Esel) + ' eV, ' + str(EbeamList[IEbeam-1]) + ' GeV)'
+    htit = 'S' + sn + ' ( x = ' + str(pinx/1000) + ' m, ' + str(Esel) + ' eV)'
+
+    h = hbook2(hnam,htit,
+               nz,zmin-dz/2.,zmax+dz/2.,
+               nz,tzmn-dtz/2.,tzmx+dtz/2.,
+               overwrite=True)
+
+    istat = nproj2(namppho,'z:tz',stok,sel,1.0,1.0,1.0,nz,nz,hnam)
+
+    xtit = 'z [mm]'
+    ytit = 'Theta_z [mrad]'
+
+    if h.y.min() < h.y.max():
+      hplot2d(hnam,plopt,tit=htit,xtit=xtit,ytit=ytit,ztit=wtit)
+    else:
+      npl(namppho,'z:y',sel,stok)
+      txyz(htit,xtit,ytit,' ')
+      #endif
+
+  elif kplane == 4:
+
+    nstok = keyu[-1]
+    sn = str(nstok)
+
+    hnam = 'HPytyS' + sn
+    htit = 'S' + sn + ' x = ' + str(pinx)
+    stok = 's' + sn +'*g'
+
+    set_plot_params_3d()
+
+    wtit = TeX_gamma + '/s/0.1' + ' %BW/mm$^{2}$/' + str(int(Curr*1000.+0.5)) + "mA"
+
+    #htit += htit + '  (' + str(Esel) + ' eV, ' + str(EbeamList[IEbeam-1]) + ' GeV)'
+    htit = 'S' + sn + ' ( x = ' + str(pinx/1000) + ' m, ' + str(Esel) + ' eV)'
+
+    h = hbook2(hnam,htit,
+               ny,ymin-dy/2.,ymax+dy/2.,
+               ny,tymn-dty/2.,tymx+dty/2.,
+               overwrite=True)
+
+    istat = nproj2(namppho,'y:ty',stok,sel,1.0,1.0,1.0,ny,ny,hnam)
+
+    xtit = 'y [mm]'
+    ytit = 'Theta_y [mrad]'
+
+    if h.y.min() < h.y.max():
+      hplot2d(hnam,plopt,tit=htit,xtit=xtit,ytit=ytit,ztit=wtit)
+    else:
+      npl(namppho,'z:y',sel,stok)
+      txyz(htit,xtit,ytit,' ')
+      #endif
+
+  #endif kplane:
+
+
+  _saveplot()
+
+#enddef _pPhot
 
 def _pWigner(key='WzzZ',select=''):
 
@@ -3161,6 +3878,7 @@ def _pWigner(key='WzzZ',select=''):
 
   global nsto,nfld,nflx,nbun,Esel
   global BeamPar,UnduPar,SpecPar,BrillPar,PlotPar
+  global nSigE
 
 
 
@@ -3188,11 +3906,12 @@ def _pWigner(key='WzzZ',select=''):
 
   set_plot_params_3d()
 
-  kstat = getstat()
+#  kstat = getstat()
   nxzones = Dsetup['NxZones'][1]
   nyzones = Dsetup['NyZones'][1]
+  kstat = Dsetup['Statistic'][1]
 
-  optnstat()
+  #ptnstat()
 
   nz = int(Dsetup['NpinZprop'][1])
   ny = int(Dsetup['NpinYprop'][1])
@@ -3307,7 +4026,7 @@ def _pWigner(key='WzzZ',select=''):
 
   wtit = TeX_gamma + '/s/0.1' + ' %BW/mm$^{2}$/mrad$^{2}$/' + str(int(Curr*1000.+0.5)) + "mA"
 
-  optstat(kstat)
+  #ptstat(kstat)
 
   sel += ' and ' + selgam
   htit += htit + '  (' + str(Esel) + ' eV)'
@@ -3356,6 +4075,7 @@ def _pWigner(key='WzzZ',select=''):
 
   Dsetup['NxZones'][1] = nxzones
   Dsetup['NyZones'][1] = nyzones
+  Dsetup['Statistic'][1] = kstat
 
 #  setaxistitledist3d(disttit3d)
 #  setaxislabeldist3d(distlab3d)
@@ -3365,6 +4085,9 @@ def _pWigner(key='WzzZ',select=''):
   ClearCanvas = 1
   Dsetup['ClearCanvas'][1] = ClearCanvas
   set_ClearCanvas(ClearCanvas)
+
+
+  _saveplot()
 
 #enddef _pWigner()
 
@@ -3384,6 +4107,7 @@ def _pWignerE(key='WzzZ',select=''):
 
   global nsto,nfld,nflx,nbun,Esel
   global BeamPar,UnduPar,SpecPar,BrillPar,PlotPar
+  global nSigE
 
 
 
@@ -3407,11 +4131,12 @@ def _pWignerE(key='WzzZ',select=''):
   elif keyu == 'WHVV': keyu = 'WZYY'
   elif keyu == 'WVHV': keyu = 'WYZY'
 
-  kstat = getstat()
+#  kstat = getstat()
   nxzones = Dsetup['NxZones'][1]
   nyzones = Dsetup['NyZones'][1]
+  kstat = Dsetup['Statistic'][1]
 
-  optnstat()
+  #ptnstat()
 
   nz = int(Dsetup['NpinZprop'][1])
   ny = int(Dsetup['NpinYprop'][1])
@@ -3475,6 +4200,19 @@ def _pWignerE(key='WzzZ',select=''):
         #endif
         IEsel = int((nwge.iegam.max()-nwge.iegam.min())/2+1)
         Esel = EphMin + (IEsel-1)*dE
+
+        if Nepho > 1:
+          dE = (EphMax-EphMin)/(Nepho-1)
+        else:
+          dE = 0
+        #endif
+
+        if Nepho > 1:
+          Esel = EphMin + (IEsel-1)*dE
+        else:
+          Esel = (EphMin + EphMax) / 2.
+        #endif
+
         S_IEsel.set(IEsel)
         S_Esel.set(Esel)
         select = 'iegam == ' + str(IEsel)
@@ -3533,7 +4271,7 @@ def _pWignerE(key='WzzZ',select=''):
 
   wtit = TeX_gamma + '/s/0.1' + ' %BW/mm$^{2}$/mrad$^{2}$/' + str(int(Curr*1000.+0.5)) + "mA"
 
-  optstat(kstat)
+  #ptstat(kstat)
 
   zone(2,1)
 
@@ -3608,6 +4346,7 @@ def _pWignerE(key='WzzZ',select=''):
 
   Dsetup['NxZones'][1] = nxzones
   Dsetup['NyZones'][1] = nyzones
+  kstat = Dsetup['Statistic'][1]
 
 #  setaxistitledist3d(disttit3d)
 #  setaxislabeldist3d(distlab3d)
@@ -3617,6 +4356,9 @@ def _pWignerE(key='WzzZ',select=''):
   ClearCanvas = 1
   Dsetup['ClearCanvas'][1] = ClearCanvas
   set_ClearCanvas(ClearCanvas)
+
+
+  _saveplot()
 
 #enddef _pWignerE()
 
@@ -3635,21 +4377,22 @@ def _pFdSpec(key='s0'):
 
   global nsto,nfld,nflx,nbun,Esel
   global BeamPar,UnduPar,SpecPar,BrillPar,PlotPar
+  global nSigE
 
 
   global LastPlot; LastPlot = ['FdSpec',key]
 
-  if Modepin != 0: return
+#  if Modepin != 0: return
 
   if Calculated_Spec == False or nexist("nflx") == 0: _calc_spec()
 
   keyu = key.upper()
-  keyl = key.lower()
+  keyl = key.lower() + "*g*whit"
 
   s0max = nfld.s0.max()
   if np.isnan(s0max): return
 
-  optnstat()
+  #ptnstat()
 
   setmarkersize(float(Vsetup_Plot[1][1][1]))
   setlinewidth(float(Vsetup_Plot[2][1][1]))
@@ -3660,10 +4403,17 @@ def _pFdSpec(key='s0'):
   nEfold = int(Dsetup['nEfold'][1])
 
   if keyl[0] == 's':
-    if Nepho > 1:
-      npl(nfld,"egam:"+keyl,selzy,plopt='line')
+    if not Modepin:
+      if Nepho > 1:
+        npl(nfld,"egam:"+keyl,selzy,plopt='line')
+      else:
+        npl(nfld,"egam:"+keyl,selzy)
+      #endif
     else:
-      npl(nfld,"egam:"+keyl,selzy)
+      if Nepho > 1:
+        nprof(nfld,"egam:"+keyl)
+      else:
+        nprof(nfld,"egam:"+keyl)
     #endif
     xtit="photon energy [eV]"
     ytit = 'N$_{\\gamma}$' + '/mm$^2$/s/0.1' + '%BW/' + str(int(Curr*1000)) + "mA"
@@ -3675,6 +4425,8 @@ def _pFdSpec(key='s0'):
   #endif key
 
   txyz(titp,xtit,ytit)
+
+  _saveplot()
 
 #enddef _pFdSpec()
 
@@ -3693,6 +4445,7 @@ def _pFluxSpec(key='s0'):
 
   global nsto,nfld,nflx,nbun,Esel
   global BeamPar,UnduPar,SpecPar,BrillPar,PlotPar
+  global nSigE
 
 
   global LastPlot; LastPlot = ['FluxSpec',key]
@@ -3702,11 +4455,17 @@ def _pFluxSpec(key='s0'):
   kplot = 0
   keyu = key.upper()
   keyl = key.lower()
+  k1 = keyl[0]
+  keyem = "(" + keyl + "-e" + keyl + ")*g"
+  keyep = "(" + keyl + "+e" + keyl + ")*g"
+  keyl = key.lower() + "*g"
+
+  #reakpoint()
 
   s0max = nflx.s0.max()
   if not np.isnan(s0max): kplot = 1
 
-  optnstat()
+  #ptnstat()
   #getzone()
   #zone(1,1)
 
@@ -3714,11 +4473,20 @@ def _pFluxSpec(key='s0'):
   setlinewidth(float(Vsetup_Plot[2][1][1]))
   setlinecolor(Vsetup_Plot[3][1][1])
 
-  if keyl[0] == 's':
+  if k1 == 's':
+    #reakpoint()
     if Nepho > 1:
-      npl(nflx,"egam:"+keyl,plopt='line')
+      npl(nflx,"egam:" + keyl,plopt='line',color='r')
+      if Modepin:
+        npl(nflx,"egam:"+keyem,plopt='sameline')
+        npl(nflx,"egam:"+keyep,plopt='sameline')
+      #endif
     else:
-      npl(nflx,"egam:"+keyl)
+      npl(nflx,"egam:"+keyl,plopt='line',color='r')
+      if Modepin:
+        npl(nflx,"egam:"+keyem,plopt='same')
+        npl(nflx,"egam:"+keyep,plopt='same')
+      #endif
     #endif
     xtit="photon energy [eV]"
     if NpinZ > 1 and NpinY > 1:
@@ -3728,7 +4496,7 @@ def _pFluxSpec(key='s0'):
     #endif NpinZ, NpinY
     titp = "\n" + keyu + " (w={:.3g}mm, h={:.3g}mm, x={:.3g}m, y={:.3g}mm, z={:.3g}mm)". \
     format(PinW,PinH,PinX/1000.,PinY,PinZ)
-  elif keyl[0] == 'p':
+  elif k1 == 'p':
     Quit("Baustelle P")
     if Nepho > 1:
       npl(nflx,"egam:"+keyl,plopt='line')
@@ -3747,6 +4515,8 @@ def _pFluxSpec(key='s0'):
 
   txyz(titp,xtit,ytit)
 
+  _saveplot()
+
 #enddef _pFluxSpec()
 
 def _write_urad_phase_nam():
@@ -3764,11 +4534,37 @@ def _write_urad_phase_nam():
 
   global nsto,nfld,nflx,nbun,Esel
   global BeamPar,UnduPar,SpecPar,BrillPar,PlotPar
+  global nSigE
 
 
   global Unamelist,Useed
 
   debugbreak('_write_urad_nam')
+  #print(Dsetup['Espread'])
+  #reakpoint()
+
+  iwig = int(Dsetup['IWigner'][1])
+  igenpho = int(Dsetup['iGenPho'][1])
+  if not iwig: igenpho = 0
+
+  neleca = int(Dsetup['nElecAmpGenPho'][1])
+  npho = int(Dsetup['Npho'][1])
+
+  if not npho or not neleca:
+    npho = 0
+    neleca = 0
+
+  nefold = int(Dsetup['nEfold'][1])
+  if not iwig and not neleca: nefold = 0
+
+  espread = float(Dsetup['Espread'][1])
+
+  Dsetup['Npho'][1] = npho
+  Dsetup['nElecAmpGenPho'][1] = neleca
+  Dsetup['IWigner'][1] = iwig
+  Dsetup['iGenPho'][1] = igenpho
+  Dsetup['nEfold'][1] = nefold
+  Dsetup['Espread'][1] = espread
 
   try:
     shutil.copyfile("urad_phase.nam","urad_phase.nam.bck")
@@ -3781,6 +4577,7 @@ def _write_urad_phase_nam():
   for var in Unamelist:
     if var == 'Harm':
       Fnam.write("  " 'harm='+ str(Dsetup['Harmonic'][1]) + '          !' + Dsetup['Harmonic'][0] + '\n')
+      #reakpoint()
     else:
       val = Dsetup[var][1]
       if (\
@@ -3827,6 +4624,7 @@ def _write_urad_phase_nam_alt():
 
   global nsto,nfld,nflx,nbun,Esel
   global BeamPar,UnduPar,SpecPar,BrillPar,PlotPar
+  global nSigE
 
 
 
@@ -3908,6 +4706,7 @@ def _dvsetup():
     Vsetup_Brill.append([key,Dsetup[key]])
   #endfor
 
+  #reakpoint()
   Vsetup_Spec = []
   for key in SpecPar:
     Vsetup_Spec.append([key,Dsetup[key]])
@@ -3957,29 +4756,47 @@ def __get_spec():
   global Calculated_Spec, NcalcSpec, SpecPar
   global nsto,nflx,nfld,nbun,nfdp,nwig,nwge
   global IWigner,nEfold,Esel,IEsel
+  global nSigE
 
 #  debugbreak('_get_spec')
 
   if fexist("urad_phase_espread.flx"):
-    nflx = ncread("nflx","iegam:iebeam:egam:ebeam:s0:s1:s2:s3","urad_phase_espread.flx")
+    nflx = ncread("nflx","iegam:iebeam:egam:ebeam:s0:s1:s2:s3:es0:es1:es2:es3:g","urad_phase_espread.flx")
   elif fexist("urad_phase.flx"):
-      nflx = ncread("nflx","iegam:iebeam:egam:ebeam:s0:s1:s2:s3:g","urad_phase.flx")
+    nflx = ncread("nflx","iegam:iebeam:egam:ebeam:s0:s1:s2:s3:es0:es2:es3:es4:g","urad_phase.flx")
   #endif
 
   if fexist("urad_phase_espread.fdp"):
     nfdp = ncread("nfdp","x:y:z:iegam:iebeam:egam:ebeam:s0:s1:s2:s3:exr:exi:eyr:eyi:ezr:ezi:bxr:bxi:byr:byi:bzr:bzi:nx:ny:nz:g","urad_phase_espread.fdp")
+    nfdpall = ncread("nfdpall","x:y:z:iegam:iebeam:egam:ebeam:s0:s1:s2:s3:exr:exi:eyr:eyi:ezr:ezi:bxr:bxi:byr:byi:bzr:bzi:nx:ny:nz:g","urad_phase.fdp")
   elif fexist("urad_phase.fdp"):
     nfdp = ncread("nfdp","x:y:z:iegam:iebeam:egam:ebeam:s0:s1:s2:s3:exr:exi:eyr:eyi:ezr:ezi:bxr:bxi:byr:byi:bzr:bzi:nx:ny:nz:g","urad_phase.fdp")
   #endif
 
   if fexist("urad_phase_espread.fld"):
-    nfld = ncread("nfld","x:y:z:iegam:iebeam:egam:ebeam:s0:s1:s2:s3:p:exr:exi:eyr:eyi:ezr:ezi:bxr:bxi:byr:byi:bzr:bzi:nx:ny:nz:g","urad_phase_espread.fld")
+    nfld = ncread("nfld","x:y:z:iegam:iebeam:egam:ebeam:s0:s1:s2:s3:p:exr:exi:eyr:eyi:ezr:ezi:bxr:bxi:byr:byi:bzr:bzi:nx:ny:nz:g:whit","urad_phase_espread.fld")
+    nfldall = ncread("nfldall","x:y:z:iegam:iebeam:egam:ebeam:s0:s1:s2:s3:p:exr:exi:eyr:eyi:ezr:ezi:bxr:bxi:byr:byi:bzr:bzi:nx:ny:nz:g:whit","urad_phase.fld")
   elif fexist("urad_phase.fld"):
-    nfld = ncread("nfld","x:y:z:iegam:iebeam:egam:ebeam:s0:s1:s2:s3:p:exr:exi:eyr:eyi:ezr:ezi:bxr:bxi:byr:byi:bzr:bzi:nx:ny:nz:g","urad_phase.fld")
+    nfld = ncread("nfld","x:y:z:iegam:iebeam:egam:ebeam:s0:s1:s2:s3:p:exr:exi:eyr:eyi:ezr:ezi:bxr:bxi:byr:byi:bzr:bzi:nx:ny:nz:g:whit","urad_phase.fld")
   #endif
 
   if fexist("urad_phase.bun"):
-    nbun = ncread("nbun","jbun:isub:ibu:bunchx:rxi1:ryi1:rzi1:ypi1:zpi1:rxin:ryin:rzin:ypin:zpin:eel:deel:x:y:z:iegam:egam:spec:s0:s1:s2:s3:p:fb28:dt:exr:exi:eyr:eyi:ezr:ezi:bxr:bxi:byr:byi:bzr:bzi:","urad_phase.bun")
+    nbun = ncread("nbun","jbun:isub:ibu:bunchx:xi:yi:zi:ypi:zpi:xf:yf:zf:ypf:zpf:eel:deel:x:y:z:iegam:egam:spec:s0:s1:s2:s3:p:fb28:dt:exr:exi:eyr:eyi:ezr:ezi:bxr:bxi:byr:byi:bzr:bzi:g","urad_phase.bun")
+    #ninfo("nbun")
+
+  fil = "ampgenpho.pho"
+  if fexist(fil):
+    #reakpoint() #3b
+    namppho = ncread("namppho","igam:iele:iegam:iebeam:ebeam:g:egam:z:y:tz:ty:s0:s1:s2:s3:s4",fil)
+    IPhot = namppho.iele.max()
+    #rint("3b",IPhot)
+    Npho = namppho.igam.max()
+    Dsetup['nElecAmpGenPho'][1] = IPhot
+    Dsetup['Npho'][1] = Npho
+
+  fil = "ampgenpho.elc"
+  if fexist(fil):
+    nampele = ncread("nampele","i:e:g:z:y:zp:yp","ampgenpho.elc")
 
   iwig = 0
 
@@ -3990,6 +4807,20 @@ def __get_spec():
   elif (fexist(fwig)):
     nwig = ncread("nwig","kpola:iz:iy:itz:ity:x:y:z:ty:tz:iegam:iebeam:egam:ebeam:ezr:ezi:eyr:eyi:wig:g",fwig)
   #endif
+
+  fil = "ampgenpho.pho"
+  if fexist(fil):
+    namppho = ncread("namppho","igam:iele:iegam:iebeam:ebeam:g:egam:z:y:tz:ty:s0:s1:s2:s3:s4",fil)
+    #reakpoint() #4
+    IPhot = namppho.iele.max()
+    #rint("4",IPhot)
+    Npho = namppho.igam.max()
+    Dsetup['nElecAmpGenPho'][1] = IPhot
+    Dsetup['Npho'][1] = Npho
+
+  fil = "ampgenpho.elc"
+  if fexist(fil):
+    nampele = ncread("nampele","i:e:g:z:y:zp:yp","ampgenpho.elc")
 
   fpin = open("urad_phase.pin",'r')
 
@@ -4037,10 +4868,20 @@ def __get_spec():
   tzwig = float(words[2])
   tywig = float(words[3])
 
+  #reakpoint()
   words = fpin.readline().strip().split()
   IWigner = int(words[0])
   nosplineefold = int(words[1])
   nEfold = int(words[2])
+  nSigE = float(words[3])
+
+  if nSigE != 3.0:
+    print("\n\n *** nSigE != 3, be careful ***\n\n")
+
+  words = fpin.readline().strip().split()
+  nelecamppho = int(words[0])
+  npho = int(words[1])
+  moderan = int(words[2])
 
   fpin.close()
 
@@ -4057,13 +4898,14 @@ def __get_spec():
   Run_pyBrill = int(line[0])
 
   if IEsel <= 0:
-    IEsel = int(nfld.iegam.max()/2) + 1
-    Esel = int(nfld.iegam.max()/2) + 1
-    S_IEsel.set(IEsel)
-    EphMin = nfld.egam.min()
-    EphMax = nfld.egam.max()
-    Esel = (EphMax+EphMin)/2.0
-    S_Esel.set(Esel)
+    _ini_Esel()
+#    IEsel = int(nflx.iegam.max()/2) + 1
+#    Esel = int(nflx.iegam.max()/2) + 1
+#    S_IEsel.set(IEsel)
+#    EphMin = nflx.egam.min()
+#    EphMax = nflx.egam.max()
+#    Esel = (EphMax+EphMin)/2.0
+#    S_Esel.set(Esel)
   #endif
 
   nlist()
@@ -4085,8 +4927,11 @@ def _calc_spec():
 
   global Calculated_Spec, NcalcSpec,SpecPar,Dsetup
   global nsto,nflx,nfld,nbun,nfdp,nwig,nwge
+  global nSigE
 
   debugbreak('calc_spec()')
+  print('\n',"Starting spectrum calculation with urad_phase.exe",flush=True)
+
   _UpdateVars()
 
   cwd = os.getcwd()
@@ -4116,7 +4961,6 @@ def _calc_spec():
       print(localtime)
       os.system("gdb --command ./startup.ddd $BRILL/bin/urad_phase_debug.exe")
     else:
-      print('\n',"Starting spectrum calculation with urad_phase.exe")
       print(localtime)
       os.system("$BRILL/bin/urad_phase.exe")
     #endif
@@ -4134,11 +4978,10 @@ def _calc_spec():
   iwigner = Dsetup['IWigner'][1]
   nEfold = Dsetup['nEfold'][1]
 
-
   if fexist("urad_phase_espread.flx"):
-    nflx = ncread("nflx","iegam:iebeam:egam:ebeam:s0:s1:s2:s3","urad_phase_espread.flx")
+    nflx = ncread("nflx","iegam:iebeam:egam:ebeam:s0:s1:s2:s3:es0:es1:es2:es3:g","urad_phase_espread.flx")
   elif fexist("urad_phase.flx"):
-      nflx = ncread("nflx","iegam:iebeam:egam:ebeam:s0:s1:s2:s3","urad_phase.flx")
+      nflx = ncread("nflx","iegam:iebeam:egam:ebeam:s0:s1:s2:s3:es0:es1:es2:es3:g","urad_phase.flx")
   #endif
 
   if fexist("urad_phase_espread.fdp"):
@@ -4148,13 +4991,14 @@ def _calc_spec():
   #endif
 
   if fexist("urad_phase_espread.fld"):
-    nfld = ncread("nfld","x:y:z:iegam:iebeam:egam:ebeam:s0:s1:s2:s3:p:exr:exi:eyr:eyi:ezr:ezi:bxr:bxi:byr:byi:bzr:bzi:nx:ny:nz:g","urad_phase_espread.fld")
+    nfld = ncread("nfld","x:y:z:iegam:iebeam:egam:ebeam:s0:s1:s2:s3:p:exr:exi:eyr:eyi:ezr:ezi:bxr:bxi:byr:byi:bzr:bzi:nx:ny:nz:g:whit","urad_phase_espread.fld")
   elif fexist("urad_phase.fld"):
-    nfld = ncread("nfld","x:y:z:iegam:iebeam:egam:ebeam:s0:s1:s2:s3:p:exr:exi:eyr:eyi:ezr:ezi:bxr:bxi:byr:byi:bzr:bzi:nx:ny:nz:g","urad_phase.fld")
+    nfld = ncread("nfld","x:y:z:iegam:iebeam:egam:ebeam:s0:s1:s2:s3:p:exr:exi:eyr:eyi:ezr:ezi:bxr:bxi:byr:byi:bzr:bzi:nx:ny:nz:g:whit","urad_phase.fld")
   #endif
 
   if fexist("urad_phase.bun"):
-    nbun = ncread("nbun","jbun:isub:ibu:bunchx:rxi1:ryi1:rzi1:ypi1:zpi1:rxin:ryin:rzin:ypin:zpin:eel:deel:x:y:z:iegam:egam:spec:s0:s1:s2:s3:p:fb28:dt:g","urad_phase.bun")
+    nbun = ncread("nbun","jbun:isub:ibu:bunchx:xi:yi:zi:ypi:zpi:xf:yf:zf:ypf:zpf:eel:deel:x:y:z:iegam:egam:spec:s0:s1:s2:s3:p:fb28:dt:exr:exi:eyr:eyi:ezr:ezi:bxr:bxi:byr:byi:bzr:bzi:g","urad_phase.bun")
+#    ninfo(nbun)
   #endif
 
   fwige = 'urad_phase_espread.wig'
@@ -4164,6 +5008,20 @@ def _calc_spec():
   elif (fexist(fwig)):
     nwig = ncread("nwig","kpola:iz:iy:itz:ity:x:y:z:ty:tz:iegam:iebeam:egam:ebeam:ezr:ezi:eyr:eyi:wig:g",fwig)
   #endif
+
+  fil = "ampgenpho.pho"
+  if fexist(fil):
+    namppho = ncread("namppho","igam:iele:iegam:iebeam:ebeam:g:egam:z:y:tz:ty:s0:s1:s2:s3:s4",fil)
+    #reakpoint() #3a
+    IPhot = namppho.iele.max()
+    #rint("3a",IPhot)
+    Npho = namppho.igam.max()
+    Dsetup['nElecAmpGenPho'][1] = IPhot
+    Dsetup['Npho'][1] = Npho
+
+  fil = "ampgenpho.elc"
+  if fexist(fil):
+    nampele = ncread("nampele","i:e:g:z:y:zp:yp","ampgenpho.elc")
 
   nlist()
 
@@ -4225,6 +5083,12 @@ def _calc_spec():
   IWigner = int(words[0])
   nosplineefold = int(words[1])
   nEfold = int(words[2])
+  nSigE = words[3]
+
+  words = fpin.readline().strip().split()
+  nelecamppho = int(words[0])
+  npho = int(words[1])
+  moderan = int(words[2])
 
   fpin.close()
 
@@ -4251,6 +5115,7 @@ def _set_plot_spec():
 
   global nsto,nfld,nflx,nbun,Esel
   global BeamPar,UnduPar,SpecPar,BrillPar,PlotPar
+  global nSigE
 
 
   global SetUp_Plot, Vsetup_Plot, LastSetUp_Plot, Dsetup
@@ -4267,9 +5132,12 @@ def _SetUpIn_Plot(event,kvar):
 #enddef _SetUpInPlot(event,kvar)
 
 def _SetUpOut_Plot(event,kvar):
+
   global SetUp_Plot, Vsetup_Plot, LastSetUp_Plot,Dsetup
+
   ev = LastSetUp_Plot[0].widget
   val = ev.get()
+
   try:
     if len(val.split('.')) > 1:
       val = float(val)
@@ -4279,20 +5147,38 @@ def _SetUpOut_Plot(event,kvar):
   except:
     pass
   #entry
+
   Vsetup_Plot[kvar][1][1] = val
   vs = Vsetup_Plot[kvar]
   Dsetup[vs[0]] = vs[1]
+  #reakpoint()
+  setstat(Dsetup['Statistic'][1])
+  #print("_SetupOut_Plot:",getstat())
   _set_plot_spec()
-#enddef _SetUpOutPlot(event,kvar)
+#enddef _SetUpOut_Plot(event,kvar)
 
 def _closeSetUp_Plot():
 
   global SetUp_Plot, Vsetup_Plot, LastSetUp_Plot, Dsetup
 
+  #print("_closeSetUp_Plot:")
+
+  #reakpoint()
   if LastSetUp_Plot:
-    ev = LastSetUp_Plot[0].widget
+
+    #print("Last:",LastSetUp_Plot)
     kvar = LastSetUp_Plot[1]
-    val = ev.get()
+    #print("kvar:",kvar)
+    #reakpoint()
+
+    # Unverstanden, warum es mit Statistic nicht funktioniert hat!
+    ev = LastSetUp_Plot[0].widget
+    try:
+      val = ev.get()
+    except:
+      val =Vsetup_Plot[kvar][1][1]
+    #print(kvar,val)
+
     try:
       if len(val.split('.')) > 1:
         val = float(val)
@@ -4300,16 +5186,24 @@ def _closeSetUp_Plot():
         val = int(val)
       #endif
     except: pass
+
     Vsetup_Plot[kvar][1][1] = val
     vs = Vsetup_Plot[kvar]
     Dsetup[vs[0]] = vs[1]
+
   else:
+
     #_set_plot_spec()
     for vs in Vsetup_Plot:
+      #print(vs)
       Dsetup[vs[0]] = vs[1]
     #endfor
+
   #endif LastSetup
 
+  #print("break in _closeSetUp_Plot")
+  #reakpoint()
+  setstat(Dsetup['Statistic'][1])
   _set_plot_spec()
 
   SetUp_Plot.destroy()
@@ -4330,6 +5224,8 @@ def _vsetup_plot_ini():
   Dsetup['NyZones'] = ["NyZones",1]
   global ClearCanvas
   Dsetup['ClearCanvas'] = ["Clear Canvas",ClearCanvas]
+  Dsetup['Statistic'] = ["Statistic on plots",getstat()]
+
   set_ClearCanvas(ClearCanvas)
 
   Vsetup_Plot = []
@@ -4356,6 +5252,7 @@ def _setup_plot():
 
   global nsto,nfld,nflx,nbun,Esel
   global BeamPar,UnduPar,SpecPar,BrillPar,PlotPar
+  global nSigE
 
 
 
@@ -4372,6 +5269,17 @@ def _setup_plot():
 
   if not len(Vsetup_Plot): _vsetup_plot_ini()
 
+#  global combomod3d
+#  fmo = Frame(SetUp_Plot)
+#  lcm = Label(fmo,text='Mode',width=10,font=Myfont)
+#  lcm.pack(side=LEFT)
+#  combomod3d = ttk.Combobox(fmo,values=Mode3ds)
+#  idx = getmode3dindex(Mode3d)
+#  if idx >= 0 and idx < len(Mode3ds): combomod3d.current(idx)
+#  combomod3d.bind("<<ComboboxSelected>>",_combomod3d)
+#  combomod3d.pack(side=RIGHT)
+#  fmo.pack()
+
   for i in range(len(Vsetup_Plot)):
     f = Frame(SetUp_Plot)
     flab = Label(f,text=Vsetup_Plot[i][1][0],font=('arial',MyLabel_font_size))
@@ -4384,6 +5292,9 @@ def _setup_plot():
     fent.bind('<Return>',lambda event,kvar=i:_SetUpOut_Plot(event,kvar))
     f.pack(fill='x')
   #endfor
+
+  #print(Vsetup_Plot)
+  #reakpoint()
 
   bClose = Button(SetUp_Plot,text='Close',font=MyLabel_font_size,command=_closeSetUp_Plot)
   bClose.pack()
@@ -4435,6 +5346,17 @@ def _closeSetUp_Spec():
     #endfor
   #endif LastSetup
 
+  neleca = int(Dsetup['nElecAmpGenPho'][1])
+  npho = int(Dsetup['Npho'][1])
+
+  if not npho or not neleca:
+    npho = 0
+    neleca = 0
+  #endif
+
+  Dsetup['Npho'][1] = npho
+  Dsetup['nElecAmpGenPho'][1] = neleca
+
   _dvsetup()
   SetUp_Spec.destroy()
 
@@ -4460,6 +5382,7 @@ def _setup_spec():
 
   global nsto,nfld,nflx,nbun,Esel
   global BeamPar,UnduPar,SpecPar,BrillPar,PlotPar
+  global nSigE
 
 
 
@@ -4479,7 +5402,8 @@ def _setup_spec():
   wm = Wmaster.winfo_width()
   hm = Wmaster.winfo_height()
 
-  SetUp_Spec.geometry('+' + str(int(xm+wm/3)) + '+' + str(int(ym+hm*0.05)))
+#  SetUp_Spec.geometry('+' + str(int(xm+wm/3)) + '+' + str(int(ym+hm*0.05)))
+  SetUp_Spec.geometry('+' + str(int(xm+wm/3)) + '+0')
 
   LastSetUp_Spec = 0
 
@@ -4570,6 +5494,7 @@ def _setup_brill():
 
   global nsto,nfld,nflx,nbun,Esel
   global BeamPar,UnduPar,SpecPar,BrillPar,PlotPar
+  global nSigE
 
 
 
@@ -4677,6 +5602,7 @@ def _setup_undu():
 
   global nsto,nfld,nflx,nbun,Esel
   global BeamPar,UnduPar,SpecPar,BrillPar,PlotPar
+  global nSigE
 
 
   global SetUp_Undu,Vsetup_Undu, LastSetUp_Undu
@@ -4788,6 +5714,7 @@ def _setup_beam():
 
   global nsto,nfld,nflx,nbun,Esel
   global BeamPar,UnduPar,SpecPar,BrillPar,PlotPar
+  global nSigE
 
 
 
@@ -4863,6 +5790,8 @@ def _readlastrun():
 
   if os.path.exists(fl):
 
+    print("\nReading variables from .pybrill_last.dat\n")
+
     Fl = open(fl,"r")
     lines = Fl.readlines()
     Fl.close()
@@ -4894,7 +5823,7 @@ def _readlastrun():
 def pwplot(y,n,ftit):
 
     global L, nKvals, Kvals, b0, Kmin, Kmax, Kellip, N, Ebeam, Curr, EmitH, EmitV
-    global BetaH, BetaV, SigE, Mode, KyzList
+    global BetaH, BetaV, Espread, Mode, KyzList
 
     x = Harm[n]
     plt.plot(x,y)
@@ -4903,13 +5832,13 @@ def pwplot(y,n,ftit):
 
     Fn = open(fn,'w')
 
-    Fn.write("* Period-length [mm]" + str(L) + "\n")
+    Fn.write("* Period-length [mm] " + str(L) + "\n")
     Fn.write("* Beam energy [GeV], Curr [A] " + str(Ebeam) + " " + str(Curr) + "\n")
     Fn.write("* Hori. and vert. Emittance [nm-rad] " +  str(EmitH) + " " + str(EmitV) + "\n")
     Fn.write("* Hori. and vert. Beta-functions [m] " + str(BetaH) + " " + str(BetaV) + "\n")
-    Fn.write("* Rel. beam energy spread " + str(SigE) + "\n")
+    Fn.write("* Rel. beam energy spread " + str(Espread) + "\n")
     Fn.write("* Columns: \n")
-    Fn.write("* Index Energy Photons Keff Beff " + str(SigE) + "\n")
+    Fn.write("* Index Energy Photons Keff Beff " + str(Espread) + "\n")
 
     for j in range(nKvals):
         i = nKvals - j - 1
@@ -4968,12 +5897,15 @@ def _pcohflux():
   Ax.set_title("Coherent Flux")
 
   Ax.set_xlabel("photon enery [keV]")
-  Ax.set_ylabel("N [1/s/mm$^{2}$/0.1%BW/" + str(Curr) + "A]")
+  Ax.set_ylabel("N$_{\\gamma} [$1/s/mm$^{2}$/0.1%BW/" + str(Curr) + "A]")
 
   Ax.set_ylim(FCmax/1.e4,FCmax*2.)
 
   grid()
   plt.show(block=False)
+
+  pplot("coherent_flux.pdf")
+
 #enddef _pcohflux()
 
 def _pbrillflux():
@@ -5007,12 +5939,15 @@ def _pbrillflux():
   Ax.set_title("Brilliant Flux")
 
   Ax.set_xlabel("photon enery [keV]")
-  Ax.set_ylabel("N [1/s/mm$^{2}$/0.1%BW/" + str(Curr) + "A]")
+  Ax.set_ylabel("N$_{\\gamma} [$1/s/mm$^{2}$/0.1%BW/" + str(Curr) + "A]")
 
   Ax.set_ylim(FBmax/1.e4,FBmax*2.)
 
   grid()
   plt.show(block=False)
+
+  pplot("brilliant_flux.pdf")
+
 #enddef _pbrillflux()
 
 def _pflux():
@@ -5046,12 +5981,15 @@ def _pflux():
     Ax.set_title("Flux")
 
     Ax.set_xlabel("photon enery [keV]")
-    Ax.set_ylabel("N [1/s/0.1%BW/" + str(Curr) + "A]")
+    Ax.set_ylabel("N$_{\\gamma} [$1/s/0.1%BW/" + str(Curr) + "A]")
 
     Ax.set_ylim(Fmax/1.e4,Fmax*2.)
 
     grid()
     plt.show(block=False)
+
+    pplot("flux.pdf")
+
 #enddef _pflux()
 
 def _pfluxden():
@@ -5085,12 +6023,14 @@ def _pfluxden():
     Ax.set_title("Flux-density")
 
     Ax.set_xlabel("photon enery [keV]")
-    Ax.set_ylabel("N [1/s/mrad$^{2}$/0.1%BW/" + str(Curr) + "A]")
+    Ax.set_ylabel("N$_{\\gamma} [$1/s/mrad$^{2}$/0.1%BW/" + str(Curr) + "A]")
 
     Ax.set_ylim(FDmax/1.e4,FDmax*2.)
 
     grid()
     plt.show(block=False)
+
+    pplot("flux-density.pdf")
 #enddef _pfluxden()
 
 def _pbrill():
@@ -5124,12 +6064,15 @@ def _pbrill():
   Ax.set_title("Brilliance")
 
   Ax.set_xlabel("photon enery [keV]")
-  Ax.set_ylabel("N [1/s/mm$^{2}$/mrad$^{2}$/0.1%BW/" + str(Curr) + "A]")
+  Ax.set_ylabel("N$_{\\gamma} [$1/s/mm$^{2}$/mrad$^{2}$/0.1%BW/" + str(Curr) + "A]")
 
   Ax.set_ylim(Bmax/1.e4,Bmax*2.)
 
   grid()
   plt.show(block=False)
+
+  pplot("brilliance.pdf")
+
 #enddef _pbrill()
 
 def _UpdateVars():
@@ -5150,15 +6093,13 @@ def _UpdateVars():
 
   global Calculated_Brill, LastSetup, Kellip, Calculated_Spec, NcalcSpec
   global L, nKvals, Kvals, b0, Kmin, Kmax, Kellip, N, Ebeam, Curr, \
-  EmitH, EmitV, BetaH, BetaV, SigE, Mode, Espread, EbeamMin,EbeamMax, dEbeam
+  EmitH, EmitV, BetaH, BetaV, Espread, Mode, Espread, EbeamMin,EbeamMax, dEbeam
 
   dsetupold = deepcopy(Dsetup)
   _dvsetup()
 
   N = Dsetup['Nper'][1]
   L = Dsetup['Perlen'][1]
-
-  Dsetup['Espread'] = Dsetup['SigE']
 
   Calculated_Brill = False
   Calculated_Spec = False
@@ -5186,14 +6127,14 @@ def _calc_brill():
 
     global Calculated_Brill, LastSetup, Kellip, NcalcBrill
     global L, nKvals, Kvals, b0, Kmin, Kmax, Kellip, N, Ebeam, Curr, \
-    EmitH, EmitV, BetaH, BetaV, SigE, Mode
+    EmitH, EmitV, BetaH, BetaV, Espread, Mode
 
     debugbreak('calc_brill()')
     _UpdateVars()
 
     calc_brill(\
     L, nKvals, Kmin, Kmax, N, Ebeam, Curr, \
-    EmitH, EmitV, BetaH, BetaV, SigE, Mode \
+    EmitH, EmitV, BetaH, BetaV, Espread, Mode \
     )
 
     Calculated_Brill = True
@@ -5303,12 +6244,13 @@ def _setup():
 
   global nsto,nfld,nflx,nbun,Esel
   global BeamPar,UnduPar,SpecPar,BrillPar,PlotPar
+  global nSigE
 
 
 
   global Fkn, F,FD, FC, FB, Qn, B, Harm, Lam, Sigr, Sigrp, KyxList
   global L, nKvals, Kvals, b0, Kmin, Kmax, Kellip, N, Ebeam, Curr, \
-  EmitH, EmitV, BetaH, BetaV, SigE, Mode, Nmax
+  EmitH, EmitV, BetaH, BetaV, Espread, Mode, Nmax
   global MBrill, Myfont, MyLabel_font_size
   global SetUp, Setup_Menu, Vsetup,Vsetup_Beam,Vsetup_Undu,Vsetup_Brill, \
   Vsetup_Spec,Vsetup_Cont, LastSetup
@@ -5380,11 +6322,11 @@ def _showMenu(menu,name):
     MSetup.unpost()
     MBrill.unpost()
     menu.post(x,y)
-    if Modepin != 0:
-      mPlotSpec.entryconfig(1,foreground='gray')
-    else:
-      mPlotSpec.entryconfig(1,foreground='black')
-    #endif
+    #    if Modepin != 0:
+    #      mPlotSpec.entryconfig(1,foreground='gray')
+    #    else:
+    mPlotSpec.entryconfig(1,foreground='black')
+    #    #endif
   #endif
 
 #enddef _showMenu()
@@ -5426,8 +6368,8 @@ EmitH = 4.4 #nm-rad
 EmitV = 0.066
 BetaH = 14. #m
 BetaV = 3.4
-SigE = 0.001
-Espread = SigE
+#SigE = 0.001
+Espread = 0.001
 Disph = 0.0 #m
 Dispph = 0.0 #rad
 Dispv = 0.0 #m
@@ -5453,7 +6395,8 @@ Dsetup['EmitH'] =  ["Hor. Emit. [nm-rad]",EmitH]
 Dsetup['EmitV'] =  ["Ver. Emit. [nm-rad]",EmitV]
 Dsetup['BetaH'] =  ["Hori. Beta function",BetaH]
 Dsetup['BetaV'] =  ["Vert. Beta function",BetaV]
-Dsetup['SigE'] =  ["Rel. energy spread",SigE]
+#Dsetup['SigE'] =  ["Rel. energy spread",SigE]
+Dsetup['Espread'] =  ["Rel. energy spread",Espread]
 Dsetup['Disph'] =  ["Hori. Dispersion [mm]",Disph]
 Dsetup['Dispph'] =  ["Derivative of Hori. Dispersion [mrad]",Dispph]
 Dsetup['Dispv'] =  ["Vert. Dispersion [mm]",Dispv]
@@ -5475,27 +6418,29 @@ Dsetup['Nmin'] = ["Lowest harmonic",Nmin]
 Dsetup['Nmax'] = ["Highest harmonic",Nmax]
 Dsetup['Mode'] = ["Brilliance Mode [-1,1,2,3]",Mode]
 
+Mthreads = -1
 Nelec = 1
+Ihbunch = 1
 Modepin = 0
 ModeSphere = 0
-Nepho = 11
-EphMin = 90.
-EphMax = 110.
-PinW = 1.0
-PinH = 1.0
+Nepho = 101
+EphMin = 95.
+EphMax = 105.
+PinW = 2.0
+PinH = 2.0
 PinX = 10000.0
 PinY = 0.0
 PinZ = 0.0
-NpinZ = 11
-NpinY = 11
+NpinZ = 31
+NpinY = 31
 Step = 0.2
 Pherror = 0.0
 IFieldProp = 0
 PinXprop = 0.0
 PinWprop = 0.1
 PinHprop = 0.1
-NpinZprop = 21
-NpinYprop = 21
+NpinZprop = 51
+NpinYprop = 51
 Ifixseed = 0
 
 IfixPhase = 0
@@ -5510,8 +6455,9 @@ TheZWig= 0.05
 nEfold = 0
 NoSplineEfold = 0
 
-EbeamMin = Ebeam*(1.0-3.0*Espread)
-EbeamMax = Ebeam*(1.0+3.0*Espread)
+nSigE = 3.0
+EbeamMin = Ebeam*(1.0-nSigE*Espread)
+EbeamMax = Ebeam*(1.0+nSigE*Espread)
 
 if nEfold > 1:
   dEbeam = (EbeamMax-EbeamMin)/(nEfold-1)
@@ -5519,17 +6465,19 @@ else:
   dEbeam = 0
 #endif
 
+Dsetup['Mthreads'] = ["Mthreads",Mthreads]
 Dsetup['Nelec'] = ["Nelec",Nelec]
+Dsetup['Ihbunch'] = ["Ihbunch",Ihbunch]
 Dsetup['Modepin'] = ["Monte-Carlo mode [0,1]",Modepin]
 Dsetup['Noranone'] = ["No randomization of first e- [0,1]",Noranone]
 Dsetup['Nepho'] = ["Number of Photon Energies",Nepho]
 Dsetup['EphMin'] = ["Min. Photon Energy [eV]",EphMin]
 Dsetup['EphMax'] = ["Max. Photon Energy [eV]",EphMax]
-Dsetup['PinX'] = ["X of PinHole [mm]",PinX]
-Dsetup['PinY'] = ["Y of PinHole [mm]",PinY]
-Dsetup['PinZ'] = ["Z of PinHole [mm]",PinZ]
-Dsetup['PinW'] = ["Width of PinHole [mm]",PinW]
-Dsetup['PinH'] = ["Height of PinHole [mm]",PinH]
+Dsetup['PinX'] = ["X of Pinhole [mm]",PinX]
+Dsetup['PinY'] = ["Y of Pinhole [mm]",PinY]
+Dsetup['PinZ'] = ["Z of Pinhole [mm]",PinZ]
+Dsetup['PinW'] = ["Width of Pinhole [mm]",PinW]
+Dsetup['PinH'] = ["Height of Pinhole [mm]",PinH]
 Dsetup['NpinZ'] = ["Number of hori. points",NpinZ]
 Dsetup['NpinY'] = ["Number of vert. points",NpinY]
 Dsetup['ModeSphere'] = ["Arrange grid points on sphere [0,1]",ModeSphere]
@@ -5537,11 +6485,11 @@ Dsetup['Step'] = ["Tracking step size [mm]",Step]
 Dsetup['Pherror'] = ["Phase errors",Pherror]
 
 Dsetup['IFieldProp'] = ["Propagate radiation field back to origin",IFieldProp]
-Dsetup['PinXprop'] = ["Long. Position of Plane [mm]",PinXprop]
-Dsetup['PinWprop'] = ["Width of PinHole in Plane [mm]",PinWprop]
-Dsetup['PinHprop'] = ["Height of PinHole in Plane [mm]",PinHprop]
-Dsetup['NpinZprop'] = ["Number of hori. points in Plane",NpinZprop]
-Dsetup['NpinYprop'] = ["Number of vert. points in Plane",NpinYprop]
+Dsetup['PinXprop'] =  ["   Long. Position of Plane [mm]",PinXprop]
+Dsetup['PinWprop'] =  ["   Width of Pinhole in Plane [mm]",PinWprop]
+Dsetup['PinHprop'] =  ["   Height of Pinhole in Plane [mm]",PinHprop]
+Dsetup['NpinZprop'] = ["   Number of hori. points in Plane",NpinZprop]
+Dsetup['NpinYprop'] = ["   Number of vert. points in Plane",NpinYprop]
 
 Dsetup['Ifixseed'] = ["Fix Seeds [0,1]",Ifixseed]
 
@@ -5549,16 +6497,24 @@ Dsetup['IfixPhase'] = ['Random phase for e-',IfixPhase]
 Dsetup['PhGshift'] = ['Global phase shift. 9999.: Hori. amplitude is zero for (PinX,PinY,PinZ)) ',PhGshift]
 Dsetup['GlobPhaseProp'] = ['Global phase shift. of prop. fields. 9999.: Hori. amplitude is zero for (PinX,PinY,PinZ)) ',GlobPhaseProp]
 Dsetup['IWigner'] = ['Calculate Wigner Distributions [-4,-3,-2,-1,0,1]',IWigner]
-Dsetup['NyTheWig'] = ['Number of vert. angle steps',NyTheWig]
-Dsetup['TheYWig'] = ['Vert. angle range',TheYWig]
-Dsetup['NzTheWig'] = ['Number of hori. angle steps',NzTheWig]
-Dsetup['TheZWig'] = ['Hori. angle range',51,TheZWig]
+Dsetup['IWigNoFile'] = ['  Wigner Distribution is not written to file [0,1]',0]
+Dsetup['NyTheWig'] = ['  Number of vert. angle steps',NyTheWig]
+Dsetup['TheYWig'] = ['  Vert. angle range',TheYWig]
+Dsetup['NzTheWig'] = ['  Number of hori. angle steps',NzTheWig]
+Dsetup['TheZWig'] = ['  Hori. angle range',51,TheZWig]
+Dsetup['iPhaseSpace'] = ['   Pattern of five bits to generate photons (Option iGenPho)',1111]
+
 Dsetup['Ebeam'] =  ["Beam energy [GeV]",Ebeam]
 Dsetup['EbeamMin'] =  ["Min. beam energy [GeV]",EbeamMin]
 Dsetup['EbeamMax'] =  ["Max. beam energy [GeV]",EbeamMax]
 Dsetup['dEbeam'] =  ["dEbeam",dEbeam]
-Dsetup['nEfold'] = ['Number of E-spread steps',0,nEfold]
-Dsetup['NoSplineEfold'] = ['Suppress splines for E-spread folding',NoSplineEfold]
+Dsetup['nEfold'] = ['Number of E-spread steps for Wigner and photon generation',0,nEfold]
+Dsetup['NoSplineEfold'] = ['  Suppress splines for E-spread folding',NoSplineEfold]
+
+Dsetup['nElecAmpGenPho'] = ['Number of electrons to generated photons from field amplitude',0]
+Dsetup['iGenPho'] = ['Generate photons from Wigner-Distribution [-1,0,1]',0]
+Dsetup['Npho'] = ['Number of photons per electron to be generated',0]
+Dsetup['ModeRan'] = ['   Photons for all grid points (zero) or from Npho random grid points (not zero)','1']
 
 _vsetup_plot_ini()
 _dvsetup()
@@ -5719,18 +6675,52 @@ MFd = Menu(MSpec,tearoff=1,font=Myfont)
 global MElec
 MElec = Menu(MFlux,tearoff=0,font=Myfont)
 
+global MElecPhot
+MElecPhot = Menu(MFlux,tearoff=0,font=Myfont)
+
+global MPhot, NPhotMentries, IPhot, Npho
+
+MPhot = Menu(MSpec,tearoff=0,font=Myfont)
+MPhotMentries = 0
+#reakpoint() #1
+IPhot = 0
+#rint("1",IPhot)
+Npho = 0
+
 mPlotSpec.add_cascade(label='Flux', menu=MFlux)
-mPlotSpec.add_cascade(label='Central Flux-density', menu=MFd)
+if Modepin == 0:
+  mPlotSpec.add_cascade(label='Central Flux-density', menu=MFd)
+else:
+  mPlotSpec.add_cascade(label='Mean Flux-density', menu=MFd)
+#endif
 mPlotSpec.add_cascade(label='Distributions in Pinhole', menu=MDist)
 mPlotSpec.add_cascade(label='Distributions of Propagated Fields', menu=MProp)
 mPlotSpec.add_cascade(label='Wigner Distributions', menu=MWigner)
-mPlotSpec.add_cascade(label='Electrons', menu=MElec)
+mPlotSpec.add_cascade(label='Photons', menu=MPhot)
+if fexist("ampgenpho.pho"):
+  mPlotSpec.add_cascade(label='Electrons of Spect. Calculations', menu=MElec)
+if fexist("ampgenpho.elc"):
+  mPlotSpec.add_cascade(label='Electrons of Photon Generation', menu=MElecPhot)
 
 MElec.add_command(label="Zi-Zi'", command= lambda key='zizpi': _pElec(key))
 MElec.add_command(label="Yi-Yi'", command= lambda key='yiypi': _pElec(key))
 MElec.add_command(label="Zi-Yi", command= lambda key='ziyi': _pElec(key))
 MElec.add_command(label="Zi'-Yi'", command= lambda key='zpiypi': _pElec(key))
+MElec.add_command(label="Zf-Zf'", command= lambda key='zfzpf': _pElec(key))
+MElec.add_command(label="Yf-Yf'", command= lambda key='yfypf': _pElec(key))
+MElec.add_command(label="Zf-Yf", command= lambda key='zfyf': _pElec(key))
+MElec.add_command(label="Zf'-Yf'", command= lambda key='zpfypf': _pElec(key))
 MElec.add_command(label="E", command= lambda key='eel': _pElec(key))
+
+MElecPhot.add_command(label="Z", command= lambda key='z': _pElecPhot(key))
+MElecPhot.add_command(label="Z'", command= lambda key='zp': _pElecPhot(key))
+MElecPhot.add_command(label="Y", command= lambda key='y': _pElecPhot(key))
+MElecPhot.add_command(label="Y'", command= lambda key='yp': _pElecPhot(key))
+MElecPhot.add_command(label="Z-Z'", command= lambda key='zzp': _pElecPhot(key))
+MElecPhot.add_command(label="Y-Y'", command= lambda key='yyp': _pElecPhot(key))
+MElecPhot.add_command(label="Z'-Y'", command= lambda key='zpyp': _pElecPhot(key))
+MElecPhot.add_command(label="Z-Y", command= lambda key='zy': _pElecPhot(key))
+MElecPhot.add_command(label="E", command= lambda key='eel': _pElecPhot(key))
 
 global MFdStokes
 MFdStokes = Menu(MFd,tearoff=0,font=Myfont)
@@ -5755,12 +6745,47 @@ MFluxStokes.add_command(label='S3', command= lambda key='s3': _pFluxSpec(key))
 #MFluxPola.add_command(label='P3', command= lambda key='p3': _pFluxSpec(key))
 
 MDistStokes = Menu(MDist,tearoff=0,font=Myfont)
+
+if Modepin:
+  MDistProfStokes = Menu(MDist,tearoff=0,font=Myfont)
+else:
+  MDistCutsStokes = Menu(MDist,tearoff=0,font=Myfont)
+
 MDistFields = Menu(MDist,tearoff=0,font=Myfont)
 
 MDist.add_cascade(label='Stokes', menu=MDistStokes)
+
+if Modepin:
+  MDist.add_cascade(label='Profiles of Stokes', menu=MDistProfStokes)
+else:
+  MDist.add_cascade(label='Cuts of Stokes', menu=MDistCutsStokes)
+
 MDist.add_cascade(label='Field Amplitudes', menu=MDistFields)
+#MDist.add_cascade(label='Photons', menu=MDistPhotons)
 MDist.add_command(label='Power', command= lambda key='p': _pFdPin(key))
 MDist.add_command(label='Select E_photon', command=_setup_esel)
+MDist.add_command(label='Select E_beam', command=_setup_ebeam)
+
+if Modepin:
+  MDistProfStokes.add_command(label='hori. profile S0', command= lambda key='hps0': _pFdPin(key))
+  MDistProfStokes.add_command(label='hori. profile S1', command= lambda key='hps1': _pFdPin(key))
+  MDistProfStokes.add_command(label='hori. profile S2', command= lambda key='hps2': _pFdPin(key))
+  MDistProfStokes.add_command(label='hori. profile S3', command= lambda key='hps3': _pFdPin(key))
+
+  MDistProfStokes.add_command(label='vert. profile S0', command= lambda key='vps0': _pFdPin(key))
+  MDistProfStokes.add_command(label='vert. profile S1', command= lambda key='vps1': _pFdPin(key))
+  MDistProfStokes.add_command(label='vert. profile S2', command= lambda key='vps2': _pFdPin(key))
+  MDistProfStokes.add_command(label='vert. profile S3', command= lambda key='vps3': _pFdPin(key))
+else:
+  MDistCutsStokes.add_command(label='hori. cut of S0', command= lambda key='hcs0': _pFdPin(key))
+  MDistCutsStokes.add_command(label='hori. cut of S1', command= lambda key='hcs1': _pFdPin(key))
+  MDistCutsStokes.add_command(label='hori. cut of S2', command= lambda key='hcs2': _pFdPin(key))
+  MDistCutsStokes.add_command(label='hori. cut of S3', command= lambda key='hcs3': _pFdPin(key))
+
+  MDistCutsStokes.add_command(label='vert. cut of S0', command= lambda key='vcs0': _pFdPin(key))
+  MDistCutsStokes.add_command(label='vert. cut of S1', command= lambda key='vcs1': _pFdPin(key))
+  MDistCutsStokes.add_command(label='vert. cut of S2', command= lambda key='vcs2': _pFdPin(key))
+  MDistCutsStokes.add_command(label='vert. cut of S3', command= lambda key='vcs3': _pFdPin(key))
 
 MDistStokes.add_command(label='S0', command= lambda key='s0': _pFdPin(key))
 MDistStokes.add_command(label='S1', command= lambda key='s1': _pFdPin(key))
@@ -5773,9 +6798,13 @@ MDistFields.add_command(label='Ez_real', command= lambda key='ezr': _pFdPin(key)
 MDistFields.add_command(label='Ez_imag', command= lambda key='ezi': _pFdPin(key))
 
 MPropStokes = Menu(MProp,tearoff=0,font=Myfont)
+
+MPropCutsStokes = Menu(MProp,tearoff=0,font=Myfont)
+
 MPropFields = Menu(MProp,tearoff=0,font=Myfont)
 
 MProp.add_cascade(label='Stokes', menu=MPropStokes)
+MProp.add_cascade(label='Cuts of Stokes', menu=MPropCutsStokes)
 MProp.add_cascade(label='Field Amplitudes', menu=MPropFields)
 MProp.add_command(label='Select E_photon', command=_setup_esel)
 
@@ -5784,13 +6813,91 @@ MPropStokes.add_command(label='S1', command= lambda key='s1': _pFdProp(key))
 MPropStokes.add_command(label='S2', command= lambda key='s2': _pFdProp(key))
 MPropStokes.add_command(label='S3', command= lambda key='s3': _pFdProp(key))
 
+MPropCutsStokes.add_command(label='Horizontal Cut of S0', command= lambda key='hcs0': _pFdProp(key))
+MPropCutsStokes.add_command(label='Horizontal Cut of S1', command= lambda key='hcs1': _pFdProp(key))
+MPropCutsStokes.add_command(label='Horizontal Cut of S2', command= lambda key='hcs2': _pFdProp(key))
+MPropCutsStokes.add_command(label='Horizontal Cut of S3', command= lambda key='hcs3': _pFdProp(key))
+
+MPropCutsStokes.add_command(label='Vertical Cut of S0', command= lambda key='vcs0': _pFdProp(key))
+MPropCutsStokes.add_command(label='Vertical Cut of S1', command= lambda key='vcs1': _pFdProp(key))
+MPropCutsStokes.add_command(label='Vertical Cut of S2', command= lambda key='vcs2': _pFdProp(key))
+MPropCutsStokes.add_command(label='Vertical Cut of S3', command= lambda key='vcs3': _pFdProp(key))
+
 MPropFields.add_command(label='Ey_real', command= lambda key='EYR': _pFdProp(key))
 MPropFields.add_command(label='Ey_imag', command= lambda key='EYI': _pFdProp(key))
 MPropFields.add_command(label='Ez_real', command= lambda key='EZR': _pFdProp(key))
 MPropFields.add_command(label='Ez_imag', command= lambda key='EZI': _pFdProp(key))
 
 IWigner = Dsetup['IWigner'][1]
+#reakpoint() #2
+#rint("2",IPhot)
+IPhot = Dsetup['nElecAmpGenPho'][1]
+Npho = Dsetup['Npho'][1]
 nEfold = Dsetup['nEfold'][1]
+
+def _reset_mphot():
+
+  global MPhot, NPhotMentries,nEfold
+
+  #reakpoint()
+
+  try: MPhot.delete('S0(z,y)')
+  except: pass
+
+  try: MPhot.delete('Select E_photon')
+  except: pass
+
+  try: MPhot.delete('Select E_Beam')
+  except: pass
+
+  NPhotMentries = 0
+
+  #rint("x",IPhot)
+
+  fil = "ampgenpho.pho"
+  if IPhot > 0 or fexist(fil):
+
+    MPhot.add_command(label='S0(z,y)', command= lambda key='PhzyS0': _pPhot(key))
+    NPhotMentries += 1
+    MPhot.add_command(label='S1(z,y)', command= lambda key='PhzyS1': _pPhot(key))
+    NPhotMentries += 1
+    MPhot.add_command(label='S2(z,y)', command= lambda key='PhzyS2': _pPhot(key))
+    NPhotMentries += 1
+    MPhot.add_command(label='S3(z,y)', command= lambda key='PhzyS3': _pPhot(key))
+    NPhotMentries += 1
+    MPhot.add_command(label='S0(z,Theta_z)', command= lambda key='PhztzS0': _pPhot(key))
+    NPhotMentries += 1
+    MPhot.add_command(label='S1(z,Theta_z)', command= lambda key='PhztzS1': _pPhot(key))
+    NPhotMentries += 1
+    MPhot.add_command(label='S2(z,Theta_z)', command= lambda key='PhztzS2': _pPhot(key))
+    NPhotMentries += 1
+    MPhot.add_command(label='S3(z,Theta_z)', command= lambda key='PhztzS3': _pPhot(key))
+    NPhotMentries += 1
+    MPhot.add_command(label='S0(y,Theta_y)', command= lambda key='PhytyS0': _pPhot(key))
+    NPhotMentries += 1
+    MPhot.add_command(label='S1(y,Theta_y)', command= lambda key='PhytyS1': _pPhot(key))
+    NPhotMentries += 1
+    MPhot.add_command(label='S2(y,Theta_y)', command= lambda key='PhytyS2': _pPhot(key))
+    NPhotMentries += 1
+    MPhot.add_command(label='S3(y,Theta_y)', command= lambda key='PhytyS3': _pPhot(key))
+    NPhotMentries += 1
+    MPhot.add_command(label='S0(Theta_z,Theta_y)', command= lambda key='PhtztyS0': _pPhot(key))
+    NPhotMentries += 1
+    MPhot.add_command(label='S1(Theta_z,Theta_y)', command= lambda key='PhtztyS1': _pPhot(key))
+    NPhotMentries += 1
+    MPhot.add_command(label='S2(Theta_z,Theta_y)', command= lambda key='PhtztyS2': _pPhot(key))
+    NPhotMentries += 1
+    MPhot.add_command(label='S3(Theta_z,Theta_y)', command= lambda key='PhtztyS3': _pPhot(key))
+    NPhotMentries += 1
+  #endif
+
+  MPhot.add_command(label='Select E_photon', command=_setup_esel)
+  NPhotMentries += 1
+
+  #MPhot.add_command(label='Select E_beam', command=_setup_ebeam)
+  #NPhotMentries += 1
+
+#enddef
 
 def _reset_mwigner():
 
@@ -5855,9 +6962,14 @@ def _reset_mwigner():
 debugbreak('Main 4')
 
 _reset_mwigner()
+_reset_mphot()
 
 bExit = Button(Toolbar,text='Exit',font=Myfont,command=_exit)
 bExit.pack(side=LEFT)
+
+global S_IEbeam
+S_IEbeam = StringVar()
+S_IEbeam.set(IEbeam)
 
 global S_Esel,S_IEsel
 S_IEsel = StringVar()

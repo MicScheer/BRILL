@@ -1,0 +1,126 @@
+\documentclass[ngerman,a4paper,twoside]{article}
+
+%\usepackage{epsfig,varioref,titlesec,latexsym,amssymb,amsmath,fancybox,graphicx}
+\usepackage{varioref,titlesec,latexsym,amssymb,amsmath,fancybox,graphicx}
+\usepackage{xcolor,relsize}
+%\usepackage{babel}
+
+\usepackage{hyperref}
+\hypersetup{
+  colorlinks,
+  linkcolor=blue,
+  filecolor=blue,
+  urlcolor=blue,	
+  citecolor=blue,
+  plainpages=false,
+  hypertexnames=false,
+}
+
+\usepackage[nottoc]{tocbibind}
+\usepackage{soul}
+\usepackage{color}
+\usepackage{epstopdf}
+\epstopdfsetup{update} % only regenerate pdf files when eps file is newer
+
+\usepackage[scaled]{helvet} %Helvetica-Fonts z.B. phvb
+\renewcommand*\familydefault{\sfdefault} % sans serif as default
+\newfont{\myheadfont}{phvb scaled \magstep4}
+
+\usepackage{fancyhdr}
+\usepackage{lmodern}
+\usepackage{amsmath}
+\usepackage{mytitlepage}
+
+\hyphenpenalty=500
+
+%\DeclareMathSizes{10}{8}{8}{7}   % For size 10 text
+%\DeclareMathSizes{12}{11}{10}{8}   % For size 10 text
+%\DeclareMathSizes{11}{19}{13}{9}   % For size 11 text
+%\DeclareMathSizes{12}{20}{14}{10}  % For size 12 text
+
+% Layout Seitenkopf
+%\addtolength{\headwidth}{\marginparsep}
+%\addtolength{\headwidth}{\marginparwidth}
+
+\setcounter{secnumdepth}{3}
+\setcounter{tocdepth}{3}
+
+\newfont{\bss}{bessy scaled \magstep 4}
+
+\setlength{\unitlength}{1cm}
+
+\clubpenalty=10000
+\widowpenalty = 10000
+\displaywidowpenalty = 10000
+
+\textwidth 16. cm
+\topmargin .0 cm
+\textheight 22.5 cm
+\parskip 0.3 cm
+\sloppy %Gegenteil von \fussy
+\oddsidemargin 0.0 cm
+\evensidemargin 0.0 cm
+\parindent=0.cm
+
+\begin{document}
+
+\thispagestyle{empty}
+
+\begin{center}
+\LARGE \textbf{PyBrill\\ Tutorial} \\[1cm]
+
+\textbf{ \Large Michael Scheer} \\[0.cm]
+%\textbf{ \Large Helmholtz-Zentrum Berlin} \\[0.75cm]
+
+\textbf{ \Large \today }\\
+\begin{figure}[htb]
+   \vspace*{2.5cm}
+   \centering
+   \includegraphics[width=0.75\textwidth]
+   {pictures/cover.pdf}
+\end{figure}
+\end{center}
+
+%\newpage
+%\thispagestyle{empty}
+%{~}
+
+\include{abbrevs}
+\include{introduction}
+%\newpage
+
+\setcounter{page}{1}
+\tableofcontents
+
+%\newpage
+
+\pagestyle{fancy}
+
+%\lhead[\bfseries\thepage]{\bfseries\rightmark}
+\lhead[\textit \thepage]{\textit \rightmark}
+\chead[]{}
+%\rhead[\bfseries\leftmark]{\bfseries\thepage}
+\rhead[\textit \leftmark]{\textit \thepage}
+
+\lfoot[]{}
+\cfoot[
+%+seq,docvers.
+]{}
+\rfoot[]{}
+
+\definecolor{orange}{rgb}{1.,0.8,0.4} % rgb
+
+\large
+
+\include{Requirements}
+\include{getting_started}
+%\include{fileformats}
+\include{examples}
+\include{hyphenation}
+
+%\include{getting_started}
+
+%\include{ex77} % User interfaces
+
+\include{bibliography}
+\end{document}

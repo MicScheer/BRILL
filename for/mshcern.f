@@ -13429,6 +13429,104 @@ C
      *        39H ERROR (N.LT.1 OR N.GT.IDIM OR K.LT.1).,
      *        6X, 3HN =, I4, 6X, 6HIDIM =, I4, 6X, 3HK =, I4, 1H. )
       END
+*CMZ :          13/12/2025  15.58.28  by  Michael Scheer
+*-- Author :    Michael Scheer   13/12/2025
+# 0 "fint.F"
+# 0 "<built-in>"
+# 0 "<command-line>"
+# 1 "/usr/include/stdc-predef.h" 1 3 4
+# 0 "<command-line>" 2
+# 1 "fint.F"
+*
+* $Id: fint.F,v 1.1.1.1 1996/02/15 17:48:36 mclareni Exp $
+*
+* $Log: fint.F,v $
+* Revision 1.1.1.1 1996/02/15 17:48:36 mclareni
+* Kernlib
+*
+*
+# 1 "kernnum/pilot.h" 1
+# 10 "fint.F" 2
+      FUNCTION FINT(NARG,ARG,NENT,ENT,TABLE)
+C
+C INTERPOLATION ROUTINE. AUTHOR C. LETERTRE.
+C MODIFIED BY B. SCHORR, 1.7.1982.
+C MODIFIED BY M. Scheer, 13.12.2025.
+C
+      INTEGER NENT(9)
+      REAL ARG(9), ENT(9), TABLE(9)
+      INTEGER INDEX(32)
+      REAL WEIGHT(32)
+cmsh      LOGICAL MFLAG, RFLAG
+      FINT = 0.
+cmsh      IF(NARG .LT. 1 .OR. NARG .GT. 5) GOTO 300
+      IF(NARG .LT. 1 .OR. NARG .GT. 5) then
+        print*,"*** Error in FINT: Number of arguments not in range [1-5] ***"
+        return
+      endif
+      LMAX = 0
+      ISTEP = 1
+      KNOTS = 1
+      INDEX(1) = 1
+      WEIGHT(1) = 1.
+      DO 100 N = 1, NARG
+        X = ARG(N)
+        NDIM = NENT(N)
+        LOCA = LMAX
+        LMIN = LMAX + 1
+        LMAX = LMAX + NDIM
+        IF(NDIM .GT. 2) GOTO 10
+        IF(NDIM .EQ. 1) GOTO 100
+        H = X - ENT(LMIN)
+        IF(H .EQ. 0.) GOTO 90
+        ISHIFT = ISTEP
+        IF(X-ENT(LMIN+1) .EQ. 0.) GOTO 21
+        ISHIFT = 0
+        ETA = H / (ENT(LMIN+1) - ENT(LMIN))
+        GOTO 30
+  10    LOCB = LMAX + 1
+  11    LOCC = (LOCA+LOCB) / 2
+        IF(X-ENT(LOCC)) 12, 20, 13
+  12    LOCB = LOCC
+        GOTO 14
+  13    LOCA = LOCC
+  14    IF(LOCB-LOCA .GT. 1) GOTO 11
+        LOCA = MIN0( MAX0(LOCA,LMIN), LMAX-1 )
+        ISHIFT = (LOCA - LMIN) * ISTEP
+        ETA = (X - ENT(LOCA)) / (ENT(LOCA+1) - ENT(LOCA))
+        GOTO 30
+  20    ISHIFT = (LOCC - LMIN) * ISTEP
+  21    DO 22 K = 1, KNOTS
+          INDEX(K) = INDEX(K) + ISHIFT
+  22    CONTINUE
+        GOTO 90
+  30    DO 31 K = 1, KNOTS
+          INDEX(K) = INDEX(K) + ISHIFT
+          INDEX(K+KNOTS) = INDEX(K) + ISTEP
+          WEIGHT(K+KNOTS) = WEIGHT(K) * ETA
+          WEIGHT(K) = WEIGHT(K) - WEIGHT(K+KNOTS)
+  31    CONTINUE
+        KNOTS = 2*KNOTS
+  90    ISTEP = ISTEP * NDIM
+ 100  CONTINUE
+      DO 200 K = 1, KNOTS
+        I = INDEX(K)
+        FINT = FINT + WEIGHT(K) * TABLE(I)
+ 200  CONTINUE
+      RETURN
+cmsh 300  CALL KERMTR('E104.1',LGFILE,MFLAG,RFLAG)
+cmsh      IF(MFLAG) THEN
+cmsh        IF(LGFILE .EQ. 0) THEN
+cmsh          WRITE(*,1000) NARG
+cmsh        ELSE
+cmsh          WRITE(LGFILE,1000) NARG
+cmsh        ENDIF
+cmsh      ENDIF
+cmsh      IF(.NOT. RFLAG) CALL ABEND
+cmsh      RETURN
+cmsh 1000 FORMAT( 7X, 24HFUNCTION FINT ... NARG =,I6,
+cmsh      + 17H NOT WITHIN RANGE)
+      END
 *CMZ :          07/10/2014  14.31.07  by  Michael Scheer
 *-- Author :    Michael Scheer   07/10/2014
 *

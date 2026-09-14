@@ -1,0 +1,109 @@
+
+%+PATCH,//BRILL/TEX
+%+DECK,requirements,T=LATEX.
+
+\renewcommand*\thesection{\Roman{section}}
+\section{Requirements}
+
+\Large
+
+\subsection{Python}
+
+To run \pB python3 must be installed on your machine. Within this tutorial
+a \Lin machine is assumed, but \pB should also run under \Wine.
+
+Several python modules are required:
+
+\begin{itemize}
+\item matplotlib
+\item pandas
+\item scipy
+\end{itemize}
+
+To check your installation, please open a command shell (we assume \bash) and enter:
+
+\cbox{
+python3 --version
+}
+
+Python should show it's version number, i.e. Python is installed. Try:
+
+\cbox{
+python3
+}
+\cbox{
+import numpy, pandas, matplotlib, scipy
+}
+
+Leave Python (Ctrl+d under \Lin, or exit() under \Win).
+
+If modules are missing, it is recommended to build your own virtual
+python environment:
+
+\cbox{
+cd\\
+mkdir python\_env\\
+python3 -m venv python\_env
+}\\
+
+To switch to this environment, enter under \Lin:
+
+\cbox{
+source ~/python\_env/bin/activate
+}
+
+Under \Win enter:
+
+\cbox{
+python\_env\textbackslash Scripts\textbackslash activate.bat\\
+}
+
+or
+
+\cbox{
+python\_env\textbackslash Scripts\textbackslash activate.psl\\
+}
+
+To leave the python environment, enter:
+
+\cbox{
+deactivate
+}
+
+To install missing modules, activate your virtual python environment,
+as described above. Then enter:
+
+\cbox{
+pip3 install matplotlib\\
+pip3 install pandas\\
+pip3 install scipy
+}\\
+
+If you prefer ipython or idle to work with, you can install them the
+same way:
+
+\cbox{
+pip3 install ipython\\
+pip3 install idle\\
+}
+
+
+\subsection{FORTRAN}
+
+The brilliance calculations of \pB are executed in \Pye,
+the working horse of the other calculations is
+
+\cbox{urad\_phase}
+
+written in \Fe.
+
+If the open source \gti{GNU} compiler \gti{gfortran} is installed,
+the program can be compiled by the script
+
+\cbox{compile\_urad\_phase.sh}
+
+under \Lin or
+
+\cbox{compile\_urad\_phase.bat}
+
+under \Wine, respectively.
