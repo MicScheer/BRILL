@@ -187,7 +187,7 @@ source plane by selecting in \gti{Set-Up/Spectra}\\
 
 \cbox{
 Nelec = 1\\
-Number of Photons Energies = 0 \\
+Number of Photons Energies = 1 \\
 Width of Pinhole = 2.0 \\
 Height of Pinhole = 2.0 \\
 Number of hori. points = 101 \\
@@ -281,3 +281,44 @@ energy,
 as it is done, when a fixed harmonic is selected in the undulator
 set-up menu.
 
+\subsection{Wigner Distribution}
+
+To calculate the Wigner distribution from the fields in the source plane
+we select in \gti{Set-Up/Spectra}
+
+\begin{figure}[htb]
+   \centering
+   \includegraphics[width=0.5\textwidth]
+   {pictures/ex5\_wigner.pdf}
+   \vspace*{-0.2cm}
+   \caption{
+   \gti{Wigner distribution in source plane}}
+   \label{ex5wigner}
+\end{figure}
+
+\cbox{
+Nelec = 1\\
+Number of Photons Energies = 1 \\
+Width of Pinhole = 0.75 \\
+Height of Pinhole = 0.75 \\
+Number of hori. points = 101 \\
+Number of vert. points = 101 \\
+Propagate radiation field back to origin = 1 \\
+Width of Pinhole in Plane = 0.1 \\
+Height of Pinhole in Plane = 0.1 \\
+Number of hori. points in Plane = 51 \\
+Number of vert. points in Plane = 51 \\
+Calculate Wigner Distributions = -1 \\
+Number of vertical angle steps = 5 \\
+}
+
+The line
+
+\cbox{Calculate Wigner Distributions = -1}
+
+triggers the Wigner calculation only for the Stokes parameter $S_0$.
+The small number of vertical angle steps is used to speed up the
+calculations, since we are only in interested in the distribution of
+the horizontal phase-space in this example (Fig. \ref{ex5wigner}).
+
+The calculations of the Wigner distributions are still experimental{\ldots}
