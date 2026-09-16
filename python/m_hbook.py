@@ -17288,7 +17288,7 @@ def showplot(visible=True,kpdf=0):
 def optconsole(con=True): global Igetconsole; Igetconsole = con
 
 def hplot2d(idh, plopt='!', block=False, scalex=1., scaley=1., scalez=1.,
-            cmap='', surfcolor='', tit='', xtit='', ytit='', ztit=''):
+            cmap='', surfcolor='', tit=' ', xtit=' ', ytit=' ', ztit=' '):
 
   import numpy as np
 
@@ -17374,9 +17374,6 @@ def hplot2d(idh, plopt='!', block=False, scalex=1., scaley=1., scalez=1.,
     print(s)
   #endif
 
-  #print("Break in hplot2d")
-  #reakpoint()
-
   nx = H2head[idx][2]
   ny = H2head[idx][6]
 
@@ -17424,6 +17421,14 @@ def hplot2d(idh, plopt='!', block=False, scalex=1., scaley=1., scalez=1.,
 
   #print("--- Break in hplot2d ---")
   #reakpoint()
+
+  #print("Break in hplot2d")
+  #reakpoint()
+
+  if tit == '': tit = ' '
+  if xtit == '': xtit = ' '
+  if ytit == '': ytit = ' '
+  if ztit == '': ztit = ' '
 
   if Ihist:
 
@@ -17483,7 +17488,6 @@ def hplot2d(idh, plopt='!', block=False, scalex=1., scaley=1., scalez=1.,
     if surfcolor: cmap = None
 
     Ax.plot_surface(xsh,ysh,zsh,rstride=1, cstride=1, shade=True, cmap=cmap,color=surfcolor)
-
     txyz(tit,xtit,ytit,ztit)
 
   elif Icont3d:
