@@ -1,4 +1,4 @@
-*CMZ :          14/09/2026  11.26.29  by  Michael Scheer
+*CMZ :          16/09/2026  13.01.15  by  Michael Scheer
 *CMZ :  4.02/01 02/09/2026  08.56.08  by  Michael Scheer
 *CMZ :  4.02/00 16/09/2025  09.13.49  by  Michael Scheer
 *CMZ :  4.01/07 18/10/2024  08.57.02  by  Michael Scheer
@@ -1548,8 +1548,21 @@ c                  rn=rn/norm2(rn)
 
         open(newunit=lunwigw,file='urad_phase.wig')
 
+        comlin='* urad_phase.wig'
+
+        write(lunwigw,'(a)') trim(comlin)
+        comlin='* kPola iz iy itz ity x y z theta_y theta_z iEgam iEbeam Egam Ebeam Ezr Ezi Eyr Eyi Wig Weight'
+        write(lunwigw,'(a)') trim(comlin)
+
         if (nefold.gt.1) then
           open(newunit=lunwige,file='urad_phase_espread.wig')
+
+          comlin='* urad_phase_espread.wig'
+
+          write(lunwigw,'(a)') trim(comlin)
+          comlin='* kPola iz iy itz ity x y z theta_y theta_z iEgam iEbeam Egam Ebeam Ezr Ezi Eyr Eyi Wig Weight'
+          write(lunwigw,'(a)') trim(comlin)
+
         endif
 
         kpola1=1
@@ -1681,7 +1694,7 @@ c                  rn=rn/norm2(rn)
      &                    iepho,-nefold,epho_u(iepho),ebeammean,
      &                    dreal(esourzye(2,iz,iy,iepho)),dimag(esourzye(2,iz,iy,iepho)),
      &                    dreal(esourzye(3,iz,iy,iepho)),dimag(esourzye(3,iz,iy,iepho)),
-     &                    wint/1.0d12
+     &                    wint/1.0d12,g1
                       else
                         write(lunwige,'(5i10,5(1pe15.6e3),2i10,11(1pe15.6e3))')
      &                    kpola,iz,iy,itz,ity,
@@ -1690,7 +1703,7 @@ c                  rn=rn/norm2(rn)
      &                    iepho,-nefold,epho_u(iepho),ebeammean,
      &                    dreal(esourzye(2,iz,iy,iepho)),dimag(esourzye(2,iz,iy,iepho)),
      &                    dreal(esourzye(3,iz,iy,iepho)),dimag(esourzye(3,iz,iy,iepho)),
-     &                    wint/1.0d12
+     &                    wint/1.0d12,g1
                       endif
                     enddo !iz
                   enddo !iy
