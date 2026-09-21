@@ -1,4 +1,4 @@
-*CMZ :          16/09/2026  13.01.15  by  Michael Scheer
+*CMZ :          21/09/2026  20.28.59  by  Michael Scheer
 *CMZ :  4.02/01 02/09/2026  08.56.08  by  Michael Scheer
 *CMZ :  4.02/00 16/09/2025  09.13.49  by  Michael Scheer
 *CMZ :  4.01/07 18/10/2024  08.57.02  by  Michael Scheer
@@ -105,7 +105,7 @@
      &  axr,axi,ayr,ayi,azr,azi,
      &  bxr,bxi,byr,byi,bzr,bzi
 
-      real secin,secout
+      real secin,secout,zel,zpel,yel,ypel,zg,yg,zpg,ypg
       real sigzr,sigyr,sigzpr,sigypr,zminr,zmaxr,yminr,ymaxr,tzminr,tzmaxr,tyminr,tymaxr
 
       real, dimension(:,:,:,:,:), allocatable :: wigreal
@@ -1163,12 +1163,12 @@ c            allocate(photonsa(5000000),electronsa(100000))
             open(newunit=lunapho,file='ampgenpho.pho')
             comlin='* ampgenpho.pho'
             write(lunapho,'(a)') trim(comlin)
-            comlin='* iGam iEle iEgam iEfold Ebeam g Egam z y zp yp S0 S1 S2 S3'
+            comlin='* iGam iEle iEgam iEfold Ebeam g Egam x y z yp zp S0 S1 S2 S3'
             write(lunapho,'(a)') trim(comlin)
             open(newunit=lunaele,file='ampgenpho.elc')
             comlin='* ampgenpho.elc'
             write(lunaele,'(a)') trim(comlin)
-            comlin='* i E g z y zp yp'
+            comlin='* i E g y z yp zp'
             write(lunaele,'(a)') trim(comlin)
           endif
 
@@ -1194,9 +1194,12 @@ c            allocate(photonsa(5000000),electronsa(100000))
           do iel=1,nelecampgenpho
             do i=1,ngam
               do iepho=1,nepho
+                zg=photonsa(l+1)*1000.
+                yg=photonsa(l+2)*1000.
+                zpg=photonsa(l+3)*1000.
+                ypg=photonsa(l+4)*1000.
                 write(lunapho,*) i,iel,iepho,iefold,ebeam,g(iefold),
-     &            photonsa(l:l),
-     &            photonsa(l+1:l+4)*1000.0,
+     &            photonsa(l:l),pinx,yg,zg,zpg,ypg,
      &            photonsa(l+5:l+8)
                 l=l+ndimapho
               enddo
@@ -1205,9 +1208,11 @@ c            allocate(photonsa(5000000),electronsa(100000))
 
           l=1
           do i=1,nelecampgenpho
-            write(lunaele,*) i,ebeam,g(iefold),
-     &        electronsa(l:l+1)*1000.0,
-     &        electronsa(l+2:l+3)*1000.0
+            zel=electronsa(l)*1000.
+            yel=electronsa(l+1)*1000.
+            zpel=electronsa(l+2)*1000.
+            ypel=electronsa(l+3)*1000.
+            write(lunaele,*) i,ebeam,g(iefold),yel-pinx*ypel,zel-pinx*zpel,ypel,zpel
             l=l+4
           enddo
 

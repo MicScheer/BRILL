@@ -2179,8 +2179,8 @@ def _set_uname():
   'BetaV','EmitH','EmitV','Disph','Dispph','Dispv','Disppv','Modeph','Pherror', \
   'IFieldProp','PinXprop','PinWprop','PinHprop','NpinYprop','NpinZprop', \
   'PhGshift','IWigner','NyTheWig','TheYWig','NzTheWig','TheZWig', \
-  'nEfold','NoSplineEfold', \
-  'nElecAmpGenPho','iGenPho','iPhaseSpace','Npho','ModeRan', \
+  'iGenPho','iPhaseSpace','nEfold','NoSplineEfold', \
+  'nElecAmpGenPho','Npho','ModeRan' \
   ]
 
   Useed = [376577121, 52147852, -1273034815, -1963249100, 1195262240, \
@@ -2858,6 +2858,12 @@ def _pFdProp(key='s0'):
   global LastPlot; LastPlot = ['FdProp',key]
   global nfdp
 
+  if Dsetup['IFieldProp'][1] == 0:
+    print("\n *** Propagated field not available for this run.")
+    print(" *** Check Set-Up/Spetra and rerun...\n")
+    return
+  #endif
+
   if Calculated_Spec == False or (Modepin != 0 and nexist("nbun") == 0) \
   or nexist("nfdp") == 0: _calc_spec()
 
@@ -3503,22 +3509,22 @@ def _pElecPhot(key='zy'):
     txyz(htit,"E[GeV]")
   elif keyl == 'z':
     #ptstat(kstat)
-    htit = 'Hori. Beam Profile at' + spinx
+    htit = 'Hori. Beam Profile at x = 0'
     npl(nampele,"z*g")
     txyz(htit,"z[mm]")
   elif keyl == 'zp':
     #ptstat(kstat)
-    htit = 'Hori. Beam Slope Profile at' + spinx
+    htit = 'Hori. Beam Slope Profile at x = 0'
     npl(nampele,"zp*g")
     txyz(htit,"z'[mrad]")
   elif keyl == 'y':
     #ptstat(kstat)
-    htit = 'Vert. Beam Profile at' + spinx
+    htit = 'Vert. Beam Profile at x = 0'
     npl(nampele,"y*g")
     txyz(htit,"y[mm]")
   elif keyl == 'yp':
     #ptstat(kstat)
-    htit = 'Vert. Beam Slope Profile at' + spinx
+    htit = 'Vert. Beam Slope Profile at x = 0'
     npl(nampele,"yp*g")
     txyz(htit,"y'[mrad]")
   elif keyl == 'zzp':
@@ -3730,12 +3736,12 @@ def _pPhot(key='PhzyS0',select=''):
     sn = str(nstok)
 
     hnam = 'HPhzyS' + sn
-    htit = 'S' + sn + ' x = ' + str(pinx)
+    htit = 'S' + sn + ' x = ' + str(pinx) + 'm'
     stok = 's' + sn +'*g'
 
     set_plot_params_3d()
 
-    wtit = TeX_gamma + '/s/0.1' + ' %BW/mm$^{2}$/' + str(int(Curr*1000.+0.5)) + "mA"
+    wtit = 'N' + TeX_gamma + '/s/0.1' + ' %BW/mm$^{2}$/' + str(int(Curr*1000.+0.5)) + "mA"
 
     #htit += htit + '  (' + str(Esel) + ' eV, ' + str(EbeamList[IEbeam-1]) + ' GeV)'
     htit = 'S' + sn + ' ( x = ' + str(pinx/1000) + ' m, ' + str(Esel) + ' eV)'
@@ -3768,7 +3774,7 @@ def _pPhot(key='PhzyS0',select=''):
 
     set_plot_params_3d()
 
-    wtit = TeX_gamma + '/s/0.1' + ' %BW/mrad$^{2}$/' + str(int(Curr*1000.+0.5)) + "mA"
+    wtit = 'N' + TeX_gamma + '/s/0.1' + ' %BW/mrad$^{2}$/' + str(int(Curr*1000.+0.5)) + "mA"
 
     #htit += htit + '  (' + str(Esel) + ' eV, ' + str(EbeamList[IEbeam-1]) + ' GeV)'
 
@@ -3795,12 +3801,12 @@ def _pPhot(key='PhzyS0',select=''):
     sn = str(nstok)
 
     hnam = 'HPztzS' + sn
-    htit = 'S' + sn + ' x = ' + str(pinx)
+    htit = 'S' + sn + ' x = ' + str(pinx) + 'm'
     stok = 's' + sn +'*g'
 
     set_plot_params_3d()
 
-    wtit = TeX_gamma + '/s/0.1' + ' %BW/mm$^{2}$/' + str(int(Curr*1000.+0.5)) + "mA"
+    wtit = 'N' + TeX_gamma + '/s/0.1' + ' %BW/mm$^{2}$/' + str(int(Curr*1000.+0.5)) + "mA"
 
     #htit += htit + '  (' + str(Esel) + ' eV, ' + str(EbeamList[IEbeam-1]) + ' GeV)'
     htit = 'S' + sn + ' ( x = ' + str(pinx/1000) + ' m, ' + str(Esel) + ' eV)'
@@ -3818,7 +3824,7 @@ def _pPhot(key='PhzyS0',select=''):
     if h.y.min() < h.y.max():
       hplot2d(hnam,plopt,tit=htit,xtit=xtit,ytit=ytit,ztit=wtit)
     else:
-      npl(namppho,'z:y',sel,stok)
+      npl(namppho,'z:tz',sel,stok)
       txyz(htit,xtit,ytit,' ')
       #endif
 
@@ -3828,12 +3834,12 @@ def _pPhot(key='PhzyS0',select=''):
     sn = str(nstok)
 
     hnam = 'HPytyS' + sn
-    htit = 'S' + sn + ' x = ' + str(pinx)
+    htit = 'S' + sn + ' x = ' + str(pinx) + 'm'
     stok = 's' + sn +'*g'
 
     set_plot_params_3d()
 
-    wtit = TeX_gamma + '/s/0.1' + ' %BW/mm$^{2}$/' + str(int(Curr*1000.+0.5)) + "mA"
+    wtit = 'N' + TeX_gamma + '/s/0.1' + ' %BW/mm$^{2}$/' + str(int(Curr*1000.+0.5)) + "mA"
 
     #htit += htit + '  (' + str(Esel) + ' eV, ' + str(EbeamList[IEbeam-1]) + ' GeV)'
     htit = 'S' + sn + ' ( x = ' + str(pinx/1000) + ' m, ' + str(Esel) + ' eV)'
@@ -3851,7 +3857,7 @@ def _pPhot(key='PhzyS0',select=''):
     if h.y.min() < h.y.max():
       hplot2d(hnam,plopt,tit=htit,xtit=xtit,ytit=ytit,ztit=wtit)
     else:
-      npl(namppho,'z:y',sel,stok)
+      npl(namppho,'y:ty',sel,stok)
       txyz(htit,xtit,ytit,' ')
       #endif
 
@@ -3887,6 +3893,13 @@ def _pWigner(key='WzzZ',select=''):
 
 #  if Modepin != 0: return
   debugbreak('_pWigner')
+  #reakpoint()
+
+  if Dsetup['IWigner'][1] == 0:
+    print("\n *** Wigner distribution not available for this run.")
+    print(" *** Check Set-Up/Spetra and rerun...\n")
+    return
+  #endif
 
   if Calculated_Spec == False or nexist("nwig") == 0: _calc_spec()
 
@@ -3906,6 +3919,9 @@ def _pWigner(key='WzzZ',select=''):
 
   set_plot_params_3d()
 
+  debugbreak('_pWigner')
+  nwig = nget("nwig")
+
 #  kstat = getstat()
   nxzones = Dsetup['NxZones'][1]
   nyzones = Dsetup['NyZones'][1]
@@ -3913,18 +3929,24 @@ def _pWigner(key='WzzZ',select=''):
 
   #ptnstat()
 
-  nz = int(Dsetup['NpinZprop'][1])
-  ny = int(Dsetup['NpinYprop'][1])
-  pinw = float(Dsetup['PinWprop'][1])
-  pinh = float(Dsetup['PinHprop'][1])
-  ymin = -pinh/2.0
-  ymax =  pinh/2.0
-  zmin = -pinw/2.0
-  zmax =  pinw/2.0
-  nty = int(Dsetup['NyTheWig'][1])
-  ntz = int(Dsetup['NzTheWig'][1])
-  tz = float(Dsetup['TheZWig'][1])
-  ty = float(Dsetup['TheYWig'][1])
+  nz = int(nwig.iz.max())
+  ny = int(nwig.iy.max())
+  ntz = int(nwig.itz.max())
+  nty = int(nwig.ity.max())
+
+  zmin = nwig.z.min()
+  zmax = nwig.z.max()
+  ymin = nwig.y.min()
+  ymax = nwig.y.max()
+  tzmin = nwig.tz.min()
+  tzmax = nwig.tz.max()
+  tymin = nwig.ty.min()
+  tymax = nwig.ty.max()
+
+  pinh = ymax - ymin
+  pinw = zmax - zmin
+  ty = tymax - tymin
+  tz = tzmax - tzmin
 
   if ny > 1: dy = pinh/(ny-1)
   else: dy = pinh / 2.
@@ -3936,19 +3958,11 @@ def _pWigner(key='WzzZ',select=''):
   if ntz > 1: dtz = tz/(ntz-1)
   else: dtz = tz / 2.
 
-  tymin = -ty/2.0
-  tymax =  ty/2.0
-  tzmin = -tz/2.0
-  tzmax =  tz/2.0
-
   a = ' and '
   sizcut = "iz==" + str(int(nz/2)+1)
   siycut = "iy==" + str(int(ny/2)+1)
   sitzcut = "itz==" + str(int(ntz/2)+1)
   sitycut = "ity==" + str(int(nty/2)+1)
-
-  debugbreak('_pWigner')
-  nwig = nget("nwig")
 
   plopt = Vsetup_Plot[0][1][1]
   lwo = float(Vsetup_Plot[2][1][1])
@@ -3974,6 +3988,7 @@ def _pWigner(key='WzzZ',select=''):
 #    #endif select != ''
 #  #endif
 
+  #reakpoint()
   if keyu == 'WZZZ':
     hnam = 'HWIGzzZ'
     htit = 'Wzz in Z-Theta_Z Plane'
@@ -4024,7 +4039,7 @@ def _pWigner(key='WzzZ',select=''):
     sel = sel + a + "kpola==4"
   #endif keyu
 
-  wtit = TeX_gamma + '/s/0.1' + ' %BW/mm$^{2}$/mrad$^{2}$/' + str(int(Curr*1000.+0.5)) + "mA"
+  wtit = 'N' + TeX_gamma + '/s/0.1' + ' %BW/mm$^{2}$/mrad$^{2}$/' + str(int(Curr*1000.+0.5)) + "mA"
 
   #ptstat(kstat)
 
@@ -4038,7 +4053,7 @@ def _pWigner(key='WzzZ',select=''):
                  ntz,tzmin-dtz/2.,tzmax+dtz/2.,
                  overwrite=True)
 
-    istat = nproj2(nwig,'z:tz','wig*1.0e-12',sel,1.0,1.0,1.0,nz,ntz,hnam)
+    istat = nproj2(nwig,'z:tz','wig*g*1.0e-12',sel,1.0,1.0,1.0,nz,ntz,hnam,ioverwrite=False)
 
     xtit = 'z [mm]'
     ytit = 'Theta_Z [mrad]'
@@ -4046,7 +4061,7 @@ def _pWigner(key='WzzZ',select=''):
     if h.y.min() < h.y.max():
       hplot2d(hnam,plopt,tit=htit,xtit=xtit,ytit=ytit,ztit='')
     else:
-      npl(nwig,'z:tz',sel,'wig*1.0e-12')
+      npl(nwig,'z:tz',sel,'wig*g*1.0e-12')
       txyz(htit,xtit,ytit,' ')
     #endif
 
@@ -4058,7 +4073,7 @@ def _pWigner(key='WzzZ',select=''):
                nty,tymin-dty/2.,tymax+dty/2.,
                overwrite=True)
 
-    istat = nproj2(nwig,'y:ty','wig*1.0e-12',sel,1.0,1.0,1.0,ny,nty,hnam)
+    istat = nproj2(nwig,'y:ty','wig*g*1.0e-12',sel,1.0,1.0,1.0,ny,nty,hnam)
 
     xtit = 'y [mm]'
     ytit = 'Theta_Y [mrad]'
@@ -4067,7 +4082,7 @@ def _pWigner(key='WzzZ',select=''):
       iyty = 1
       hplot2d(h,plopt,tit=htit,xtit=xtit,ytit=ytit,ztit='')
     else:
-      npl(nwig,'y:ty',sel,'wig*1.0e-12')
+      npl(nwig,'y:ty',sel,'wig*g*1.0e-12')
       txyz(htit,xtit,ytit,' ')
     #endif
 
@@ -4269,7 +4284,7 @@ def _pWignerE(key='WzzZ',select=''):
     sel = sel + a + "kpola==4"
   #endif keyu
 
-  wtit = TeX_gamma + '/s/0.1' + ' %BW/mm$^{2}$/mrad$^{2}$/' + str(int(Curr*1000.+0.5)) + "mA"
+  wtit = 'N' + TeX_gamma + '/s/0.1' + ' %BW/mm$^{2}$/mrad$^{2}$/' + str(int(Curr*1000.+0.5)) + "mA"
 
   #ptstat(kstat)
 
@@ -4282,7 +4297,7 @@ def _pWignerE(key='WzzZ',select=''):
                  ntz,tzmin-dtz/2.,tzmax+dtz/2.,
                  overwrite=True)
 
-    istat = nproj2(nwge,'z:tz','wig*1.0e-12',sel,1.0,1.0,1.0,nz,ntz,hnam)
+    istat = nproj2(nwge,'z:tz','wig*g*1.0e-12',sel,1.0,1.0,1.0,nz,ntz,hnam)
 
     xtit = 'z [mm]'
     ytit = 'Theta_Z [mrad]'
@@ -4292,18 +4307,18 @@ def _pWignerE(key='WzzZ',select=''):
     else:
 #      setaxistitledist3d(disttit3d*2)
       setcolorbarpad(colorbarpad*2)
-      npl(nwge,'z:tz:wig*1.0e-12:wig*1.0e-12',sel)
+      npl(nwge,'z:tz:wig*g*1.0e-12:wig*g*1.0e-12',sel)
       txyz(htit,'  '+xtit,'\n\n'+ytit,' ')
     #endif
 
     zone(2,2,2,'same')
-    npl(nwge,'z:wig*1.0e-12',sel + a + sitzcut)
+    npl(nwge,'z:wig*g*1.0e-12',sel + a + sitzcut)
     tit = 'Theta_Z = 0'
     xtit = 'z [mm]'
     txyz(tit,xtit,wtit)
 
     zone(2,2,4,'same')
-    npl(nwge,'tz:wig*1.0e-12',sel + a + sizcut)
+    npl(nwge,'tz:wig*g*1.0e-12',sel + a + sizcut)
     tit = 'Z = 0'
     xtit = 'Theta_Z [mrad]'
     txyz(tit,xtit,wtit)
@@ -4314,7 +4329,7 @@ def _pWignerE(key='WzzZ',select=''):
                nty,tymin-dty/2.,tymax+dty/2.,
                overwrite=True)
 
-    istat = nproj2(nwge,'y:ty','wig*1.0e-12',sel,1.0,1.0,1.0,ny,nty,hnam)
+    istat = nproj2(nwge,'y:ty','wig*g*1.0e-12',sel,1.0,1.0,1.0,ny,nty,hnam)
 
     xtit = 'y [mm]'
     ytit = 'Theta_Y [mrad]'
@@ -4326,18 +4341,18 @@ def _pWignerE(key='WzzZ',select=''):
 #      setaxistitledist3d(disttit3d*2)
 #      setaxislabeldist3d(1)
       setcolorbarpad(colorbarpad*2)
-      npl(nwge,'y:ty:wig*1.0e-12:wig*1.0e-12',sel)
+      npl(nwge,'y:ty:wig*g*1.0e-12:wig*g*1.0e-12',sel)
       txyz(htit,'  '+xtit,'\n\n'+ytit,' ')
     #endif
 
     zone(2,2,2,'same')
-    npl(nwge,'y:wig*1.0e-12',sel + a + sitycut)
+    npl(nwge,'y:wig*g*1.0e-12',sel + a + sitycut)
     tit = 'Theta_Y = 0'
     xtit = 'y [mm]'
     txyz(htit,xtit,wtit)
 
     zone(2,2,4,'same')
-    npl(nwge,'ty:wig*1.0e-12',sel + a + siycut)
+    npl(nwge,'ty:wig*g*1.0e-12',sel + a + siycut)
     tit = 'Y = 0'
     xtit = 'Theta_Y [mrad]'
     txyz(tit,xtit,wtit)
@@ -4787,7 +4802,7 @@ def __get_spec():
   fil = "ampgenpho.pho"
   if fexist(fil):
     #reakpoint() #3b
-    namppho = ncread("namppho","igam:iele:iegam:iebeam:ebeam:g:egam:z:y:tz:ty:s0:s1:s2:s3:s4",fil)
+    namppho = ncread("namppho","igam:iele:iegam:iebeam:ebeam:g:egam:x:y:z:ty:tz:s0:s1:s2:s3:s4",fil)
     IPhot = namppho.iele.max()
     #rint("3b",IPhot)
     Npho = namppho.igam.max()
@@ -4796,7 +4811,7 @@ def __get_spec():
 
   fil = "ampgenpho.elc"
   if fexist(fil):
-    nampele = ncread("nampele","i:e:g:z:y:zp:yp","ampgenpho.elc")
+    nampele = ncread("nampele","i:e:g:y:z:yp:zp","ampgenpho.elc")
 
   iwig = 0
 
@@ -4810,7 +4825,7 @@ def __get_spec():
 
   fil = "ampgenpho.pho"
   if fexist(fil):
-    namppho = ncread("namppho","igam:iele:iegam:iebeam:ebeam:g:egam:z:y:tz:ty:s0:s1:s2:s3:s4",fil)
+    namppho = ncread("namppho","igam:iele:iegam:iebeam:ebeam:g:egam:x:y:z:ty:tz:s0:s1:s2:s3:s4",fil)
     #reakpoint() #4
     IPhot = namppho.iele.max()
     #rint("4",IPhot)
@@ -4820,7 +4835,7 @@ def __get_spec():
 
   fil = "ampgenpho.elc"
   if fexist(fil):
-    nampele = ncread("nampele","i:e:g:z:y:zp:yp","ampgenpho.elc")
+    nampele = ncread("nampele","i:e:g:y:z:yp:zp","ampgenpho.elc")
 
   fpin = open("urad_phase.pin",'r')
 
@@ -5009,19 +5024,20 @@ def _calc_spec():
     nwig = ncread("nwig","kpola:iz:iy:itz:ity:x:y:z:ty:tz:iegam:iebeam:egam:ebeam:ezr:ezi:eyr:eyi:wig:g",fwig)
   #endif
 
-  fil = "ampgenpho.pho"
-  if fexist(fil):
-    namppho = ncread("namppho","igam:iele:iegam:iebeam:ebeam:g:egam:z:y:tz:ty:s0:s1:s2:s3:s4",fil)
-    #reakpoint() #3a
-    IPhot = namppho.iele.max()
-    #rint("3a",IPhot)
-    Npho = namppho.igam.max()
-    Dsetup['nElecAmpGenPho'][1] = IPhot
-    Dsetup['Npho'][1] = Npho
+  _reset_mphot()
+#  fil = "ampgenpho.pho"
+#  if fexist(fil):
+#    namppho = ncread("namppho","igam:iele:iegam:iebeam:ebeam:g:egam:z:y:tz:ty:s0:s1:s2:s3:s4",fil)
+#    #reakpoint() #3a
+#    IPhot = namppho.iele.max()
+#    #rint("3a",IPhot)
+#    Npho = namppho.igam.max()
+#    Dsetup['nElecAmpGenPho'][1] = IPhot
+#    Dsetup['Npho'][1] = Npho
 
-  fil = "ampgenpho.elc"
-  if fexist(fil):
-    nampele = ncread("nampele","i:e:g:z:y:zp:yp","ampgenpho.elc")
+#  fil = "ampgenpho.elc"
+#  if fexist(fil):
+#    nampele = ncread("nampele","i:e:g:z:y:zp:yp","ampgenpho.elc")
 
   nlist()
 
@@ -5173,11 +5189,20 @@ def _closeSetUp_Plot():
 
     # Unverstanden, warum es mit Statistic nicht funktioniert hat!
     ev = LastSetUp_Plot[0].widget
+
     try:
       val = ev.get()
     except:
       val =Vsetup_Plot[kvar][1][1]
     #print(kvar,val)
+
+    v = ''
+    for c in val:
+      if c != '"' and c != "'":
+        v += c
+    #endfor
+
+    val = v
 
     try:
       if len(val.split('.')) > 1:
