@@ -1,4 +1,4 @@
-*CMZ :          21/09/2026  20.28.59  by  Michael Scheer
+*CMZ :          22/09/2026  08.54.34  by  Michael Scheer
 *CMZ :  4.02/01 02/09/2026  08.56.08  by  Michael Scheer
 *CMZ :  4.02/00 16/09/2025  09.13.49  by  Michael Scheer
 *CMZ :  4.01/07 18/10/2024  08.57.02  by  Michael Scheer
@@ -1212,7 +1212,7 @@ c            allocate(photonsa(5000000),electronsa(100000))
             yel=electronsa(l+1)*1000.
             zpel=electronsa(l+2)*1000.
             ypel=electronsa(l+3)*1000.
-            write(lunaele,*) i,ebeam,g(iefold),yel-pinx*ypel,zel-pinx*zpel,ypel,zpel
+            write(lunaele,*) i,ebeam,g(iefold),yel-pinx/1000.*ypel,zel-pinx/1000.*zpel,ypel,zpel
             l=l+4
           enddo
 
@@ -5836,6 +5836,7 @@ c              write(66,*)ix,iy,x,y,wlc,sin(wlc)/wlc,dreal(esour(ix,iy)),dimag(e
       endif
 
       end
+*CMZ :          21/09/2026  21.18.09  by  Michael Scheer
 *CMZ :  4.02/01 28/08/2026  08.14.45  by  Michael Scheer
 *-- Author :    Michael Scheer   05/01/2026
         subroutine urad_phase_amp_genpho(zi,yi,ny,nz,obsv,
@@ -5946,7 +5947,7 @@ c              write(66,*)ix,iy,x,y,wlc,sin(wlc)/wlc,dreal(esour(ix,iy)),dimag(e
 
       do iel=1,nelec
 
-        if (noranone.ne.0.and.iel.gt.1) then
+        if (noranone.ne.0.or.iel.gt.1) then
           kel=kel+1
           zpel=sigzp*eran(kel)
           kel=kel+1
