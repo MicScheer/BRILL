@@ -1,4 +1,4 @@
-*CMZ :          22/09/2026  08.54.34  by  Michael Scheer
+*CMZ :          22/09/2026  14.20.22  by  Michael Scheer
 *CMZ :  4.02/01 02/09/2026  08.56.08  by  Michael Scheer
 *CMZ :  4.02/00 16/09/2025  09.13.49  by  Michael Scheer
 *CMZ :  4.01/07 18/10/2024  08.57.02  by  Michael Scheer
@@ -1200,7 +1200,7 @@ c            allocate(photonsa(5000000),electronsa(100000))
                 ypg=photonsa(l+4)*1000.
                 write(lunapho,*) i,iel,iepho,iefold,ebeam,g(iefold),
      &            photonsa(l:l),pinx,yg,zg,zpg,ypg,
-     &            photonsa(l+5:l+8)
+     &            photonsa(l+5:l+8)/1.0e6
                 l=l+ndimapho
               enddo
             enddo

@@ -66,7 +66,7 @@ c      print*,n
 
       return
       end
-*CMZ :          23/08/2026  10.44.02  by  Michael Scheer
+*CMZ :  4.02/01 23/08/2026  10.44.02  by  Michael Scheer
 *CMZ :  2.66/07 04/03/2010  21.48.04  by  Michael Scheer
 *-- Author :    Michael Scheer   04/03/2010
       subroutine util_bessel(n,x,bessel,jfail)
@@ -179,7 +179,7 @@ C--- INTEGRATION
 
       RETURN
       END
-*CMZ :          12/05/2026  08.28.47  by  Michael Scheer
+*CMZ :  4.02/01 12/05/2026  08.28.47  by  Michael Scheer
 *CMZ :  4.00/11 28/05/2021  09.17.01  by  Michael Scheer
 *CMZ :  3.05/05 12/07/2018  13.12.16  by  Michael Scheer
 *CMZ :  3.02/00 24/09/2014  13.51.08  by  Michael Scheer
@@ -2101,7 +2101,7 @@ c---  calculates integral(f(x)*sin(omega*x)) and integral(f(x)*cos(omega*x))
       if (iw.ne.nx) istat=-2
 
       end
-*CMZ :          16/12/2025  16.15.53  by  Michael Scheer
+*CMZ :  4.02/01 16/12/2025  16.15.53  by  Michael Scheer
 *-- Author :    Michael Scheer   15/12/2025
       subroutine util_read_wigner(filwig)
 
@@ -3468,7 +3468,7 @@ C     ERROR FINISH, INSUFFICIENT ARRAY STORAGE
 
       return
       end
-*CMZ :          26/09/2025  13.16.41  by  Michael Scheer
+*CMZ :  4.02/01 26/09/2025  13.16.41  by  Michael Scheer
 *-- Author :    Michael Scheer   26/09/2025
       subroutine util_e_to_stokes(e,specnor,s)
 
@@ -3629,7 +3629,7 @@ c Dimensions f(nx,ny), fg(nx,ny)
 
       return
       end
-*CMZ :          14/02/2026  08.46.53  by  Michael Scheer
+*CMZ :  4.02/01 14/02/2026  08.46.53  by  Michael Scheer
 *-- Author :    Michael Scheer   05/01/2026
       subroutine util_linear_inter_4d_real(nx,ny,nz,nt,xa,ya,za,ta,fa,x,y,z,t,f,istat)
 
