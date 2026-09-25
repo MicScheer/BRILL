@@ -1,4 +1,4 @@
-*CMZ :          22/09/2026  14.20.22  by  Michael Scheer
+*CMZ :          25/09/2026  11.32.41  by  Michael Scheer
 *CMZ :  4.02/01 02/09/2026  08.56.08  by  Michael Scheer
 *CMZ :  4.02/00 16/09/2025  09.13.49  by  Michael Scheer
 *CMZ :  4.01/07 18/10/2024  08.57.02  by  Michael Scheer
@@ -119,7 +119,7 @@
      &  iwigner,iwignofile,iwigcheck,jz,jy,ic,iobsv,iobfr,nobsv,modepino,
      &  ispline=1,nz,ny,ntz,nty,itz,ity,ianalytic,kpola,kpol,idone,iesourext,
      &  mz,my,mtz,mty,nzl,nzh,nyl,nyh,kepho,kpola1,kpola2,
-     &  ianalytico,ierr,izobs,iyobs,lunwige,lunwig,lunpin,kwigpho,nzyprop,lunapho,lunaele,
+     &  ianalytico,ierr,izobs,iyobs,lunwige,lunwig,lunpin,kwigpho,nzyprop,lunapho,lunaele,nefoldo,
      &  iwighor,iwigver,nwigcenhit,nwigincut,nosplineefold,iefold,nefold,icbrill,icbrillprop,
      &  igenpho,nelecampgenpho,iphasespace,igenphonofile,npho,ngam,ith,moderan,npola(5),nthreads
 
@@ -267,8 +267,12 @@ c        ifieldprop=1
       if (nepho.le.0) nepho=1
       nepho=(nepho/2)*2+1
 
-      if (nefold.eq.0) nefold=1
-      nefold=(nefold/2*2)+1
+      nefoldo=nefold
+      if (nefold.gt.0) then
+        nefold=(nefold/2*2)+1
+      else
+        nefold=1
+      endif
 
       allocate(g(nefold))
 
@@ -285,13 +289,14 @@ c        ifieldprop=1
 
       if (modepin.ne.0 .and. nefold.gt.1) then
         print*,''
-        print*,'*** Warning: modepoin not zero and nefold greater than 1***'
+        print*,'*** Warning: modepin not zero and nefold greater than 1***'
         print*,'*** Modepin set zero ***'
         print*,''
         modepin=0
       endif
 
       nephogam=nepho*nefold
+
       ianalytic_u=ianalytic
 
       if (modeph.ne.0.and.ianalytic.ne.0) then
@@ -380,6 +385,9 @@ c        ifieldprop=1
       if (nefold.gt.1) then
         ebeammin=ebeam*(1.0d0-ebeamnsig*espread)
         debeam=2.0d0*ebeamnsig*espread/dble(nefold-1)*ebeam
+      else if (nefoldo.lt.1) then
+        ebeammin=ebeam*(1.0d0-ebeamnsig*espread)
+        debeam=2.0d0*ebeamnsig*espread*ebeam
       else
         ebeammin=ebeam
         debeam=0.0d0
@@ -2158,7 +2166,7 @@ c      if (modewave.ne.0) call util_zeit_kommentar(6,'Leaving urad_phase')
 
       ical=1
       end
-*CMZ :          10/09/2026  14.01.05  by  Michael Scheer
+*CMZ :          25/09/2026  14.04.43  by  Michael Scheer
 *CMZ :  4.02/01 02/09/2026  09.04.08  by  Michael Scheer
 *CMZ :  4.02/00 27/08/2025  14.45.47  by  Michael Scheer
 *CMZ :  4.01/07 18/10/2024  09.41.32  by  Michael Scheer
@@ -2477,8 +2485,8 @@ c      dr0=[xf0-x0,yf0-y0,zf0-z0]
       !allutil_break
       if (ibunch.eq.0.or.
      &    emith_u.eq.0.0d0.and.emitv_u.eq.0.0d0.and.espread_u.eq.0.0d0
-     &    .or.
-     &    nelecampgenpho_u.ne.0
+c     &    .or.
+c     &    nelecampgenpho_u.ne.0
      &    ) then
         iemit=0
         ibunch=0
@@ -5836,7 +5844,7 @@ c              write(66,*)ix,iy,x,y,wlc,sin(wlc)/wlc,dreal(esour(ix,iy)),dimag(e
       endif
 
       end
-*CMZ :          21/09/2026  21.18.09  by  Michael Scheer
+*CMZ :          25/09/2026  14.18.37  by  Michael Scheer
 *CMZ :  4.02/01 28/08/2026  08.14.45  by  Michael Scheer
 *-- Author :    Michael Scheer   05/01/2026
         subroutine urad_phase_amp_genpho(zi,yi,ny,nz,obsv,
@@ -5947,7 +5955,7 @@ c              write(66,*)ix,iy,x,y,wlc,sin(wlc)/wlc,dreal(esour(ix,iy)),dimag(e
 
       do iel=1,nelec
 
-        if (noranone.ne.0.or.iel.gt.1) then
+        if (noranone.eq.0.or.iel.gt.1) then
           kel=kel+1
           zpel=sigzp*eran(kel)
           kel=kel+1
