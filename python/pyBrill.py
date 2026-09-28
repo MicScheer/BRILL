@@ -4587,14 +4587,22 @@ def _pFluxSpec(key='s0'):
     #reakpoint()
     stato = getstat()
     if Nepho > 1:
-      npl(nflx,"egam:" + keyl,plopt='line',color='r')
+      if Modepin:
+        npl(nflx,"egam:" + keyl,plopt='line',color='r')
+      else:
+        npl(nflx,"egam:" + keyl,plopt='line')
+      #endif
       optnstat()
       if Modepin:
         npl(nflx,"egam:"+keyem,plopt='sameline')
         npl(nflx,"egam:"+keyep,plopt='sameline')
       #endif
     else:
-      npl(nflx,"egam:"+keyl,plopt='line',color='r')
+      if Modepin:
+        npl(nflx,"egam:"+keyl,plopt='marker',color='r')
+      else:
+        npl(nflx,"egam:"+keyl,plopt='line')
+      #endif
       if Modepin:
         npl(nflx,"egam:"+keyem,plopt='same')
         npl(nflx,"egam:"+keyep,plopt='same')
