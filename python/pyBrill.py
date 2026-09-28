@@ -60,7 +60,7 @@ def startup(sfile='ntupplot_startup.py'):
   S_nSkipHead, S_nSkipFoot, S_nComment, S_nSep, \
   WnPlot,WnDump,WnDelete,WnTitle, S_nSelect, S_nWeight, S_nScaleX, S_nScaleY, \
   S_nScaleZ, S_nScaleT,S_nLegend, S_nHisto, S_nLine, S_nMark,S_nColor, S_nPlopt,S_nIsort, S_nIsame, \
-  S_nLineColor, S_nLineStyle, S_nMarkerColor, S_nMarkerStyle, S_nIsame, \
+  S_nLineColor, S_nLineStyle, S_nMarkerColor, S_nMarkerStyle, S_nIsame, S_nProf, \
   WnNull, S_nXmin,S_nYmin,S_nZmin,S_nXmax,S_nYmax,S_nZmax, S_nLastCom, \
   S_nTitT,S_nTitX,S_nTitY,S_nTitZ,S_n3d,Omenu,NOmenu,Wmaster, \
   KmenuPosted,KplotPosted,KoptPosted, \
@@ -122,7 +122,7 @@ def _showMenu(menu):
   S_nSkipHead, S_nSkipFoot, S_nComment, S_nSep, \
   WnPlot,WnDump,WnDelete,WnTitle, S_nSelect, S_nWeight, S_nScaleX, S_nScaleY, \
   S_nScaleZ, S_nScaleT,S_nLegend, S_nHisto, S_nLine, S_nMark,S_nColor, S_nPlopt,S_nIsort, S_nIsame, \
-  S_nLineColor, S_nLineStyle, S_nMarkerColor, S_nMarkerStyle, S_nIsame, \
+  S_nLineColor, S_nLineStyle, S_nMarkerColor, S_nMarkerStyle, S_nIsame, S_nProf, \
   WnNull, S_nXmin,S_nYmin,S_nZmin,S_nXmax,S_nYmax,S_nZmax, S_nLastCom, \
   S_nTitT,S_nTitX,S_nTitY,S_nTitZ,S_n3d,Omenu,NOmenu,Wmaster, \
   KmenuPosted,KplotPosted,KoptPosted, \
@@ -237,7 +237,7 @@ def _clFillColor():
   S_nSkipHead, S_nSkipFoot, S_nComment, S_nSep, \
   WnPlot,WnDump,WnDelete,WnTitle, S_nSelect, S_nWeight, S_nScaleX, S_nScaleY, \
   S_nScaleZ, S_nScaleT,S_nLegend, S_nHisto, S_nLine, S_nMark,S_nColor, S_nPlopt,S_nIsort, S_nIsame, \
-  S_nLineColor, S_nLineStyle, S_nMarkerColor, S_nMarkerStyle, S_nIsame, \
+  S_nLineColor, S_nLineStyle, S_nMarkerColor, S_nMarkerStyle, S_nIsame, S_nProf, \
   WnNull, S_nXmin,S_nYmin,S_nZmin,S_nXmax,S_nYmax,S_nZmax, S_nLastCom, \
   S_nTitT,S_nTitX,S_nTitY,S_nTitZ,S_n3d,Omenu,NOmenu,Wmaster, \
   KmenuPosted,KplotPosted,KoptPosted, \
@@ -268,7 +268,7 @@ def _nFillColor():
   S_nSkipHead, S_nSkipFoot, S_nComment, S_nSep, \
   WnPlot,WnDump,WnDelete,WnTitle, S_nSelect, S_nWeight, S_nScaleX, S_nScaleY, \
   S_nScaleZ, S_nScaleT,S_nLegend, S_nHisto, S_nLine, S_nMark,S_nColor, S_nPlopt,S_nIsort, S_nIsame, \
-  S_nLineColor, S_nLineStyle, S_nMarkerColor, S_nMarkerStyle, S_nIsame, \
+  S_nLineColor, S_nLineStyle, S_nMarkerColor, S_nMarkerStyle, S_nIsame, S_nProf, \
   WnNull, S_nXmin,S_nYmin,S_nZmin,S_nXmax,S_nYmax,S_nZmax, S_nLastCom, \
   S_nTitT,S_nTitX,S_nTitY,S_nTitZ,S_n3d,Omenu,NOmenu,Wmaster, \
   KmenuPosted,KplotPosted,KoptPosted, \
@@ -313,7 +313,7 @@ def _clText():
   S_nSkipHead, S_nSkipFoot, S_nComment, S_nSep, \
   WnPlot,WnDump,WnDelete,WnTitle, S_nSelect, S_nWeight, S_nScaleX, S_nScaleY, \
   S_nScaleZ, S_nScaleT,S_nLegend, S_nHisto, S_nLine, S_nMark,S_nColor, S_nPlopt,S_nIsort, S_nIsame, \
-  S_nLineColor, S_nLineStyle, S_nMarkerColor, S_nMarkerStyle, S_nIsame, \
+  S_nLineColor, S_nLineStyle, S_nMarkerColor, S_nMarkerStyle, S_nIsame, S_nProf, \
   WnNull, S_nXmin,S_nYmin,S_nZmin,S_nXmax,S_nYmax,S_nZmax, S_nLastCom, \
   S_nTitT,S_nTitX,S_nTitY,S_nTitZ,S_n3d,Omenu,NOmenu,Wmaster, \
   KmenuPosted,KplotPosted,KoptPosted, \
@@ -387,7 +387,7 @@ def _cnText():
   S_nSkipHead, S_nSkipFoot, S_nComment, S_nSep, \
   WnPlot,WnDump,WnDelete,WnTitle, S_nSelect, S_nWeight, S_nScaleX, S_nScaleY, \
   S_nScaleZ, S_nScaleT,S_nLegend, S_nHisto, S_nLine, S_nMark,S_nColor, S_nPlopt,S_nIsort, S_nIsame, \
-  S_nLineColor, S_nLineStyle, S_nMarkerColor, S_nMarkerStyle, S_nIsame, \
+  S_nLineColor, S_nLineStyle, S_nMarkerColor, S_nMarkerStyle, S_nIsame, S_nProf, \
   WnNull, S_nXmin,S_nYmin,S_nZmin,S_nXmax,S_nYmax,S_nZmax, S_nLastCom, \
   S_nTitT,S_nTitX,S_nTitY,S_nTitZ,S_n3d,Omenu,NOmenu,Wmaster, \
   KmenuPosted,KplotPosted,KoptPosted, \
@@ -413,7 +413,7 @@ def _nText():
   S_nSkipHead, S_nSkipFoot, S_nComment, S_nSep, \
   WnPlot,WnDump,WnDelete,WnTitle, S_nSelect, S_nWeight, S_nScaleX, S_nScaleY, \
   S_nScaleZ, S_nScaleT,S_nLegend, S_nHisto, S_nLine, S_nMark,S_nColor, S_nPlopt,S_nIsort, S_nIsame, \
-  S_nLineColor, S_nLineStyle, S_nMarkerColor, S_nMarkerStyle, S_nIsame, \
+  S_nLineColor, S_nLineStyle, S_nMarkerColor, S_nMarkerStyle, S_nIsame, S_nProf, \
   WnNull, S_nXmin,S_nYmin,S_nZmin,S_nXmax,S_nYmax,S_nZmax, S_nLastCom, \
   S_nTitT,S_nTitX,S_nTitY,S_nTitZ,S_n3d,Omenu,NOmenu,Wmaster, \
   KmenuPosted,KplotPosted,KoptPosted, \
@@ -473,7 +473,7 @@ def _clDump():
   S_nSkipHead, S_nSkipFoot, S_nComment, S_nSep, \
   WnPlot,WnDump,WnDelete,WnTitle, S_nSelect, S_nWeight, S_nScaleX, S_nScaleY, \
   S_nScaleZ, S_nScaleT,S_nLegend, S_nHisto, S_nLine, S_nMark,S_nColor, S_nPlopt,S_nIsort, S_nIsame, \
-  S_nLineColor, S_nLineStyle, S_nMarkerColor, S_nMarkerStyle, S_nIsame, \
+  S_nLineColor, S_nLineStyle, S_nMarkerColor, S_nMarkerStyle, S_nIsame, S_nProf, \
   WnNull, S_nXmin,S_nYmin,S_nZmin,S_nXmax,S_nYmax,S_nZmax, S_nLastCom, \
   S_nTitT,S_nTitX,S_nTitY,S_nTitZ,S_n3d,Omenu,NOmenu,Wmaster, \
   KmenuPosted,KplotPosted,KoptPosted, \
@@ -519,6 +519,12 @@ def _clDump():
   nFile = S_nFile.get()
   if nFile == '': nFile = 'ntuple.dat'
 
+  global NLast, NSelectLast, NVarlisLast, NSelectLast
+
+  NLast = snam
+  NVarlisLast = svar
+  NSelectLast = ssel
+
   ndump(snam,svar,ssel,sfile,shead,sind)
 
   WnDump.destroy()
@@ -538,7 +544,7 @@ def _nDump():
   S_nSkipHead, S_nSkipFoot, S_nComment, S_nSep, \
   WnPlot,WnDump,WnDelete,WnTitle, S_nSelect, S_nWeight, S_nScaleX, S_nScaleY, \
   S_nScaleZ, S_nScaleT,S_nLegend, S_nHisto, S_nLine, S_nMark,S_nColor, S_nPlopt,S_nIsort, S_nIsame, \
-  S_nLineColor, S_nLineStyle, S_nMarkerColor, S_nMarkerStyle, S_nIsame, \
+  S_nLineColor, S_nLineStyle, S_nMarkerColor, S_nMarkerStyle, S_nIsame, S_nProf, \
   WnNull, S_nXmin,S_nYmin,S_nZmin,S_nXmax,S_nYmax,S_nZmax, S_nLastCom, \
   S_nTitT,S_nTitX,S_nTitY,S_nTitZ,S_n3d,Omenu,NOmenu,Wmaster, \
   KmenuPosted,KplotPosted,KoptPosted, \
@@ -566,8 +572,19 @@ def _nDump():
   widlab = 24
   wident = 32
 
-  nNam = Nhead[-1][1]
-  nid = GetIndexN(nNam)
+  try:
+    nid = GetIndexN(NLast)
+    nhead = Nhead[nid]
+    nNam = nhead[1]
+  except:
+    nNam = Nhead[-1][1]
+    nid = GetIndexN(nNam)
+    nhead = Nhead[nid]
+
+  NiLast = nid
+  NLast = nNam
+#  nNam = Nhead[-1][1]
+#  nid = GetIndexN(nNam)
 
   varlis = list(Ntup[nid].columns)
   slis = nlistcolon(varlis)
@@ -579,6 +596,8 @@ def _nDump():
 
   ssel = S_nSelect.get()
   if ssel == '': ssel = 'none'
+
+  NSelect == ssel
 
   sind = 'no'
   try:
@@ -650,7 +669,7 @@ def _clRead():
   S_nSkipHead, S_nSkipFoot, S_nComment, S_nSep, \
   WnPlot,WnDump,WnDelete,WnTitle, S_nSelect, S_nWeight, S_nScaleX, S_nScaleY, \
   S_nScaleZ, S_nScaleT,S_nLegend, S_nHisto, S_nLine, S_nMark,S_nColor, S_nPlopt,S_nIsort, S_nIsame, \
-  S_nLineColor, S_nLineStyle, S_nMarkerColor, S_nMarkerStyle, S_nIsame, \
+  S_nLineColor, S_nLineStyle, S_nMarkerColor, S_nMarkerStyle, S_nIsame, S_nProf, \
   WnNull, S_nXmin,S_nYmin,S_nZmin,S_nXmax,S_nYmax,S_nZmax, S_nLastCom, \
   S_nTitT,S_nTitX,S_nTitY,S_nTitZ,S_n3d,Omenu,NOmenu,Wmaster, \
   KmenuPosted,KplotPosted,KoptPosted, \
@@ -711,7 +730,7 @@ def _nRead():
   S_nSkipHead, S_nSkipFoot, S_nComment, S_nSep, \
   WnPlot,WnDump,WnDelete,WnTitle, S_nSelect, S_nWeight, S_nScaleX, S_nScaleY, \
   S_nScaleZ, S_nScaleT,S_nLegend, S_nHisto, S_nLine, S_nMark,S_nColor, S_nPlopt,S_nIsort, S_nIsame, \
-  S_nLineColor, S_nLineStyle, S_nMarkerColor, S_nMarkerStyle, S_nIsame, \
+  S_nLineColor, S_nLineStyle, S_nMarkerColor, S_nMarkerStyle, S_nIsame, S_nProf, \
   WnNull, S_nXmin,S_nYmin,S_nZmin,S_nXmax,S_nYmax,S_nZmax, S_nLastCom, \
   S_nTitT,S_nTitX,S_nTitY,S_nTitZ,S_n3d,Omenu,NOmenu,Wmaster, \
   KmenuPosted,KplotPosted,KoptPosted, \
@@ -773,7 +792,7 @@ def _clMerge():
   S_nSkipHead, S_nSkipFoot, S_nComment, S_nSep, \
   WnPlot,WnDump,WnDelete,WnTitle, S_nSelect, S_nWeight, S_nScaleX, S_nScaleY, \
   S_nScaleZ, S_nScaleT,S_nLegend, S_nHisto, S_nLine, S_nMark,S_nColor, S_nPlopt,S_nIsort, S_nIsame, \
-  S_nLineColor, S_nLineStyle, S_nMarkerColor, S_nMarkerStyle, S_nIsame, \
+  S_nLineColor, S_nLineStyle, S_nMarkerColor, S_nMarkerStyle, S_nIsame, S_nProf, \
   WnNull, S_nXmin,S_nYmin,S_nZmin,S_nXmax,S_nYmax,S_nZmax, S_nLastCom, \
   S_nTitT,S_nTitX,S_nTitY,S_nTitZ,S_n3d,Omenu,NOmenu,Wmaster, \
   KmenuPosted,KplotPosted,KoptPosted, \
@@ -813,7 +832,7 @@ def _nMerge():
   S_nSkipHead, S_nSkipFoot, S_nComment, S_nSep, \
   WnPlot,WnDump,WnDelete,WnTitle, S_nSelect, S_nWeight, S_nScaleX, S_nScaleY, \
   S_nScaleZ, S_nScaleT,S_nLegend, S_nHisto, S_nLine, S_nMark,S_nColor, S_nPlopt,S_nIsort, S_nIsame, \
-  S_nLineColor, S_nLineStyle, S_nMarkerColor, S_nMarkerStyle, S_nIsame, \
+  S_nLineColor, S_nLineStyle, S_nMarkerColor, S_nMarkerStyle, S_nIsame, S_nProf, \
   WnNull, S_nXmin,S_nYmin,S_nZmin,S_nXmax,S_nYmax,S_nZmax, S_nLastCom, \
   S_nTitT,S_nTitX,S_nTitY,S_nTitZ,S_n3d,Omenu,NOmenu,Wmaster, \
   KmenuPosted,KplotPosted,KoptPosted, \
@@ -861,7 +880,7 @@ def _clCreate():
   S_nSkipHead, S_nSkipFoot, S_nComment, S_nSep, \
   WnPlot,WnDump,WnDelete,WnTitle, S_nSelect, S_nWeight, S_nScaleX, S_nScaleY, \
   S_nScaleZ, S_nScaleT,S_nLegend, S_nHisto, S_nLine, S_nMark,S_nColor, S_nPlopt,S_nIsort, S_nIsame, \
-  S_nLineColor, S_nLineStyle, S_nMarkerColor, S_nMarkerStyle, S_nIsame, \
+  S_nLineColor, S_nLineStyle, S_nMarkerColor, S_nMarkerStyle, S_nIsame, S_nProf, \
   WnNull, S_nXmin,S_nYmin,S_nZmin,S_nXmax,S_nYmax,S_nZmax, S_nLastCom, \
   S_nTitT,S_nTitX,S_nTitY,S_nTitZ,S_n3d,Omenu,NOmenu,Wmaster, \
   KmenuPosted,KplotPosted,KoptPosted, \
@@ -901,7 +920,7 @@ def _nCreate():
   S_nSkipHead, S_nSkipFoot, S_nComment, S_nSep, \
   WnPlot,WnDump,WnDelete,WnTitle, S_nSelect, S_nWeight, S_nScaleX, S_nScaleY, \
   S_nScaleZ, S_nScaleT,S_nLegend, S_nHisto, S_nLine, S_nMark,S_nColor, S_nPlopt,S_nIsort, S_nIsame, \
-  S_nLineColor, S_nLineStyle, S_nMarkerColor, S_nMarkerStyle, S_nIsame, \
+  S_nLineColor, S_nLineStyle, S_nMarkerColor, S_nMarkerStyle, S_nIsame, S_nProf, \
   WnNull, S_nXmin,S_nYmin,S_nZmin,S_nXmax,S_nYmax,S_nZmax, S_nLastCom, \
   S_nTitT,S_nTitX,S_nTitY,S_nTitZ,S_n3d,Omenu,NOmenu,Wmaster, \
   KmenuPosted,KplotPosted,KoptPosted, \
@@ -951,7 +970,7 @@ def _clNull():
   S_nSkipHead, S_nSkipFoot, S_nComment, S_nSep, \
   WnPlot,WnDump,WnDelete,WnTitle, S_nSelect, S_nWeight, S_nScaleX, S_nScaleY, \
   S_nScaleZ, S_nScaleT,S_nLegend, S_nHisto, S_nLine, S_nMark,S_nColor, S_nPlopt,S_nIsort, S_nIsame, \
-  S_nLineColor, S_nLineStyle, S_nMarkerColor, S_nMarkerStyle, S_nIsame, \
+  S_nLineColor, S_nLineStyle, S_nMarkerColor, S_nMarkerStyle, S_nIsame, S_nProf, \
   WnNull, S_nXmin,S_nYmin,S_nZmin,S_nXmax,S_nYmax,S_nZmax, S_nLastCom, \
   S_nTitT,S_nTitX,S_nTitY,S_nTitZ,S_n3d,Omenu,NOmenu,Wmaster, \
   KmenuPosted,KplotPosted,KoptPosted, \
@@ -1003,7 +1022,7 @@ def _nNull():
   S_nSkipHead, S_nSkipFoot, S_nComment, S_nSep, \
   WnPlot,WnDump,WnDelete,WnTitle, S_nSelect, S_nWeight, S_nScaleX, S_nScaleY, \
   S_nScaleZ, S_nScaleT,S_nLegend, S_nHisto, S_nLine, S_nMark,S_nColor, S_nPlopt,S_nIsort, S_nIsame, \
-  S_nLineColor, S_nLineStyle, S_nMarkerColor, S_nMarkerStyle, S_nIsame, \
+  S_nLineColor, S_nLineStyle, S_nMarkerColor, S_nMarkerStyle, S_nIsame, S_nProf, \
   WnNull, S_nXmin,S_nYmin,S_nZmin,S_nXmax,S_nYmax,S_nZmax, S_nLastCom, \
   S_nTitT,S_nTitX,S_nTitY,S_nTitZ,S_n3d,Omenu,NOmenu,Wmaster, \
   KmenuPosted,KplotPosted,KoptPosted, \
@@ -1061,7 +1080,7 @@ def _clTitle():
   S_nSkipHead, S_nSkipFoot, S_nComment, S_nSep, \
   WnPlot,WnDump,WnDelete,WnTitle, S_nSelect, S_nWeight, S_nScaleX, S_nScaleY, \
   S_nScaleZ, S_nScaleT,S_nLegend, S_nHisto, S_nLine, S_nMark,S_nColor, S_nPlopt,S_nIsort, S_nIsame, \
-  S_nLineColor, S_nLineStyle, S_nMarkerColor, S_nMarkerStyle, S_nIsame, \
+  S_nLineColor, S_nLineStyle, S_nMarkerColor, S_nMarkerStyle, S_nIsame, S_nProf, \
   WnNull, S_nXmin,S_nYmin,S_nZmin,S_nXmax,S_nYmax,S_nZmax, S_nLastCom, \
   S_nTitT,S_nTitX,S_nTitY,S_nTitZ,S_n3d,Omenu,NOmenu,Wmaster, \
   KmenuPosted,KplotPosted,KoptPosted, \
@@ -1109,7 +1128,7 @@ def _nTitle():
   S_nSkipHead, S_nSkipFoot, S_nComment, S_nSep, \
   WnPlot,WnDump,WnDelete,WnTitle, S_nSelect, S_nWeight, S_nScaleX, S_nScaleY, \
   S_nScaleZ, S_nScaleT,S_nLegend, S_nHisto, S_nLine, S_nMark,S_nColor, S_nPlopt,S_nIsort, S_nIsame, \
-  S_nLineColor, S_nLineStyle, S_nMarkerColor, S_nMarkerStyle, S_nIsame, \
+  S_nLineColor, S_nLineStyle, S_nMarkerColor, S_nMarkerStyle, S_nIsame, S_nProf, \
   WnNull, S_nXmin,S_nYmin,S_nZmin,S_nXmax,S_nYmax,S_nZmax, S_nLastCom, \
   S_nTitT,S_nTitX,S_nTitY,S_nTitZ,S_n3d,Omenu,NOmenu,Wmaster, \
   KmenuPosted,KplotPosted,KoptPosted, \
@@ -1164,7 +1183,7 @@ def _clInfo():
   S_nSkipHead, S_nSkipFoot, S_nComment, S_nSep, \
   WnPlot,WnDump,WnDelete,WnTitle, S_nSelect, S_nWeight, S_nScaleX, S_nScaleY, \
   S_nScaleZ, S_nScaleT,S_nLegend, S_nHisto, S_nLine, S_nMark,S_nColor, S_nPlopt,S_nIsort, S_nIsame, \
-  S_nLineColor, S_nLineStyle, S_nMarkerColor, S_nMarkerStyle, S_nIsame, \
+  S_nLineColor, S_nLineStyle, S_nMarkerColor, S_nMarkerStyle, S_nIsame, S_nProf, \
   WnNull, S_nXmin,S_nYmin,S_nZmin,S_nXmax,S_nYmax,S_nZmax, S_nLastCom, \
   S_nTitT,S_nTitX,S_nTitY,S_nTitZ,S_n3d,Omenu,NOmenu,Wmaster, \
   KmenuPosted,KplotPosted,KoptPosted, \
@@ -1201,7 +1220,7 @@ def _nInfo():
   S_nSkipHead, S_nSkipFoot, S_nComment, S_nSep, \
   WnPlot,WnDump,WnDelete,WnTitle, S_nSelect, S_nWeight, S_nScaleX, S_nScaleY, \
   S_nScaleZ, S_nScaleT,S_nLegend, S_nHisto, S_nLine, S_nMark,S_nColor, S_nPlopt,S_nIsort, S_nIsame, \
-  S_nLineColor, S_nLineStyle, S_nMarkerColor, S_nMarkerStyle, S_nIsame, \
+  S_nLineColor, S_nLineStyle, S_nMarkerColor, S_nMarkerStyle, S_nIsame, S_nProf, \
   WnNull, S_nXmin,S_nYmin,S_nZmin,S_nXmax,S_nYmax,S_nZmax, S_nLastCom, \
   S_nTitT,S_nTitX,S_nTitY,S_nTitZ,S_n3d,Omenu,NOmenu,Wmaster, \
   KmenuPosted,KplotPosted,KoptPosted, \
@@ -1250,7 +1269,7 @@ def _clDelete():
   S_nSkipHead, S_nSkipFoot, S_nComment, S_nSep, \
   WnPlot,WnDump,WnDelete,WnTitle, S_nSelect, S_nWeight, S_nScaleX, S_nScaleY, \
   S_nScaleZ, S_nScaleT,S_nLegend, S_nHisto, S_nLine, S_nMark,S_nColor, S_nPlopt,S_nIsort, S_nIsame, \
-  S_nLineColor, S_nLineStyle, S_nMarkerColor, S_nMarkerStyle, S_nIsame, \
+  S_nLineColor, S_nLineStyle, S_nMarkerColor, S_nMarkerStyle, S_nIsame, S_nProf, \
   WnNull, S_nXmin,S_nYmin,S_nZmin,S_nXmax,S_nYmax,S_nZmax, S_nLastCom, \
   S_nTitT,S_nTitX,S_nTitY,S_nTitZ,S_n3d,Omenu,NOmenu,Wmaster, \
   KmenuPosted,KplotPosted,KoptPosted, \
@@ -1287,7 +1306,7 @@ def _nDelete():
   S_nSkipHead, S_nSkipFoot, S_nComment, S_nSep, \
   WnPlot,WnDump,WnDelete,WnTitle, S_nSelect, S_nWeight, S_nScaleX, S_nScaleY, \
   S_nScaleZ, S_nScaleT,S_nLegend, S_nHisto, S_nLine, S_nMark,S_nColor, S_nPlopt,S_nIsort, S_nIsame, \
-  S_nLineColor, S_nLineStyle, S_nMarkerColor, S_nMarkerStyle, S_nIsame, \
+  S_nLineColor, S_nLineStyle, S_nMarkerColor, S_nMarkerStyle, S_nIsame, S_nProf, \
   WnNull, S_nXmin,S_nYmin,S_nZmin,S_nXmax,S_nYmax,S_nZmax, S_nLastCom, \
   S_nTitT,S_nTitX,S_nTitY,S_nTitZ,S_n3d,Omenu,NOmenu,Wmaster, \
   KmenuPosted,KplotPosted,KoptPosted, \
@@ -1336,7 +1355,7 @@ def _clStat():
   S_nSkipHead, S_nSkipFoot, S_nComment, S_nSep, \
   WnPlot,WnDump,WnDelete,WnTitle, S_nSelect, S_nWeight, S_nScaleX, S_nScaleY, \
   S_nScaleZ, S_nScaleT,S_nLegend, S_nHisto, S_nLine, S_nMark,S_nColor, S_nPlopt,S_nIsort, S_nIsame, \
-  S_nLineColor, S_nLineStyle, S_nMarkerColor, S_nMarkerStyle, S_nIsame, \
+  S_nLineColor, S_nLineStyle, S_nMarkerColor, S_nMarkerStyle, S_nIsame, S_nProf, \
   WnNull, S_nXmin,S_nYmin,S_nZmin,S_nXmax,S_nYmax,S_nZmax, S_nLastCom, \
   S_nTitT,S_nTitX,S_nTitY,S_nTitZ,S_n3d,Omenu,NOmenu,Wmaster, \
   KmenuPosted,KplotPosted,KoptPosted, \
@@ -1361,6 +1380,11 @@ def _clStat():
     return
   #endif
 
+  global NLast, NSelectLast, NVarlisLast, NSelectLast
+  NLast = snam
+  NSelectLast = ssel
+  NVarlisLast = svars
+
   nstat(snam,svars,ssel)
 
   WnStat.destroy()
@@ -1380,7 +1404,7 @@ def _nStat():
   S_nSkipHead, S_nSkipFoot, S_nComment, S_nSep, \
   WnPlot,WnDump,WnDelete,WnTitle, S_nSelect, S_nWeight, S_nScaleX, S_nScaleY, \
   S_nScaleZ, S_nScaleT,S_nLegend, S_nHisto, S_nLine, S_nMark,S_nColor, S_nPlopt,S_nIsort, S_nIsame, \
-  S_nLineColor, S_nLineStyle, S_nMarkerColor, S_nMarkerStyle, S_nIsame, \
+  S_nLineColor, S_nLineStyle, S_nMarkerColor, S_nMarkerStyle, S_nIsame, S_nProf, \
   WnNull, S_nXmin,S_nYmin,S_nZmin,S_nXmax,S_nYmax,S_nZmax, S_nLastCom, \
   S_nTitT,S_nTitX,S_nTitY,S_nTitZ,S_n3d,Omenu,NOmenu,Wmaster, \
   KmenuPosted,KplotPosted,KoptPosted, \
@@ -1443,7 +1467,7 @@ def _clPlot():
   S_nSkipHead, S_nSkipFoot, S_nComment, S_nSep, \
   WnPlot,WnDump,WnDelete,WnTitle, S_nSelect, S_nWeight, S_nScaleX, S_nScaleY, \
   S_nScaleZ, S_nScaleT,S_nLegend, S_nHisto, S_nLine, S_nMark,S_nColor, S_nPlopt,S_nIsort, S_nIsame, \
-  S_nLineColor, S_nLineStyle, S_nMarkerColor, S_nMarkerStyle, S_nIsame, \
+  S_nLineColor, S_nLineStyle, S_nMarkerColor, S_nMarkerStyle, S_nIsame, S_nProf, \
   WnNull, S_nXmin,S_nYmin,S_nZmin,S_nXmax,S_nYmax,S_nZmax, S_nLastCom, \
   S_nTitT,S_nTitX,S_nTitY,S_nTitZ,S_n3d,Omenu,NOmenu,Wmaster, \
   KmenuPosted,KplotPosted,KoptPosted, \
@@ -1471,11 +1495,6 @@ def _clPlot():
   scz = float(S_nScaleZ.get())
   sct = float(S_nScaleT.get())
 
-  splopt = S_nPlopt.get()
-  if splopt == '': splopt = Mode2d
-
-  plotoptions(splopt)
-
   sisame = S_nIsame.get().lower()
   if sisame == 'yes' or sisame == 'y': isame = 1
   else: isame = 0
@@ -1498,6 +1517,11 @@ def _clPlot():
   imarker = 0
   if yesno(smarker) == 'yes': imarker = 1
 
+  sprof = S_nProf.get()
+  iprof = 0
+  if yesno(sprof) == 'yes': iprof = 1
+  #endif
+
   sline = S_nLine.get()
   iline = 0
   if yesno(sline) == 'yes': iline = 1
@@ -1517,18 +1541,43 @@ def _clPlot():
 
   h = hget(snam)
 
+#  splopt = S_nPlopt.get()
+  #reakpoint()
+  splopt = ''
+  if isame: splopt += 'same'
+  if iprof: splopt = 'prof'
+  else:
+    if iline: splopt += 'line'
+    if imarker: splopt += 'marker'
+  #endif
+
+  if splopt == '': splopt = Mode2d
+
+  plotoptions(splopt)
+
+  global NLast, NSelectLast, NVarlisLast
+
   if type(h) == int and h == -1:
     if nexists(snam) == 0:
       nError(snam + " not existing!")
       return
     #endif
+    NLast = snam
+    NVarlisLast = svars
+    NSelectLast = ssel
     nplot(snam,svars,ssel,swei,splopt,sleg,scx,scy,scz,sct,'','HnPlot',scol,isort)
   else:
     if scx == 1.0 and scy == 1.0 and scz == 1.0 and ssel == '' and swei == '':
+      NLast = snam
+      NVarlisLast = svars
+      NSelectLast = ssel
       hplot(snam,splopt,legend=sleg)
     else:
       snamN = snam + "_N"
       nh = hcopn(snam,snamN,svars)
+      NLast = snamN
+      NVarlisLast = svars
+      NSelectLast = ssel
       nplot(snamN,svars,ssel,swei,splopt,sleg,scx,scy,scz,sct,'','HnPlot',scol,isort)
     #endif
   #endif
@@ -1550,7 +1599,7 @@ def _nPlot():
   S_nSkipHead, S_nSkipFoot, S_nComment, S_nSep, \
   WnPlot,WnDump,WnDelete,WnTitle, S_nSelect, S_nWeight, S_nScaleX, S_nScaleY, \
   S_nScaleZ, S_nScaleT,S_nLegend, S_nHisto, S_nLine, S_nMark,S_nColor, S_nPlopt,S_nIsort, S_nIsame, \
-  S_nLineColor, S_nLineStyle, S_nMarkerColor, S_nMarkerStyle, S_nIsame, \
+  S_nLineColor, S_nLineStyle, S_nMarkerColor, S_nMarkerStyle, S_nIsame, S_nProf, \
   WnNull, S_nXmin,S_nYmin,S_nZmin,S_nXmax,S_nYmax,S_nZmax, S_nLastCom, \
   S_nTitT,S_nTitX,S_nTitY,S_nTitZ,S_n3d,Omenu,NOmenu,Wmaster, \
   KmenuPosted,KplotPosted,KoptPosted, \
@@ -1563,6 +1612,7 @@ def _nPlot():
 
 #---------------------------------------------------------------------------
 
+  global NLast, NSelectLast, NVarlisLast, NSelectLast
 
   global FillColor
   #print("_Plot!")
@@ -1583,9 +1633,17 @@ def _nPlot():
   widlab = 15
   wident = 15
 
-  nNam = Nhead[-1][1]
-  nid = GetIndexN(nNam)
-  nhead = Nhead[nid]
+  try:
+    nid = GetIndexN(NLast)
+    nhead = Nhead[nid]
+    nNam = nhead[1]
+  except:
+    nNam = Nhead[-1][1]
+    nid = GetIndexN(nNam)
+    nhead = Nhead[nid]
+
+  NiLast = nid
+  NLast = nNam
 
   if hasattr(Ax,'zaxis'):
     S_n3d.set('yes')
@@ -1593,13 +1651,22 @@ def _nPlot():
     S_n3d.set('no')
   #endif
 
-  nvar = nhead[3]
-  svar = nhead[4][0]
-  if nvar > 1:
-    if nNam == 'n10':
-      svar += ":" + nhead[6][0]
-    else:
-      svar += ":" + nhead[5][0]
+  svar = ''
+
+  try:
+    svar = NVarlisLast
+  except: svar = ''
+
+  if svar == '':
+    nvar = nhead[3]
+    svar = nhead[4][0]
+
+    if nvar > 1:
+      if nNam == 'n10':
+        svar += ":" + nhead[6][0]
+      else:
+        svar += ":" + nhead[5][0]
+      #endif
     #endif
   #endif
 
@@ -1607,6 +1674,11 @@ def _nPlot():
 
   snsep = S_nSep.get()
   if snsep == "none": snsep = 'blank'
+
+  try:
+    S_nSelect.set(NSelectLast)
+  except:
+    S_nSelect.set('none')
 
   ssel = S_nSelect.get()
   if ssel == '': ssel = 'none'
@@ -1633,8 +1705,12 @@ def _nPlot():
   scol = S_nColor.get()
   if scol == '': scol = 'default'
 
+  sprof = S_nProf.get()
+  if sprof == '': sprof = 'no'
+
   smarker = S_nMark.get()
   if smarker == '': smark = 'no'
+
   sline = S_nLine.get()
   if sline == '': scol = 'yes'
 
@@ -1648,6 +1724,7 @@ def _nPlot():
   framelabentry(WnPlot,'Scaling of 3rd var.',scz,S_nScaleZ,MyFont,widlab,wident)
   framelabentry(WnPlot,'Scaling of 4th var.',sct,S_nScaleT,MyFont,widlab,wident)
 
+  framelabentry(WnPlot,'Profile',sprof,S_nProf,MyFont,widlab,wident)
   framelabentry(WnPlot,'Line',sline,S_nLine,MyFont,widlab,wident)
   framelabentry(WnPlot,'Marker',smarker,S_nMark,MyFont,widlab,wident)
   framelabentry(WnPlot,'Coler',scol,S_nColor,MyFont,widlab,wident)
@@ -1662,6 +1739,11 @@ def _nPlot():
   bClose = Button(fbot,text='Ok',command=_clPlot)
   bClose.pack(side=LEFT,expand=TRUE,fill=X)
   fbot.pack(expand=TRUE,fill=X)
+
+  NiLast = nid
+  NLast = nNam
+  NSelectLast = ssel
+  NVarlisLast = svar
 
   Nplot.unpost()
 
@@ -2180,8 +2262,9 @@ def _set_uname():
   'IFieldProp','PinXprop','PinWprop','PinHprop','NpinYprop','NpinZprop', \
   'PhGshift','IWigner','NyTheWig','TheYWig','NzTheWig','TheZWig', \
   'iGenPho','iPhaseSpace','nEfold','NoSplineEfold', \
-  'nElecAmpGenPho','Npho','ModeRan' \
+  'Npho','ModeRan' \
   ]
+#  'nElecAmpGenPho','Npho','ModeRan' \
 
   Useed = [376577121, 52147852, -1273034815, -1963249100, 1195262240, \
   -1718716574, -224354675, 432587481, 1692325775, 1934175653, \
@@ -2223,10 +2306,10 @@ def _set_uname():
   #reakpoint()
   Dsetup['iPhaseSpace'] = ['   Pattern of five bits to generate photons (Option iGenPho)',1111]
 
-  Dsetup['nElecAmpGenPho'] = ['Number of electrons to generated photons from field amplitude',0]
+#  Dsetup['nElecAmpGenPho'] = ['Number of electrons to generated photons from field amplitude',0]
   Dsetup['Npho'] = ['Number of photons per electron to be generated',1]
   Dsetup['ModeRan'] = ['All grid points (zero) or Npho random grid points (not zero)','1']
-  Dsetup['nEfold'] = ['Number of E-spread steps for Wigner Dist. and photon generation',1]
+  Dsetup['nEfold'] = ['Number of E-spread steps for Wigner Dist.',1]
   #Dsetup[''] = ['',]
 
   Dsetup['Statistic'] = ['Statistic on plots',getstat()]
@@ -2254,7 +2337,8 @@ SpecPar = ['Mthreads','Nelec','Ihbunch','Modepin','Noranone','ModeSphere','Nepho
 'PinY','PinZ','PinW','PinH','NpinZ','NpinY','Step','Pherror', \
 'IFieldProp','PinXprop','PinWprop','PinHprop','NpinYprop','NpinZprop', \
 'IfixPhase','PhGshift','IWigner','IWigNoFile','NyTheWig','TheYWig','NzTheWig','TheZWig', \
-'NoSplineEfold', 'iGenPho','iPhaseSpace','nElecAmpGenPho','Npho','ModeRan','nEfold','Ifixseed']
+'NoSplineEfold', 'iGenPho','iPhaseSpace','Npho','ModeRan','nEfold','Ifixseed']
+#'NoSplineEfold', 'iGenPho','iPhaseSpace','nElecAmpGenPho','Npho','ModeRan','nEfold','Ifixseed']
 
 PlotPar = ['Mode3d','Markersize','Linewidth','Linecolor','NxZones','NyZones','ClearCanvas','Statistic']
 
@@ -3704,7 +3788,9 @@ def _pPhot(key='PhzyS0',select=''):
 
   kplane = 0
 
-  if keyu == 'PHZYS0' or keyu == 'PHZYS1' or keyu == 'PHZYS2' or keyu == 'PHZYS3':
+  if keyu == 'PHS0' or keyu == 'PHS1' or keyu == 'PHS2' or keyu == 'PHS3':
+    kplane = -1
+  elif keyu == 'PHZYS0' or keyu == 'PHZYS1' or keyu == 'PHZYS2' or keyu == 'PHZYS3':
     kplane = 1
   elif keyu == 'PHTZTYS0' or keyu == 'PHTZTYS1' or keyu == 'PHTZTYS2' or keyu == 'PHTZTYS3':
     kplane = 2
@@ -3730,7 +3816,16 @@ def _pPhot(key='PhzyS0',select=''):
     sel = selgam
   #endif
 
-  if kplane == 1:
+  if kplane == -1:
+
+    nstok = keyu[-1]
+    sn = str(nstok)
+
+    nprof(namppho,"egam:s" + sn)
+    ytit = 'N' + TeX_gamma + '/s/0.1' + ' %BW/mm$^{2}$/' + str(int(Curr*1000.+0.5)) + "mA"
+    txyz("Mean flux-density of S" + sn + " (x=" + str(pinx/1000) + "m)","Eph[eV]",ytit)
+
+  elif kplane == 1:
 
     nstok = keyu[-1]
     sn = str(nstok)
@@ -4490,8 +4585,10 @@ def _pFluxSpec(key='s0'):
 
   if k1 == 's':
     #reakpoint()
+    stato = getstat()
     if Nepho > 1:
       npl(nflx,"egam:" + keyl,plopt='line',color='r')
+      optnstat()
       if Modepin:
         npl(nflx,"egam:"+keyem,plopt='sameline')
         npl(nflx,"egam:"+keyep,plopt='sameline')
@@ -4511,6 +4608,7 @@ def _pFluxSpec(key='s0'):
     #endif NpinZ, NpinY
     titp = "\n" + keyu + " (w={:.3g}mm, h={:.3g}mm, x={:.3g}m, y={:.3g}mm, z={:.3g}mm)". \
     format(PinW,PinH,PinX/1000.,PinY,PinZ)
+    optstat(stato)
   elif k1 == 'p':
     Quit("Baustelle P")
     if Nepho > 1:
@@ -4562,20 +4660,20 @@ def _write_urad_phase_nam():
   igenpho = int(Dsetup['iGenPho'][1])
   if not iwig: igenpho = 0
 
-  neleca = int(Dsetup['nElecAmpGenPho'][1])
+#  neleca = int(Dsetup['nElecAmpGenPho'][1])
   npho = int(Dsetup['Npho'][1])
 
-  if not npho or not neleca:
-    npho = 0
-    neleca = 0
+#  if not npho or not neleca:
+#    npho = 0
+#    neleca = 0
 
   nefold = int(Dsetup['nEfold'][1])
-  if not iwig and not neleca: nefold = 0
+  if not iwig: nefold = 0
 
   espread = float(Dsetup['Espread'][1])
 
   Dsetup['Npho'][1] = npho
-  Dsetup['nElecAmpGenPho'][1] = neleca
+#  Dsetup['nElecAmpGenPho'][1] = neleca
   Dsetup['IWigner'][1] = iwig
   Dsetup['iGenPho'][1] = igenpho
   Dsetup['nEfold'][1] = nefold
@@ -4806,7 +4904,7 @@ def __get_spec():
     IPhot = namppho.iele.max()
     #rint("3b",IPhot)
     Npho = namppho.igam.max()
-    Dsetup['nElecAmpGenPho'][1] = IPhot
+#    Dsetup['nElecAmpGenPho'][1] = IPhot
     Dsetup['Npho'][1] = Npho
 
   fil = "ampgenpho.elc"
@@ -4830,7 +4928,7 @@ def __get_spec():
     IPhot = namppho.iele.max()
     #rint("4",IPhot)
     Npho = namppho.igam.max()
-    Dsetup['nElecAmpGenPho'][1] = IPhot
+#    Dsetup['nElecAmpGenPho'][1] = IPhot
     Dsetup['Npho'][1] = Npho
 
   fil = "ampgenpho.elc"
@@ -5371,16 +5469,16 @@ def _closeSetUp_Spec():
     #endfor
   #endif LastSetup
 
-  neleca = int(Dsetup['nElecAmpGenPho'][1])
+#  neleca = int(Dsetup['nElecAmpGenPho'][1])
   npho = int(Dsetup['Npho'][1])
 
-  if not npho or not neleca:
-    npho = 0
-    neleca = 0
-  #endif
+#  if not npho:
+#    npho = 0
+#    neleca = 0
+#  #endif
 
   Dsetup['Npho'][1] = npho
-  Dsetup['nElecAmpGenPho'][1] = neleca
+#  Dsetup['nElecAmpGenPho'][1] = neleca
 
   _dvsetup()
   SetUp_Spec.destroy()
@@ -6536,7 +6634,7 @@ Dsetup['dEbeam'] =  ["dEbeam",dEbeam]
 Dsetup['nEfold'] = ['Number of E-spread steps for Wigner and photon generation',0,nEfold]
 Dsetup['NoSplineEfold'] = ['  Suppress splines for E-spread folding',NoSplineEfold]
 
-Dsetup['nElecAmpGenPho'] = ['Number of electrons to generated photons from field amplitude',0]
+#Dsetup['nElecAmpGenPho'] = ['Number of electrons to generated photons from field amplitude',0]
 Dsetup['iGenPho'] = ['Generate photons from Wigner-Distribution [-1,0,1]',0]
 Dsetup['Npho'] = ['Number of photons per electron to be generated',0]
 Dsetup['ModeRan'] = ['   Photons for all grid points (zero) or from Npho random grid points (not zero)','1']
@@ -6856,7 +6954,7 @@ MPropFields.add_command(label='Ez_imag', command= lambda key='EZI': _pFdProp(key
 IWigner = Dsetup['IWigner'][1]
 #reakpoint() #2
 #rint("2",IPhot)
-IPhot = Dsetup['nElecAmpGenPho'][1]
+#IPhot = Dsetup['nElecAmpGenPho'][1]
 Npho = Dsetup['Npho'][1]
 nEfold = Dsetup['nEfold'][1]
 
@@ -6882,6 +6980,14 @@ def _reset_mphot():
   fil = "ampgenpho.pho"
   if IPhot > 0 or fexist(fil):
 
+    MPhot.add_command(label='S0(Eph)', command= lambda key='PhS0': _pPhot(key))
+    NPhotMentries += 1
+    MPhot.add_command(label='S1(Eph)', command= lambda key='PhS1': _pPhot(key))
+    NPhotMentries += 1
+    MPhot.add_command(label='S2(Eph)', command= lambda key='PhS2': _pPhot(key))
+    NPhotMentries += 1
+    MPhot.add_command(label='S3(Eph)', command= lambda key='PhS3': _pPhot(key))
+    NPhotMentries += 1
     MPhot.add_command(label='S0(z,y)', command= lambda key='PhzyS0': _pPhot(key))
     NPhotMentries += 1
     MPhot.add_command(label='S1(z,y)', command= lambda key='PhzyS1': _pPhot(key))

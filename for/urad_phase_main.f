@@ -1,4 +1,4 @@
-*CMZ :          25/09/2026  11.32.41  by  Michael Scheer
+*CMZ :          28/09/2026  09.07.50  by  Michael Scheer
 *CMZ :  4.02/01 02/09/2026  08.56.08  by  Michael Scheer
 *CMZ :  4.02/00 16/09/2025  09.13.49  by  Michael Scheer
 *CMZ :  4.01/07 18/10/2024  08.57.02  by  Michael Scheer
@@ -101,7 +101,7 @@
      &  wigfluxin,eps=1.0d-12,wigzcut,wigycut,wigmin,wigcenmax,w,fdwigtztymax,w0000,
      &  wigzcutw,wigycutw,depho,wint, g1=1.0d0
 
-      real xran(1),rr(2),whit,
+      real xran(1),rr(2),whit,dpp,
      &  axr,axi,ayr,ayi,azr,azi,
      &  bxr,bxi,byr,byi,bzr,bzi
 
@@ -184,10 +184,10 @@ c      call util_random_init(isize,iseed)
         call util_file_delete('genpho.elc',kstat)
       endif
 
-      if (nelecampgenpho.ge.0) then
-        call util_file_delete('ampgenpho.pho',kstat)
-        call util_file_delete('ampgenpho.elc',kstat)
-      endif
+      if (nelecampgenpho.gt.0) nelec=1
+
+      call util_file_delete('ampgenpho.pho',kstat)
+      call util_file_delete('ampgenpho.elc',kstat)
 
       open(newunit=luna,file='urad_phase.run',status='old',iostat=kstat)
       if (kstat.ne.0) then
@@ -385,9 +385,6 @@ c        ifieldprop=1
       if (nefold.gt.1) then
         ebeammin=ebeam*(1.0d0-ebeamnsig*espread)
         debeam=2.0d0*ebeamnsig*espread/dble(nefold-1)*ebeam
-      else if (nefoldo.lt.1) then
-        ebeammin=ebeam*(1.0d0-ebeamnsig*espread)
-        debeam=2.0d0*ebeamnsig*espread*ebeam
       else
         ebeammin=ebeam
         debeam=0.0d0
@@ -758,6 +755,7 @@ c        open(newunit=lung,file='urad_phase.geo')
 
       do iefold=1,nefold
 
+        callu
         if (nefold.gt.1) then
           espread=0.0d0
           espread_u=espread
@@ -831,6 +829,15 @@ c              print*,"fdmaxana:",sngl(fdmaxana)
         enddo !nepho
 
         if (ianalytic.eq.0) then
+
+          !allu
+          if (nelec.gt.0) then
+            ndimpho=ndimapho*nepho*nelec
+            if (modepin.eq.0) ndimpho=ndimpho*nobsv
+c            print*,ndimpho
+            !allu
+            allocate(photons_u(ndimpho),electrons_u(5*nelec))
+          endif
 
           call urad_phase(
      &      mthreads,nelec,noranone,icohere,modebunch,bunchlen,bunchcharge,ihbunch,
@@ -1113,7 +1120,7 @@ c              stosum=stokes_u(1:4,iobph)
                 endif
               enddo
 
-              callu
+              !allu
 c              stm(1:4)=(stosum(1:4)/nelec_u)**2
 c              stm(5:8)=stm(5:8)/nelec_u
 c              stm(1:4)=sqrt(stm(5:8)-stm(1:4))
@@ -1145,7 +1152,59 @@ c     &          stosum(1:4)*pinw*pinh/nelec_u,stm(1:4)/sqrt(dble(nelec_u)),
 
         endif !(ianalytic.le.0) then
 
-        if (nelecampgenpho.ne.0) then
+        if (nelecampgenpho.eq.0) then
+
+          callu
+
+          if (modepin.gt.0) then
+            ngam=1
+          else
+            ngam=nobsv
+          endif
+
+          open(newunit=lunapho,file='ampgenpho.pho')
+          comlin='* ampgenpho.pho'
+          write(lunapho,'(a)') trim(comlin)
+          comlin='* iGam iEle iEgam iEfold Ebeam g Egam x y z yp zp S0 S1 S2 S3'
+          write(lunapho,'(a)') trim(comlin)
+
+          l=1
+          do iel=1,nelec
+            do i=1,ngam
+              do iepho=1,nepho
+                zg=photons_u(l+1)*1000.
+                yg=photons_u(l+2)*1000.
+                zpg=photons_u(l+3)*1000.
+                ypg=photons_u(l+4)*1000.
+                dpp=electrons_u(5*(iel-1)+5)
+                write(lunapho,*) i,iel,iepho,iefold,ebeam*(1.0+dpp),
+     &            g(iefold),
+     &            photons_u(l:l),pinx,yg,zg,zpg,ypg,
+     &            photons_u(l+5:l+8)/1.0e6
+                l=l+ndimapho
+              enddo
+            enddo
+          enddo
+
+          open(newunit=lunaele,file='ampgenpho.elc')
+          comlin='* ampgenpho.elc'
+          write(lunaele,'(a)') trim(comlin)
+          comlin='* i E g y z yp zp'
+          write(lunaele,'(a)') trim(comlin)
+
+          l=1
+          do i=1,nelec
+            zel=electrons_u(l)*1000.
+            yel=electrons_u(l+1)*1000.
+            zpel=electrons_u(l+2)*1000.
+            ypel=electrons_u(l+3)*1000.
+            dpp=electrons_u(5*(i-1)+5)
+            write(lunaele,*) i,ebeam*(1.0+dpp),
+     &        g(iefold),yel-pinx/1000.*ypel,zel-pinx/1000.*zpel,ypel,zpel
+            l=l+5
+          enddo
+
+        else if (nelecampgenpho.ne.0.and.nelec.eq.1) then
 
 c          write(6,*) ''
 c          write(6,*) 'Starting photon generation from field amplitude'
@@ -1196,7 +1255,6 @@ c            allocate(photonsa(5000000),electronsa(100000))
           endif
 
           !allutil_break
-
 
           l=1
           do iel=1,nelecampgenpho
@@ -2166,7 +2224,7 @@ c      if (modewave.ne.0) call util_zeit_kommentar(6,'Leaving urad_phase')
 
       ical=1
       end
-*CMZ :          25/09/2026  14.04.43  by  Michael Scheer
+*CMZ :          28/09/2026  09.54.17  by  Michael Scheer
 *CMZ :  4.02/01 02/09/2026  09.04.08  by  Michael Scheer
 *CMZ :  4.02/00 27/08/2025  14.45.47  by  Michael Scheer
 *CMZ :  4.01/07 18/10/2024  09.41.32  by  Michael Scheer
@@ -2209,7 +2267,7 @@ cc+seq,uservar.
 
       complex*16, dimension (:), allocatable :: expphiran
       real, dimension (:), allocatable :: pherr,pherrc,phiran
-      real, dimension(:,:), allocatable :: pranall,eall
+      real, dimension(:,:), allocatable :: pranall,eall,photons
 
       real eran(6),pran(3),rr(2)
 
@@ -2227,7 +2285,7 @@ cc+seq,uservar.
      &  bunnor,clight,bunchx,beta,beff,spow,
      &  zp0,yp0,rph,a2,anor,fsum,smax,zob,yob,
      &  xkellip,zampell,yampell,parkv,parkh,zpampell,ypampell,emom,dzpin,dypin,zmin,ymin,phgsh,
-     &  emitho,emitvo
+     &  emitho,emitvo,rn(3)
 
       double precision xprop,yprop(npinyprop_u),zprop(npinzprop_u),dy,dz,pinwprop,pinhprop
       double complex, dimension(:,:,:,:,:), allocatable :: fprop
@@ -2240,13 +2298,13 @@ cc+seq,uservar.
 
       double complex :: rea(3),expsh
 
-      integer :: kfreq,iobsv,i,np2,nelec,mbunch,meinbunch,ibu,jbun,
+      integer :: l,kfreq,iobsv,i,np2,nelec,mbunch,meinbunch,ibu,jbun,
      &  kran=6,icbrill,ilo,kobsv,i1,i2,n,
      &  ifail,ndimu,nstepu,ith,noespread,noemit,jbunch,jubunch,jhbunch,
      &  jcharge=-1,lmodeph,nclo,jeneloss=0,iamppin,
      &  iamppincirc=0,ifrob,iobfr,isub,jvelofield=0,nlbu=0,nepho,ielo,
      &  modewave,iepho,ifieldprop,nzprop,nyprop,im,izm,iym,ifix,lz,ly,
-     &  lunbun
+     &  lunbun,npho(1000),lpho,mpho
 
       integer, dimension (:), allocatable :: lnbunch
 
@@ -2261,6 +2319,8 @@ c      iuser=user(3)
 
       emitho=emith_u
       emitvo=emitv_u
+
+      npho=1
 
 c      if (nelecampgenpho_u.ne.0) then
 c        emitho=0.0d0
@@ -2321,6 +2381,16 @@ c      jhbunch=max(0,ihbunch)
 c      if (jhbunch.ne.0) then
 c        jhbunch=max(1,jhbunch)
 c      endif
+      !print*,size(photons_u)
+      !allu
+
+      if (nelec_u.lt.mthreads) mthreads=1
+      callu
+      if (modewave.eq.0) then
+        mpho=size(photons_u)/mthreads
+        allocate(photons(mpho,mthreads))
+        photons=0.0
+      endif
 
       nepho=nepho_u
       if (ifieldprop_u.eq.2) then
@@ -2502,6 +2572,10 @@ c     &    nelecampgenpho_u.ne.0
         print*,''
       endif
 
+      if (modewave.eq.0) then
+        electrons_u=0.0
+      endif
+
       if (iemit.ne.0) then
 
         allocate(eall(6,nelec_u))
@@ -2537,6 +2611,15 @@ c     &    nelecampgenpho_u.ne.0
         endif
 
         if (noranone.ne.0) eall(:,1)=0.0
+
+        if (modewave.eq.0) then
+          l=0
+          do i=1,nelec_u
+            electrons_u(l+1:l+5)=eall(2:6,i)
+            l=l+5
+          enddo
+        endif
+
       endif
 
       !allocate(affe(6,nepho_u*nobsv))
@@ -2700,8 +2783,8 @@ c      anor=sqrt(1.0d0/specnor_si)
 !$OMP& pran,pranall,eall,fillb,r0,dr0,iamppin,iamppincirc,pc,phase0,pr,banwid_u,
 !$OMP& pw,ph,idebug,pcbrill,wsstokes,vn,bunchlen_u,modebunch_u,icohere_u)
 !$OMP& SHARED(mthreads,stokes,pherr,expphiran,lbunch,lnbunch,modepin_u,fieldbunch,npinzo_u,nobsvo,dzpin,dypin,
-!$OMP& fbunch_u,jcharge,jeneloss,jvelofield,iemit,noranone,arad,pow,
-!$OMP& nrad_u,zmin,ymin,phgsh,fprop,stokesprop)
+!$OMP& fbunch_u,jcharge,jeneloss,jvelofield,iemit,noranone,arad,pow,photons,
+!$OMP& nrad_u,zmin,ymin,phgsh,fprop,stokesprop,npho,mpho)
 
       jbun=1
       isub=0
@@ -3081,7 +3164,7 @@ c     &              ampn(3)
 
                 endif
 
-              endif
+              endif !jhbunch.ne.0
 
             enddo !nper_u
 
@@ -3130,6 +3213,39 @@ c     &              ampn(3)
             !arad(:,iobfr,ith)=arad(:,iobfr,ith)+affe(:,iobfr)
 
             arad(:,iobfr,ith)=arad(:,iobfr,ith)+amp
+
+            !allu
+
+            rn(1)=
+     &        real(amp(2)*conjg(amp(6))-amp(3)*conjg(amp(5)))
+            rn(2)=
+     &            real(amp(3)*conjg(amp(4))-amp(1)*conjg(amp(6)))
+            rn(3)=
+     &        real(amp(1)*conjg(amp(5))-amp(2)*conjg(amp(4)))
+
+            rn(2)=rn(2)/rn(1)
+            rn(3)=rn(3)/rn(1)
+            rn(1)=sqrt(1.0d0-(rn(2)**2+rn(3)**2))
+
+            !allu
+
+            if (modewave.eq.0) then
+c              if(mod(ielec,iabs(jhbunch)).eq.0 .or. ielec.eq.1) then
+                if (npho(ith).le.mpho-8) then
+                  photons(npho(ith),ith)=frq(kfreq)
+                  photons(npho(ith)+1,ith)=obs(2)
+                  photons(npho(ith)+2,ith)=obs(3)
+                  photons(npho(ith)+3,ith)=rn(2)
+                  photons(npho(ith)+4,ith)=rn(3)
+                  photons(npho(ith)+5,ith)=wsstokes(1,iobfr)
+                  photons(npho(ith)+6,ith)=wsstokes(2,iobfr)
+                  photons(npho(ith)+7,ith)=wsstokes(3,iobfr)
+                  photons(npho(ith)+8,ith)=wsstokes(4,iobfr)
+                  npho(ith)=npho(ith)+9
+                endif
+c              endif
+            endif
+
             if (kfreq.eq.1) then
               nrad_u(kobsv)=nrad_u(kobsv)+1
               !allu
@@ -3275,7 +3391,14 @@ c      enddo !ilo
 !$OMP END DO
 !$OMP END PARALLEL
 
+      callu
+      lpho=0
       do ith=1,mthreads
+        if (modewave.eq.0) then
+          mpho=npho(ith)-1
+          photons_u(lpho+1:lpho+mpho)=photons(1:mpho,ith)
+          lpho=lpho+mpho
+        endif
         pow_u(:)=pow_u(:)+pow(:,ith)
         arad_u(:,:)=arad_u(:,:)+arad(:,:,ith)
       enddo
