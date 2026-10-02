@@ -1,4 +1,4 @@
-*CMZ :          01/10/2026  13.26.40  by  Michael Scheer
+*CMZ :          02/10/2026  12.14.55  by  Michael Scheer
 *CMZ :  4.02/01 02/09/2026  08.56.08  by  Michael Scheer
 *CMZ :  4.02/00 16/09/2025  09.13.49  by  Michael Scheer
 *CMZ :  4.01/07 18/10/2024  08.57.02  by  Michael Scheer
@@ -1182,7 +1182,7 @@ c     &          stosum(1:4)*pinw*pinh/nelec_u,stm(1:4)/sqrt(dble(nelec_u)),
                 dpp=electrons_u(5*(iel-1)+5)
                 write(lunapho,*) i,iel,iepho,iefold,ebeam*(1.0+dpp),
      &            g(iefold),
-     &            photons_u(l:l),pinx,yg,zg,zpg,ypg,
+     &            photons_u(l:l),pinx,yg,zg,ypg,zpg,
      &            photons_u(l+5:l+8)/1.0e6
                 l=l+ndimapho
               enddo
@@ -1268,7 +1268,7 @@ c            allocate(photonsa(5000000),electronsa(100000))
                 zpg=photonsa(l+3)*1000.
                 ypg=photonsa(l+4)*1000.
                 write(lunapho,*) i,iel,iepho,iefold,ebeam,g(iefold),
-     &            photonsa(l:l),pinx,yg,zg,zpg,ypg,
+     &            photonsa(l:l),pinx,yg,zg,ypg,zpg,
      &            photonsa(l+5:l+8)/1.0e6
                 l=l+ndimapho
               enddo
