@@ -1,83 +1,93 @@
  $uradphasen
 
-  Mthreads=-1          !Number of threads (<0: Use all cores)
+  Mthreads=-1        !Number of threads (<0: Use all cores)
 
-  Ebeam=1.722          !Beam energy [GeV]
-  Curr=0.1             !Current [A]
+  Ebeam=1.722        !Beam energy [GeV]
+  Curr=0.1           !Current [A]
+  Step=0.2           !Tracking step size [mm]
 
-  Nelec=1              !Nelec
-  Noranone=1           !No random change for first e-
+  Nelec=1            !Nelec
+  Noranone=1         !No random change for first e-
+  IfixPhase=0        !Random phase for e-
 
-  IfixPhase=0          !Random phase for e-
-  Icohere=0            !Coherent treatment of photons (experimental)
-  Ihbunch=0            !Each Ihbunch_th bunch is recorded
-  Bunchlen=0.0         !Not yet
-  BunchCharge=0.0      !Not yet
-  Modebunch=0          !Not yet
+  Icohere=0          ! to be tested
+  Ihbunch=1          ! Each Ihbunch_th bunch is recorded
+  Bunchlen=0.0
+  BunchCharge=0.0
+  Modebunch=0        ! Not yet
 
-  PinX=10000.0         !X of Pinhole [mm]
-  PinY=0.0             !Y of Pinhole [mm]
-  PinZ=0.0             !Z of Pinhole [mm]
-  PinW=1.0             !Width of Pinhole [mm]
-  PinH=1.0             !Height of Pinhole [mm]
-  NpinY=101            !Number of vert. points
-  NpinZ=101            !Number of hori. points
-  Modepin=0            !Monte-Carlo mode [0,1]
-  ModeSphere=0         !Arrange grid points on sphere [0,1]
+  PinX=10000.0      !X of PinHole [mm]
+  PinY=0.0            !Y of PinHole [mm]
+  PinZ=0.0            !Z of PinHole [mm]
+  PinW=2.0          !Width of PinHole [mm]
+  PinH=2.0          !Height of PinHole [mm]
+  NpinY=51           !Number of vert. points
+  NpinZ=51           !Number of hori. points
 
-  Perlen=50.0          !Period-length [mm]
-  Shift=0.0            !Shift [mm] (for spectra only)
+  Modepin=0           !Monte-Carlo mode [0,1]
+
+  ModeSphere=0        !Arrange grid points on sphere [0,1]
+
+  Perlen=50.0         !Period-length [mm]
+  Shift=0.0           !Shift [mm] (for spectra only)
+
   Nper=100             !Number of periods
-  Nharm=1              !Nharm (>0: overwrites Beff)
-  harm=100.0           !Harmonic [eV]
-  Beffv=1.0            !B0 vert. [T]
-  Beffh=0.0            !B0 hori. [T]
-  Step=0.2             !Tracking step size [mm]
+  Nharm=1             !Nharm (>0: overwrites Beff)
 
-  Nepho=1              !Number of Photon Energies
-  EphMin=695.0         !Min. Photon Energy [eV]
-  EphMax=705.0         !Max. Photon Energy [eV]
-  Espread=0.001        !Rel. energy spread
-  BetaH=14.0           !Hori. Beta function
-  BetaV=3.4            !Vert. Beta function
-  EmitH=4.4            !Hor. Emit. [nm-rad]
-  EmitV=0.0            !Ver. Emit. [nm-rad]
-  Disph=0.0            !Hori. Dispersion [mm]
-  Dispph=0.0           !Derivative of Hori. Dispersion [mrad]
-  Dispv=0.0            !Vert. Dispersion [mm]
-  Disppv=0.0           !Derivative of Vert. Dispersion [mrad]
+  harm=100.0          !Harm [eV]
+  Beffv=1.0           !B0 vert. [T]
+  Beffh=0.0           !B0 hori.. [T]
 
-  Modeph=0             !Mode for phase-error
-  Pherror=0.0          !Phase errors
+  Nepho=101           !Number of Photon Energies
+  EphMin=95.0         !Min. Photon Energy [eV]
+  EphMax=105.0        !Max. Photon Energy [eV]
 
-  Ianalytic=0          !Use analytic formular for rad. field
+  Espread=0.001       !Rel. energy spread
 
-  IFieldProp=1         !Propagate radiation field back to origin
+  BetaH=14.0          !Hori. Beta function
+  BetaV=3.4           !Vert. Beta function
+  EmitH=4.4           !Hor. Emit. [nm-rad]
+  EmitV=0.066         !Ver. Emit. [nm-rad]
+  Disph=0.0           !Hori. Dispersion [mm]
+  Dispph=0.0          !Derivative of Hori. Dispersion [mrad]
+  Dispv=0.0           !Vert. Dispersion [mm]
+  Disppv=0.0          !Derivative of Vert. Dispersion [mrad]
 
-  PinXprop=0.0         !Long. Position of Plane [mm]
-  PinWprop=0.1         !Width of Pinhole in Plane [mm]
-  PinHprop=0.1         !Height of Pinhole in Plane [mm]
-  NpinYprop=5          !Number of vert. points in Plane
-  NpinZprop=5          !Number of hori. points in Plane
+  Modeph=0            !Mode for phase-error, only for inanalytic = 0
+  Pherror=0.0         !Phase errors
 
-  PhGshift=9999.0      !Global phase shift. 9999.: Hori. amplitude is zero for (PinX,PinY,PinZ))
+  IFieldProp=0        !Propagate radiation field back to origin
+  PinXprop=0.0        !Long. Position of Plane [mm]
+  PinWprop=0.05       !Width of PinHole in Origin[mm]
+  PinHprop=0.05       !Height of PinHole in Origin [mm]
+  NpinYprop=51        !Number of vert. points in Origin
+  NpinZprop=51        !Number of hori. points in Origin
+  IfixPhase=0         !Random phase for e-
+  PhGshift=9999.0     !Global phase shift. 9999.: Hori. amplitude is zero for (PinX,PinY,PinZ))
 
-  IWigner=0            !Calculate Wigner Distributions [-4,-3,-2,-1,0,1]
+  IWigner=0           !Calculate Wigner Distributions [-4,-3,-2,-1,0,1], triggers ifieldprop
+                      ! -1: Wzz only
+                      ! -2: Wyy only
+                      ! -3: Wzy only
+                      ! -4: Wyz only
+                      !  1: all
+		
+  NyTheWig=1          !Number of vert. angle steps
+  NzTheWig=31         !Number of hori.. angle steps
 
-  NyTheWig=5           !Number of vert. angle steps
-  TheYWig=0.05         !Vert. angle range
-  NzTheWig=5           !Number of hori. angle steps
-  TheZWig=0.05         !Hori. angle range
-  iGenPho=0            !Generate photons from Wigner-Distribution [-1,0,1]
-  iPhaseSpace=1111     !Pattern of five bits to generate photons (Option iGenPho)
-  nEfold=1             !Number of E-spread steps for Wigner Distribution
-  NoSplineEfold=0      !Suppress splines for E-spread folding
+  TheYWig=0.05        !Vert. angle range
+  TheZWig=0.05        !Hori. angle range
+
+  nEfold=0            !Number of E-spread steps
+
+  NoSplineEfold=0     !Suppress splines for E-spread folding, use simple summation
 
  $end
 
  $seedn
 
   Ifixseed=0         !Fix Seeds [0,1]
+
   irnseed(1)=376577121
   irnseed(2)=52147852
   irnseed(3)=-1273034815
@@ -144,4 +154,3 @@
   irnseed(64)=-674825931
 
  $end
-

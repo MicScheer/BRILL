@@ -1781,9 +1781,15 @@ def _combomod3d(ev):
 
 def _saveplot(prefix='pyBrill_plot_'):
 #  global WaveFilePrefix
+  global KZone_B
   m.WaveFilePrefix = prefix
   showplot(kpdf=1)
   m.WaveFilePrefix = ''
+  if KZone_B == -1:
+    KZone_B = -10000 + m.Kzone
+  else:
+    KZone_B = m.Kzone
+  #endif
 #enddef _saveplot()
 
 global Kdebug
@@ -1798,6 +1804,11 @@ else: Kdebug = 0
 
 global IEbeam
 IEbeam = -1
+
+global NxZone_B, NyZone_B, KZone_B
+NxZone_B = -1
+NyZone_B = -1
+KZone_B = -1
 
 global ClearCanvas
 ClearCanvas = 0
@@ -2166,7 +2177,7 @@ def get_mshwelcome():
 #enddef
 
 #reakpoint()
-def mshwelcome(program='pyBrill',year='2023'):
+def mshwelcome(program='pyBrill',year='2026'):
 
   global Kdate, Kbox, KxAxis, KyAxis, MShWelcome
 
@@ -2191,6 +2202,7 @@ def mshwelcome(program='pyBrill',year='2023'):
   text += "\n      Germany"
   text += "\n"
   text += "\n      Michael.Scheer@Helmholtz-Berlin.de"
+  text += "\n      Mic.Scheer@gmx.de"
   text += "\n"
   text += "\n -----------------------------------------------------------------------"
   text += "\n"
@@ -2207,6 +2219,9 @@ def mshwelcome(program='pyBrill',year='2023'):
   textndc(0.5,0.4,text,fontsize=10,color='magenta')
 
   Kdate, Kbox, KxAxis, KyAxis = KdateO, KboxO, KxAxisO, KyAxisO
+  global NxZone_B, NyZone_B, KZone_B
+  KZone_B = -9999
+
 #enddef mshwelcome()
 
 def _spec_key_press(ev):
@@ -2340,7 +2355,8 @@ SpecPar = ['Mthreads','Nelec','Ihbunch','Modepin','Noranone','ModeSphere','Nepho
 'NoSplineEfold', 'iGenPho','iPhaseSpace','Npho','ModeRan','nEfold','Ifixseed']
 #'NoSplineEfold', 'iGenPho','iPhaseSpace','nElecAmpGenPho','Npho','ModeRan','nEfold','Ifixseed']
 
-PlotPar = ['Mode3d','Markersize','Linewidth','Linecolor','NxZones','NyZones','ClearCanvas','Statistic']
+#PlotPar = ['Mode3d','Markersize','Linewidth','Linecolor','NxZones','NyZones','ClearCanvas','Statistic']
+PlotPar = ['Mode3d','Markersize','Linewidth','Linecolor','NxZones','NyZones','Statistic']
 
 global LastSetUp_Esel
 LastSetUp_Esel = 0
@@ -2543,7 +2559,7 @@ def _sel_Esel():
     titp = "\nS0 (x={:.3g}m, y={:.3g}mm, z={:.3g}mm)". \
     format(PinX/1000.,PinY,PinZ)
     txyz(titp,'',ytit)
-    if Nepho < 100:
+    if Nepho < 50:
       npl(nfld,"egam:s0",selzy,plopt='samemarker')
     #endif
     nextzone()
@@ -2555,7 +2571,7 @@ def _sel_Esel():
     npl(nflx,"egam:s0*g")
   #endif
 
-  if Nepho < 100:
+  if Nepho < 50:
     npl(nflx,"egam:s0*g",plopt='markersame')
 
   xtit="photon energy [eV]"
@@ -2888,7 +2904,7 @@ def _ini_Esel():
   EphMin = float(Dsetup['EphMin'][1])
   EphMax = float(Dsetup['EphMax'][1])
 
-  if nexist("nbun"):
+  if nexist("nflx"):
     s0max = nflx.s0.max()
     EphMaxS0 = nflx.query("s0=="+str(s0max)).egam.max()
     Esel = EphMaxS0
@@ -3245,8 +3261,10 @@ def _pFdPin(key='s0'):
   global nSigE
 
 
+
   global Esel,IEsel,S_Esel,S_IEsel
   global LastPlot; LastPlot = ['FdPin',key]
+  global NxZone_B, NyZone_B, KZone_B
 
   if Calculated_Spec == False or (Modepin != 0 and nexist("nbun") == 0) \
   or nexist("nfld") == 0: _calc_spec()
@@ -3254,22 +3272,13 @@ def _pFdPin(key='s0'):
   s0max = nflx.s0.max()
   if np.isnan(s0max) == True: return
 
-  #getzone()
-  #ptnstat()
   _set_plot_spec()
 
   keyu = key.upper()
   keyl = key.lower() + '*g'
   keylp = key.lower() + '*g*whit'
 
-  if Esel <= 0 : _ini_Esel()
-  elif Esel < EphMin :
-    Esel = EphMin
-    IEsel = 1
-  elif Esel > nfld.egam.max() :
-    Esel = EphMax
-    IEsel = Nepho
-  #endif
+  _ini_Esel()
 
   if Nepho > 1:
     dE = (EphMax-EphMin)/(Nepho-1)
@@ -3286,7 +3295,6 @@ def _pFdPin(key='s0'):
   S_IEsel.set(IEsel)
   S_Esel.set(Esel)
 
-  #selgam = "abs(egam-" + str(Esel) + ")<1.0e-10"
   selgam = "iegam==" + str(IEsel)
 
   ymin = PinY - PinH/2.
@@ -3296,20 +3304,12 @@ def _pFdPin(key='s0'):
 
   set_plot_params_3d()
 
-  #reakpoint()
-
   spinx = str(Dsetup['PinX'][1] / 1000) + 'm'
 
   if keyu == 'VPS0' or keyu == 'VPS1' or keyu == 'VPS2' or keyu == 'VPS3':
 
     htit = 'Vertical Profile at x = ' + spinx + ' of S$_' + keyu[-1] + '$'
-
-    #    if Modepin != 0:
-    #      nprof(nbun,"y:" + keyl[2:],selgam)
-    #    else:
     nprof(nfld,"y:" + keylp[2:],selgam)
-    #    #endif
-
     tunit = 'N$_{\\gamma}$' + '/mm$^2$/s/0.1' + '%BW/' + str(int(Curr*1000)) + "mA"
     txyz(htit + " for E$_{\\gamma}$  = " + pg5(Esel) + " eV","y [mm]",tunit)
 
@@ -3317,39 +3317,21 @@ def _pFdPin(key='s0'):
 
     htit = 'Vertical Cut at x = ' + spinx + ' of S$_' + keyu[-1] + '$'
 
-    #    if Modepin != 0:
-    #      nprof(nbun,"z:" + keyl[2:],selgam)
-    #    else:
     npl(nfld,"y:" + keylp[2:],selgam + ' and z==0',plopt='line')
-    #    #endif
-
     tunit = 'N$_{\\gamma}$' + '/mm$^2$/s/0.1' + '%BW/' + str(int(Curr*1000)) + "mA"
     txyz(htit + " for E$_{\\gamma}$  = " + pg5(Esel) + " eV","y [mm]",tunit)
 
   elif keyu == 'HCS0' or keyu == 'HCS1' or keyu == 'HCS2' or keyu == 'HCS3':
 
     htit = 'Horizontal Cut at x = ' + spinx + ' of S$_' + keyu[-1] + '$'
-
-    #    if Modepin != 0:
-    #      nprof(nbun,"z:" + keyl[2:],selgam)
-    #    else:
-    print(nfld.whit.max(),keylp[2:])
     npl(nfld,"z:" + keylp[2:],selgam + ' and y==0',plopt='line')
-    #    #endif
-
     tunit = 'N$_{\\gamma}$' + '/mm$^2$/s/0.1' + '%BW/' + str(int(Curr*1000)) + "mA"
     txyz(htit + " for E$_{\\gamma}$  = " + pg5(Esel) + " eV","z [mm]",tunit)
 
   elif keyu == 'HPS0' or keyu == 'HPS1' or keyu == 'HPS2' or keyu == 'HPS3':
 
     htit = 'Horizontal Profile at x = ' + spinx + ' of S$_' + keyu[-1] + '$'
-
-    #    if Modepin != 0:
-    #      nprof(nbun,"z:" + keyl[2:],selgam)
-    #    else:
     nprof(nfld,"z:" + keylp[2:],selgam)
-    #    #endif
-
     tunit = 'N$_{\\gamma}$' + '/mm$^2$/s/0.1' + '%BW/' + str(int(Curr*1000)) + "mA"
     txyz(htit + " for E$_{\\gamma}$  = " + pg5(Esel) + " eV","z [mm]",tunit)
 
@@ -3363,31 +3345,17 @@ def _pFdPin(key='s0'):
 
     plopt = Vsetup_Plot[0][1][1]
 
+    #print("*** Breakpoint funktioniert nur beim explitem Aufruf von _pFdPin() ***")
     #reakpoint()
     if plopt == 'surf' or plopt == 'boxes' or plopt == 'inter':
-      dzh = (zmax-zmin)/(max(1,NpinZ-1))/2.
-      dyh = (ymax-ymin)/(max(1,NpinY-1))/2.
       hnam = 'Hpin_' + keyu
-#      hbook2(hnam,htit,NpinZ,zmin-dzh,zmax+dzh,NpinY,ymin-dyh,ymax+dyh,overwrite=1)
       hbook2(hnam,htit,NpinZ,zmin,zmax,NpinY,ymin,ymax,overwrite=1)
-      #      if Modepin != 0:
-      #        nproj2(nbun,"z:y",keyl,selgam,idh=hnam,ioverwrite=0)
-      #      else:
       nproj2(nfld,"z:y",keyl,selgam,idh=hnam,ioverwrite=0)
-      #      #endif
       hplave(hnam,plopt)
     elif plopt == 'scat3d':
-      #      if Modepin != 0:
-      #        nplot(nbun,"z:y:"+keyl+":"+keyl,selgam)
-      #      else:
       nplot(nfld,"z:y:"+keyl+":"+keyl,selgam)
-      #      #endif
     else:
-      #      if Modepin != 0:
-      #        nplot(nbun,"z:y",selgam,keyl)
-      #      else:
       nplot(nfld,"z:y",selgam,keyl)
-      #      #endif
     #endif
 
     tunit = 'N$_{\\gamma}$' + '/mm$^2$/s/0.1' + '%BW/' + str(int(Curr*1000)) + "mA"
@@ -4495,6 +4463,7 @@ def _pFdSpec(key='s0'):
 #  if Modepin != 0: return
 
   if Calculated_Spec == False or nexist("nflx") == 0: _calc_spec()
+  _set_plot_spec()
 
   keyu = key.upper()
   keyl = key.lower() + "*g*whit"
@@ -4511,6 +4480,8 @@ def _pFdSpec(key='s0'):
   selzy = "abs(z-" + str(PinZ) + ") < 1.0e-10 and abs(y-" + str(PinY) + ") < 1.e-10"
 
   nEfold = int(Dsetup['nEfold'][1])
+
+  #reakpoint()
 
   if keyl[0] == 's':
     if not Modepin:
@@ -4561,6 +4532,7 @@ def _pFluxSpec(key='s0'):
   global LastPlot; LastPlot = ['FluxSpec',key]
 
   if Calculated_Spec == False or nexist("nflx") == 0: _calc_spec()
+  _set_plot_spec()
 
   kplot = 0
   keyu = key.upper()
@@ -4583,6 +4555,8 @@ def _pFluxSpec(key='s0'):
   setlinewidth(float(Vsetup_Plot[2][1][1]))
   setlinecolor(Vsetup_Plot[3][1][1])
 
+  #reakpoint()
+
   if k1 == 's':
     #reakpoint()
     stato = getstat()
@@ -4601,7 +4575,7 @@ def _pFluxSpec(key='s0'):
       if Modepin:
         npl(nflx,"egam:"+keyl,plopt='marker',color='r')
       else:
-        npl(nflx,"egam:"+keyl,plopt='line')
+        npl(nflx,"egam:"+keyl,plopt='marker')
       #endif
       if Modepin:
         npl(nflx,"egam:"+keyem,plopt='same')
@@ -5131,19 +5105,6 @@ def _calc_spec():
   #endif
 
   _reset_mphot()
-#  fil = "ampgenpho.pho"
-#  if fexist(fil):
-#    namppho = ncread("namppho","igam:iele:iegam:iebeam:ebeam:g:egam:z:y:tz:ty:s0:s1:s2:s3:s4",fil)
-#    #reakpoint() #3a
-#    IPhot = namppho.iele.max()
-#    #rint("3a",IPhot)
-#    Npho = namppho.igam.max()
-#    Dsetup['nElecAmpGenPho'][1] = IPhot
-#    Dsetup['Npho'][1] = Npho
-
-#  fil = "ampgenpho.elc"
-#  if fexist(fil):
-#    nampele = ncread("nampele","i:e:g:z:y:zp:yp","ampgenpho.elc")
 
   nlist()
 
@@ -5224,6 +5185,7 @@ def _calc_spec():
 
 def _set_plot_spec():
 
+
   global Dsetup
   global Vsetup_Beam, LastSetUp_Beam,  SetUp_Beam, \
   Vsetup_Undu, LastSetUp_Undu, SetUp_Undu, \
@@ -5240,11 +5202,43 @@ def _set_plot_spec():
   global nSigE
 
 
+
   global SetUp_Plot, Vsetup_Plot, LastSetUp_Plot, Dsetup
+  global NxZone_B, NyZone_B, KZone_B
+
+  kstat = Dsetup['Statistic'][1]
+
+  optstat(kstat)
 
   setmarkersize(float(Vsetup_Plot[1][1][1]))
   setlinewidth(float(Vsetup_Plot[2][1][1]))
   setlinecolor(Vsetup_Plot[3][1][1])
+
+  #print("*** ",KZone_B)
+  if KZone_B == -1:
+    NxZone_B = 1
+    Dsetup['NxZones'][1] = 1
+    NyZone_B = 1
+    Dsetup['NyZones'][1] = 1
+    return #before welcome page
+
+  #reakpoint()
+  if KZone_B == -9999: # After welcome page
+    NxZone_B = int(Dsetup['NxZones'][1])
+    NyZone_B = int(Dsetup['NyZones'][1])
+    #print("Zone 1")
+    zone(NxZone_B,NyZone_B)
+  elif KZone_B > 0:
+    NxZone_B = int(Dsetup['NxZones'][1])
+    NyZone_B = int(Dsetup['NyZones'][1])
+    if NxZone_B != m.Nxzone or NyZone_B != m.Nyzone:
+      #print("Zone 2")
+      zone(NxZone_B,NyZone_B)
+    else:
+      #print("Nextzone")
+      nextzone()
+    #endif
+  #endif
 
 #enddef _set_plot_spec()
 
@@ -5353,11 +5347,11 @@ def _vsetup_plot_ini():
   Dsetup['Linecolor'] = ["Linecolor",'b']
   Dsetup['NxZones'] = ["NxZones",1]
   Dsetup['NyZones'] = ["NyZones",1]
-  global ClearCanvas
-  Dsetup['ClearCanvas'] = ["Clear Canvas",ClearCanvas]
+#  global ClearCanvas
+#  Dsetup['ClearCanvas'] = ["Clear Canvas",ClearCanvas]
   Dsetup['Statistic'] = ["Statistic on plots",getstat()]
 
-  set_ClearCanvas(ClearCanvas)
+#  set_ClearCanvas(ClearCanvas)
 
   Vsetup_Plot = []
   for key in PlotPar:
@@ -6562,8 +6556,8 @@ PinH = 2.0
 PinX = 10000.0
 PinY = 0.0
 PinZ = 0.0
-NpinZ = 31
-NpinY = 31
+NpinZ = 51
+NpinY = 51
 Step = 0.2
 Pherror = 0.0
 IFieldProp = 0
@@ -6743,8 +6737,8 @@ global FigMain,AxMain
 FigMain = plt.gcf()
 AxMain = plt.gca()
 
-MBrill = Menu(Toolbar,tearoff=1,font=Myfont)
-mPlot = Menu(MBrill,tearoff=1,font=Myfont)
+MBrill = Menu(Toolbar,title='Brilliance',font=Myfont)
+mPlot = Menu(MBrill,font=Myfont)
 
 NMBrill += 1
 MBrill.add_command(label='Calculate', command=_calc_brill)
@@ -6762,7 +6756,7 @@ mPlot.add_command(label='Brilliant Flux', command=_pbrillflux)
 
 global BSetup, MSetup
 
-MSetup = Menu(Toolbar,tearoff=1,font=Myfont)
+MSetup = Menu(Toolbar,title='Set-Up',tearoff=1,font=Myfont)
 BSetup = Button(Toolbar,text='Set-Up',font=Myfont, \
 command= lambda menu = MSetup, name ='MSetup' : _showMenu(menu,name))
 BSetup.pack(side=LEFT)
@@ -6779,7 +6773,7 @@ BBrill.pack(side=LEFT)
 
 global BSpec, MSpec, MFlux
 
-MSpec = Menu(Toolbar,tearoff=1,font=Myfont)
+MSpec = Menu(Toolbar,tearoff=1,title='Spectra',font=Myfont)
 mPlotSpec = Menu(MSpec,tearoff=0,font=Myfont)
 
 MSpec.add_command(label='Calculate', command=_calc_spec)
@@ -6895,28 +6889,28 @@ MDist.add_cascade(label='Field Amplitudes', menu=MDistFields)
 #MDist.add_cascade(label='Photons', menu=MDistPhotons)
 MDist.add_command(label='Power', command= lambda key='p': _pFdPin(key))
 MDist.add_command(label='Select E_photon', command=_setup_esel)
-MDist.add_command(label='Select E_beam', command=_setup_ebeam)
+#MDist.add_command(label='Select E_beam', command=_setup_ebeam)
 
 if Modepin:
-  MDistProfStokes.add_command(label='hori. profile S0', command= lambda key='hps0': _pFdPin(key))
-  MDistProfStokes.add_command(label='hori. profile S1', command= lambda key='hps1': _pFdPin(key))
-  MDistProfStokes.add_command(label='hori. profile S2', command= lambda key='hps2': _pFdPin(key))
-  MDistProfStokes.add_command(label='hori. profile S3', command= lambda key='hps3': _pFdPin(key))
+  MDistProfStokes.add_command(label='Hori. Profile S0', command= lambda key='hps0': _pFdPin(key))
+  MDistProfStokes.add_command(label='Hori. Profile S1', command= lambda key='hps1': _pFdPin(key))
+  MDistProfStokes.add_command(label='Hori. Profile S2', command= lambda key='hps2': _pFdPin(key))
+  MDistProfStokes.add_command(label='Hori. Profile S3', command= lambda key='hps3': _pFdPin(key))
 
-  MDistProfStokes.add_command(label='vert. profile S0', command= lambda key='vps0': _pFdPin(key))
-  MDistProfStokes.add_command(label='vert. profile S1', command= lambda key='vps1': _pFdPin(key))
-  MDistProfStokes.add_command(label='vert. profile S2', command= lambda key='vps2': _pFdPin(key))
-  MDistProfStokes.add_command(label='vert. profile S3', command= lambda key='vps3': _pFdPin(key))
+  MDistProfStokes.add_command(label='Vert. Profile S0', command= lambda key='vps0': _pFdPin(key))
+  MDistProfStokes.add_command(label='Vert. Profile S1', command= lambda key='vps1': _pFdPin(key))
+  MDistProfStokes.add_command(label='Vert. Profile S2', command= lambda key='vps2': _pFdPin(key))
+  MDistProfStokes.add_command(label='Vert. Profile S3', command= lambda key='vps3': _pFdPin(key))
 else:
-  MDistCutsStokes.add_command(label='hori. cut of S0', command= lambda key='hcs0': _pFdPin(key))
-  MDistCutsStokes.add_command(label='hori. cut of S1', command= lambda key='hcs1': _pFdPin(key))
-  MDistCutsStokes.add_command(label='hori. cut of S2', command= lambda key='hcs2': _pFdPin(key))
-  MDistCutsStokes.add_command(label='hori. cut of S3', command= lambda key='hcs3': _pFdPin(key))
+  MDistCutsStokes.add_command(label='Hori. Cut of S0', command= lambda key='hcs0': _pFdPin(key))
+  MDistCutsStokes.add_command(label='Hori. Cut of S1', command= lambda key='hcs1': _pFdPin(key))
+  MDistCutsStokes.add_command(label='Hori. Cut of S2', command= lambda key='hcs2': _pFdPin(key))
+  MDistCutsStokes.add_command(label='Hori. Cut of S3', command= lambda key='hcs3': _pFdPin(key))
 
-  MDistCutsStokes.add_command(label='vert. cut of S0', command= lambda key='vcs0': _pFdPin(key))
-  MDistCutsStokes.add_command(label='vert. cut of S1', command= lambda key='vcs1': _pFdPin(key))
-  MDistCutsStokes.add_command(label='vert. cut of S2', command= lambda key='vcs2': _pFdPin(key))
-  MDistCutsStokes.add_command(label='vert. cut of S3', command= lambda key='vcs3': _pFdPin(key))
+  MDistCutsStokes.add_command(label='Vert. Cut of S0', command= lambda key='vcs0': _pFdPin(key))
+  MDistCutsStokes.add_command(label='Vert. Cut of S1', command= lambda key='vcs1': _pFdPin(key))
+  MDistCutsStokes.add_command(label='Vert. Cut of S2', command= lambda key='vcs2': _pFdPin(key))
+  MDistCutsStokes.add_command(label='Vert. Cut of S3', command= lambda key='vcs3': _pFdPin(key))
 
 MDistStokes.add_command(label='S0', command= lambda key='s0': _pFdPin(key))
 MDistStokes.add_command(label='S1', command= lambda key='s1': _pFdPin(key))
@@ -6944,15 +6938,15 @@ MPropStokes.add_command(label='S1', command= lambda key='s1': _pFdProp(key))
 MPropStokes.add_command(label='S2', command= lambda key='s2': _pFdProp(key))
 MPropStokes.add_command(label='S3', command= lambda key='s3': _pFdProp(key))
 
-MPropCutsStokes.add_command(label='Horizontal Cut of S0', command= lambda key='hcs0': _pFdProp(key))
-MPropCutsStokes.add_command(label='Horizontal Cut of S1', command= lambda key='hcs1': _pFdProp(key))
-MPropCutsStokes.add_command(label='Horizontal Cut of S2', command= lambda key='hcs2': _pFdProp(key))
-MPropCutsStokes.add_command(label='Horizontal Cut of S3', command= lambda key='hcs3': _pFdProp(key))
+MPropCutsStokes.add_command(label='Hori. Cut of S0', command= lambda key='hcs0': _pFdProp(key))
+MPropCutsStokes.add_command(label='Hori. Cut of S1', command= lambda key='hcs1': _pFdProp(key))
+MPropCutsStokes.add_command(label='Hori. Cut of S2', command= lambda key='hcs2': _pFdProp(key))
+MPropCutsStokes.add_command(label='Hori. Cut of S3', command= lambda key='hcs3': _pFdProp(key))
 
-MPropCutsStokes.add_command(label='Vertical Cut of S0', command= lambda key='vcs0': _pFdProp(key))
-MPropCutsStokes.add_command(label='Vertical Cut of S1', command= lambda key='vcs1': _pFdProp(key))
-MPropCutsStokes.add_command(label='Vertical Cut of S2', command= lambda key='vcs2': _pFdProp(key))
-MPropCutsStokes.add_command(label='Vertical Cut of S3', command= lambda key='vcs3': _pFdProp(key))
+MPropCutsStokes.add_command(label='Vert. Cut of S0', command= lambda key='vcs0': _pFdProp(key))
+MPropCutsStokes.add_command(label='Vert. Cut of S1', command= lambda key='vcs1': _pFdProp(key))
+MPropCutsStokes.add_command(label='Vert. Cut of S2', command= lambda key='vcs2': _pFdProp(key))
+MPropCutsStokes.add_command(label='Vert. Cut of S3', command= lambda key='vcs3': _pFdProp(key))
 
 MPropFields.add_command(label='Ey_real', command= lambda key='EYR': _pFdProp(key))
 MPropFields.add_command(label='Ey_imag', command= lambda key='EYI': _pFdProp(key))

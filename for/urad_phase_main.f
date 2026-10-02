@@ -1,4 +1,4 @@
-*CMZ :          28/09/2026  09.07.50  by  Michael Scheer
+*CMZ :          01/10/2026  13.26.40  by  Michael Scheer
 *CMZ :  4.02/01 02/09/2026  08.56.08  by  Michael Scheer
 *CMZ :  4.02/00 16/09/2025  09.13.49  by  Michael Scheer
 *CMZ :  4.01/07 18/10/2024  08.57.02  by  Michael Scheer
@@ -268,6 +268,8 @@ c        ifieldprop=1
       nepho=(nepho/2)*2+1
 
       nefoldo=nefold
+      if (iwigner.eq.0) nefold=0
+
       if (nefold.gt.0) then
         nefold=(nefold/2*2)+1
       else
@@ -661,9 +663,9 @@ c      endif
 
       modebunch_u=modebunch
 
-      if (ktime.eq.1) then
-        call util_zeit_kommentar_delta(6,'Writing output',1)
-      endif
+c      if (ktime.eq.1) then
+c        call util_zeit_kommentar_delta(6,'Writing output',1)
+c      endif
 
       if (modebunch.eq.-1) then
         nelec=0
@@ -836,6 +838,7 @@ c              print*,"fdmaxana:",sngl(fdmaxana)
             if (modepin.eq.0) ndimpho=ndimpho*nobsv
 c            print*,ndimpho
             !allu
+            if (ihbunch.ne.0 .and. ihbunch.lt.nelec_u) ndimpho=ndimpho/iabs(ihbunch)
             allocate(photons_u(ndimpho),electrons_u(5*nelec))
           endif
 
@@ -1169,7 +1172,7 @@ c     &          stosum(1:4)*pinw*pinh/nelec_u,stm(1:4)/sqrt(dble(nelec_u)),
           write(lunapho,'(a)') trim(comlin)
 
           l=1
-          do iel=1,nelec
+          do iel=1,nelec,iabs(ihbunch)
             do i=1,ngam
               do iepho=1,nepho
                 zg=photons_u(l+1)*1000.
@@ -2224,7 +2227,7 @@ c      if (modewave.ne.0) call util_zeit_kommentar(6,'Leaving urad_phase')
 
       ical=1
       end
-*CMZ :          28/09/2026  09.54.17  by  Michael Scheer
+*CMZ :          30/09/2026  09.52.43  by  Michael Scheer
 *CMZ :  4.02/01 02/09/2026  09.04.08  by  Michael Scheer
 *CMZ :  4.02/00 27/08/2025  14.45.47  by  Michael Scheer
 *CMZ :  4.01/07 18/10/2024  09.41.32  by  Michael Scheer
@@ -3230,7 +3233,7 @@ c     &              ampn(3)
             !allu
 
             if (modewave.eq.0) then
-c              if(mod(ielec,iabs(jhbunch)).eq.0 .or. ielec.eq.1) then
+              if(mod(ielec,iabs(jhbunch)).eq.0 .or. ielec.eq.1) then
                 if (npho(ith).le.mpho-8) then
                   photons(npho(ith),ith)=frq(kfreq)
                   photons(npho(ith)+1,ith)=obs(2)
@@ -3243,7 +3246,7 @@ c              if(mod(ielec,iabs(jhbunch)).eq.0 .or. ielec.eq.1) then
                   photons(npho(ith)+8,ith)=wsstokes(4,iobfr)
                   npho(ith)=npho(ith)+9
                 endif
-c              endif
+              endif
             endif
 
             if (kfreq.eq.1) then
