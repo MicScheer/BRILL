@@ -780,7 +780,7 @@ NxZone_B = -1
 NyZone_B = -1
 KZone_B = -1
 
-#global ClearCanvas
+global ClearCanvas
 ClearCanvas = 0
 set_ClearCanvas(ClearCanvas)
 
@@ -4943,7 +4943,7 @@ def _pWigner(key='WzzZ',select=''):
 
 
   global LastPlot; LastPlot = ['Wigner',key]
-  global Esel,IEsel,S_Esel,S_IEsel,dE
+  global Esel,IEsel,S_Esel,S_IEsel,dE,nwig
 
 #  if Modepin != 0: return
   debugbreak('_pWigner')
@@ -5151,10 +5151,9 @@ def _pWigner(key='WzzZ',select=''):
   setcolorbarpad(colorbarpad)
 
   global ClearCanvas
-  ClearCanvas = 1
-  Dsetup['ClearCanvas'][1] = ClearCanvas
-  set_ClearCanvas(ClearCanvas)
-
+#  ClearCanvas = 1
+#  Dsetup['ClearCanvas'][1] = ClearCanvas
+#  set_ClearCanvas(ClearCanvas)
 
   _saveplot()
 
