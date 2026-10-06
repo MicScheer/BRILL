@@ -5839,7 +5839,7 @@ def debug(s=''):
 
 def __get_spec():
 
-  global Calculated_Spec, NcalcSpec, SpecPar
+  global Calculated_Spec, NcalcSpec, SpecPar,IPhot
   global nsto,nflx,nfld,nbun,nfdp,nwig,nwge,namppho,nampele,Modepin
   global IWigner,nEfold,Esel,IEsel
   global nSigE
@@ -7848,6 +7848,7 @@ global MElecPhot
 MElecPhot = Menu(MFlux,tearoff=0,font=Myfont)
 
 global MPhot, NPhotMentries, IPhot, Npho
+IPhot = 0
 
 MPhot = Menu(MSpec,tearoff=0,font=Myfont)
 NPhotMentries = 0
@@ -8007,7 +8008,7 @@ nEfold = Dsetup['nEfold'][1]
 
 def _reset_mphot():
 
-  global MPhot, NPhotMentries,nEfold
+  global MPhot, NPhotMentries,nEfold,IPhot
 
   #reakpoint()
 
