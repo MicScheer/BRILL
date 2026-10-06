@@ -1,4 +1,4 @@
-*CMZ :          02/10/2026  12.14.55  by  Michael Scheer
+*CMZ :          06/10/2026  11.45.01  by  Michael Scheer
 *CMZ :  4.02/01 02/09/2026  08.56.08  by  Michael Scheer
 *CMZ :  4.02/00 16/09/2025  09.13.49  by  Michael Scheer
 *CMZ :  4.01/07 18/10/2024  08.57.02  by  Michael Scheer
@@ -121,7 +121,7 @@
      &  mz,my,mtz,mty,nzl,nzh,nyl,nyh,kepho,kpola1,kpola2,
      &  ianalytico,ierr,izobs,iyobs,lunwige,lunwig,lunpin,kwigpho,nzyprop,lunapho,lunaele,nefoldo,
      &  iwighor,iwigver,nwigcenhit,nwigincut,nosplineefold,iefold,nefold,icbrill,icbrillprop,
-     &  igenpho,nelecampgenpho,iphasespace,igenphonofile,npho,ngam,ith,moderan,npola(5),nthreads
+     &  igenpho,nelecampgenpho,iphasespace,igenphonofile,npho,ngam,ith,moderan,npola(5),nthreads,lele,lp
 
       namelist/uradphasen/
      &  perlen,shift,nper,beffv,beffh,
@@ -174,18 +174,6 @@ c      call util_random_init(isize,iseed)
       call util_file_delete('urad_phase.fdp',kstat)
       call util_file_delete('urad_phase_espread.fdp',kstat)
 
-      if (iwigner.ge.0) then
-        call util_file_delete('urad_phase.wig',kstat)
-        call util_file_delete('urad_phase_espread.wig',kstat)
-      endif
-
-      if (igenpho.ge.0) then
-        call util_file_delete('genpho.pho',kstat)
-        call util_file_delete('genpho.elc',kstat)
-      endif
-
-      if (nelecampgenpho.gt.0) nelec=1
-
       call util_file_delete('ampgenpho.pho',kstat)
       call util_file_delete('ampgenpho.elc',kstat)
 
@@ -212,6 +200,38 @@ c      call util_random_init(isize,iseed)
       read(luna,seedn)
 
       close(luna)
+
+      if (mthreads.lt.0) then
+        mthreads=OMP_GET_MAX_THREADS()
+      else if (mthreads.eq.0) then
+        mthreads=1
+      endif
+
+      if (iwigner.ge.0) then
+        call util_file_delete('urad_phase.wig',kstat)
+        call util_file_delete('urad_phase_espread.wig',kstat)
+      endif
+
+      if (igenpho.ge.0) then
+        call util_file_delete('genpho.pho',kstat)
+        call util_file_delete('genpho.elc',kstat)
+      endif
+
+      if (nelecampgenpho.gt.0) nelec=1
+
+      if (nelec.lt.mthreads) then
+        mthreads=1
+      endif
+
+      if (mod(nelec,mthreads).ne.0) then
+        nelec=nelec/mthreads*mthreads
+        write(6,*)""
+        write(6,*)"--- Nelec adapted to number of threads"
+        write(6,*)"    Nelec = ",nelec
+        write(6,*)""
+      endif
+
+      mthreads_u=mthreads
 
       if (espread.lt.1.0d-5) NoSplineEfold=1
 
@@ -295,6 +315,14 @@ c        ifieldprop=1
         print*,'*** Modepin set zero ***'
         print*,''
         modepin=0
+      endif
+
+      if (modepin.ne.0 .and. ifieldprop.ne.0) then
+        print*,''
+        print*,'*** Warning: Both Modepin and IfieldProp not zero***'
+        print*,'*** IfieldProp set zero ***'
+        print*,''
+        ifieldprop=0
       endif
 
       nephogam=nepho*nefold
@@ -696,14 +724,6 @@ c      endif
       write(luna,*)nelecampgenpho,npho,moderan
       close(luna)
 
-      if (mthreads.lt.0) then
-        mthreads=OMP_GET_MAX_THREADS()
-      else if (mthreads.eq.0) then
-        mthreads=1
-      endif
-
-      mthreads_u=mthreads
-
       !allutil_break
       gsum=0.0d0
       do iefold=1,nefold
@@ -757,7 +777,7 @@ c        open(newunit=lung,file='urad_phase.geo')
 
       do iefold=1,nefold
 
-        callu
+        !allu
         if (nefold.gt.1) then
           espread=0.0d0
           espread_u=espread
@@ -1157,7 +1177,7 @@ c     &          stosum(1:4)*pinw*pinh/nelec_u,stm(1:4)/sqrt(dble(nelec_u)),
 
         if (nelecampgenpho.eq.0) then
 
-          callu
+          !allu
 
           if (modepin.gt.0) then
             ngam=1
@@ -1172,40 +1192,62 @@ c     &          stosum(1:4)*pinw*pinh/nelec_u,stm(1:4)/sqrt(dble(nelec_u)),
           write(lunapho,'(a)') trim(comlin)
 
           l=1
-          do iel=1,nelec,iabs(ihbunch)
+          lele=1
+          lp=max(1,iabs(ihbunch))
+          do iel=1,nelec,lp
             do i=1,ngam
               do iepho=1,nepho
-                zg=photons_u(l+1)*1000.
-                yg=photons_u(l+2)*1000.
-                zpg=photons_u(l+3)*1000.
-                ypg=photons_u(l+4)*1000.
+                yg=photons_u(l+1)*1000.
+                zg=photons_u(l+2)*1000.
+                ypg=photons_u(l+3)*1000.
+                zpg=photons_u(l+4)*1000.
                 dpp=electrons_u(5*(iel-1)+5)
-                write(lunapho,*) i,iel,iepho,iefold,ebeam*(1.0+dpp),
+                write(lunapho,*) i,lele,iepho,iefold,ebeam*(1.0+dpp),
      &            g(iefold),
      &            photons_u(l:l),pinx,yg,zg,ypg,zpg,
      &            photons_u(l+5:l+8)/1.0e6
                 l=l+ndimapho
               enddo
             enddo
+            if (iel.eq.1) then
+              lele=lele-1+lp
+            else
+              lele=lele+lp
+            endif
           enddo
 
-          open(newunit=lunaele,file='ampgenpho.elc')
-          comlin='* ampgenpho.elc'
-          write(lunaele,'(a)') trim(comlin)
-          comlin='* i E g y z yp zp'
-          write(lunaele,'(a)') trim(comlin)
+          if (electrons_u(1).ne.-9999.) then
 
-          l=1
-          do i=1,nelec
-            zel=electrons_u(l)*1000.
-            yel=electrons_u(l+1)*1000.
-            zpel=electrons_u(l+2)*1000.
-            ypel=electrons_u(l+3)*1000.
-            dpp=electrons_u(5*(i-1)+5)
-            write(lunaele,*) i,ebeam*(1.0+dpp),
-     &        g(iefold),yel-pinx/1000.*ypel,zel-pinx/1000.*zpel,ypel,zpel
-            l=l+5
-          enddo
+            open(newunit=lunaele,file='ampgenpho.elc')
+            comlin='* ampgenpho.elc'
+            write(lunaele,'(a)') trim(comlin)
+            comlin='* i E g y z yp zp'
+            write(lunaele,'(a)') trim(comlin)
+
+            callu
+            l=1
+            lele=1
+            lp=iabs(ihbunch)
+            do i=1,nelec
+              if (electrons_u(l).eq.-9999.) then
+                callu
+                exit
+              endif
+              yel=electrons_u(l)*1000.
+              zel=electrons_u(l+1)*1000.
+              ypel=electrons_u(l+2)*1000.
+              zpel=electrons_u(l+3)*1000.
+              dpp=electrons_u(5*(i-1)+5)
+              write(lunaele,*) lele,ebeam*(1.0+dpp),
+     &          g(iefold),yel-pinx/1000.*ypel,zel-pinx/1000.*zpel,ypel,zpel
+              l=l+5
+              if (i.eq.1) then
+                lele=lele-1+lp
+              else
+                lele=lele+lp
+              endif
+            enddo
+          endif
 
         else if (nelecampgenpho.ne.0.and.nelec.eq.1) then
 
@@ -2227,7 +2269,7 @@ c      if (modewave.ne.0) call util_zeit_kommentar(6,'Leaving urad_phase')
 
       ical=1
       end
-*CMZ :          30/09/2026  09.52.43  by  Michael Scheer
+*CMZ :          06/10/2026  11.03.24  by  Michael Scheer
 *CMZ :  4.02/01 02/09/2026  09.04.08  by  Michael Scheer
 *CMZ :  4.02/00 27/08/2025  14.45.47  by  Michael Scheer
 *CMZ :  4.01/07 18/10/2024  09.41.32  by  Michael Scheer
@@ -2301,7 +2343,7 @@ cc+seq,uservar.
 
       double complex :: rea(3),expsh
 
-      integer :: l,kfreq,iobsv,i,np2,nelec,mbunch,meinbunch,ibu,jbun,
+      integer :: l,kfreq,iobsv,i,np2,nelec,mbunch,meinbunch,ibu,jbun,kmod,
      &  kran=6,icbrill,ilo,kobsv,i1,i2,n,
      &  ifail,ndimu,nstepu,ith,noespread,noemit,jbunch,jubunch,jhbunch,
      &  jcharge=-1,lmodeph,nclo,jeneloss=0,iamppin,
@@ -2311,7 +2353,7 @@ cc+seq,uservar.
 
       integer, dimension (:), allocatable :: lnbunch
 
-      integer :: idebug=0, lbunch=0, ierr=0, ielec=0
+      integer :: idebug=0, lbunch=0, ierr=0, ielec=0,lele
       integer ibunch,ihbunch,mthreads,nobsv,nobsvo,iemit,noranone,iz,iy,ipz,ipy,nobsvz,nobsvy
       integer iobm,iobp,iobfrm,iobfrp,neleco,noranoneo
       integer :: ical=0
@@ -2388,7 +2430,7 @@ c      endif
       !allu
 
       if (nelec_u.lt.mthreads) mthreads=1
-      callu
+      !allu
       if (modewave.eq.0) then
         mpho=size(photons_u)/mthreads
         allocate(photons(mpho,mthreads))
@@ -2404,16 +2446,6 @@ c     &    fpriv(3,npinzprop_u,npinyprop_u),
         stokesprop=0.0d0
       endif
 
-      if (modepin_u.ne.0) then
-        if (ical.eq.0) allocate(fieldbunch(7,npinzo_u,npinyo_u,nepho_u),stat=ierr)
-        if (ierr.ne.0) then
-          print*,""
-          print*,"*** Warning in urad_amprep: Could not allocate buffer for beam Ntuple ***"
-          print*,""
-          goto 9999
-        endif
-        fieldbunch=czero
-      endif
 
       call urad_field_ini(perlen_u,shift_u,beffv_u,beffh_u,modewave)
 
@@ -2576,9 +2608,15 @@ c     &    nelecampgenpho_u.ne.0
       endif
 
       if (modewave.eq.0) then
-        electrons_u=0.0
+        electrons_u=-9999.0
+        electrons_u(1)=yi
+        electrons_u(2)=zi
+        electrons_u(3)=vyi/vxi
+        electrons_u(4)=vzi/vxi
+        electrons_u(5)=0.0
       endif
 
+      lele=0
       if (iemit.ne.0) then
 
         allocate(eall(6,nelec_u))
@@ -2610,18 +2648,26 @@ c     &    nelecampgenpho_u.ne.0
             eall(4,i)=ypi
             eall(5,i)=zpi
             eall(6,i)=dpp
+            if (modewave.eq.0) then
+              kmod=0
+              if (i.eq.1) then
+                kmod=1
+              else
+                if (jhbunch.ne.0) then
+                  if(mod(i,iabs(jhbunch)).eq.0) then
+                    kmod=1
+                  endif
+                endif
+              endif
+              if (kmod.ne.0) then
+                electrons_u(lele+1:lele+5)=eall(2:6,i)
+                lele=lele+5
+              endif
+            endif
           enddo
         endif
 
         if (noranone.ne.0) eall(:,1)=0.0
-
-        if (modewave.eq.0) then
-          l=0
-          do i=1,nelec_u
-            electrons_u(l+1:l+5)=eall(2:6,i)
-            l=l+5
-          enddo
-        endif
 
       endif
 
@@ -2930,11 +2976,16 @@ c+self.
                 iy=nint((obs(2)-ymin)/dypin)+1
                 iz=nint((obs(3)-zmin)/dzpin)+1
                 kobsv=iz+nobsvz*(iy-1)
+                obs=obsv_u(:,kobsv)
               else
                 rpin=(pran(1)-0.5)*pr
                 ppin=pran(2)*twopi1
                 obs(2)=pc(2)+rpin*cos(ppin)
                 obs(3)=pc(3)+rpin*sin(ppin)
+                iy=nint((obs(2)-ymin)/dypin)+1
+                iz=nint((obs(3)-zmin)/dzpin)+1
+                kobsv=iz+nobsvz*(iy-1)
+                obs=obsv_u(:,kobsv)
               endif
             endif
 
@@ -3019,7 +3070,7 @@ c          amp0=amp0*dcmplx(0.0d0,dble(pran(1)*twopi1))
             !allutil_break
             do i=1,nper_u
 
-              !if (i.eq.1.or.i.eq.nper_u) !all util_break
+              if (i.eq.1.or.i.eq.nper_u) call util_break
 
               r=r0+(i-np2-1)*dr0
               dobs=obs-r
@@ -3173,12 +3224,6 @@ c     &              ampn(3)
 
             !allutil_break
 
-            if (modepin_u.ne.0) then
-              !print*,ilo,ith,obs(3),zmin,dzpin,iz
-              fieldbunch(1:6,iz,iy,kfreq)=fieldbunch(1:6,iz,iy,kfreq)+amp(1:6)
-              fieldbunch(7,iz,iy,kfreq)=fieldbunch(7,iz,iy,kfreq)+cone
-            endif
-
             apolh=
      &        amp(1)*conjg(stokesv(1,1))
      &        +amp(2)*conjg(stokesv(1,2))
@@ -3233,7 +3278,20 @@ c     &              ampn(3)
             !allu
 
             if (modewave.eq.0) then
-              if(mod(ielec,iabs(jhbunch)).eq.0 .or. ielec.eq.1) then
+
+              kmod=0
+
+              if (ielec.eq.1) then
+                kmod=1
+              else
+                if (jhbunch.ne.0) then
+                  if(mod(ielec,iabs(jhbunch)).eq.0) then
+                    kmod=1
+                  endif
+                endif
+              endif
+
+              if (kmod.ne.0) then
                 if (npho(ith).le.mpho-8) then
                   photons(npho(ith),ith)=frq(kfreq)
                   photons(npho(ith)+1,ith)=obs(2)
@@ -3247,6 +3305,7 @@ c     &              ampn(3)
                   npho(ith)=npho(ith)+9
                 endif
               endif
+
             endif
 
             if (kfreq.eq.1) then
@@ -3394,7 +3453,7 @@ c      enddo !ilo
 !$OMP END DO
 !$OMP END PARALLEL
 
-      callu
+      !allu
       lpho=0
       do ith=1,mthreads
         if (modewave.eq.0) then
@@ -3542,19 +3601,6 @@ c     &  sum(abs(amp)**2)/specnor_si)
 c      anor=sqrt(sbnor/specnor_si)
 
 c      arad_u=arad_u*anor
-
-      if (modepin_u.ne.0) then
-        do iepho=1,nepho_u
-          do iy=1,npinyo_u-1
-            do iz=1,npinzo_u-1
-              fsum=max(1.0d0,dreal(fieldbunch(7,iz,iy,iepho)))
-              fieldbunch(1:6,iz,iy,iepho)=fieldbunch(1:6,iz,iy,iepho)/fsum
-c            fieldbunch(1:6,iz,iy,iepho)=fieldbunch(1:6,iz,iy,iepho)
-            enddo
-          enddo
-        enddo
-c        fieldbunch=fieldbunch*anor/sqrt(specnor_si)
-      endif
 
 c      if (ifieldprop_u.eq.2) then
       if (ifieldprop_u.gt.0) then

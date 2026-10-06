@@ -93,7 +93,7 @@ fix the starting seed of the random number generator. This allows to
 reproduce results of a program run.
 
 We have a look on the flux-density distribution in the pinhole (Fig.
-\ref{ex1fig2}:
+\ref{ex1fig2}):
 
 \cbox{Spectra/Plot/Distribution in Pinhole/Stokes/S0}
 
@@ -105,6 +105,9 @@ We have a look on the flux-density distribution in the pinhole (Fig.
    \caption{\gti{Flux spectrum, plotted with option 'scat2d'}}
    \label{ex1fig3}
 \end{figure}
+
+You may step through the photon energies of the plot by pressing the arrow
+keys or the page keys.
 
 \begin{figure}[htb]
    \centering
@@ -225,9 +228,9 @@ NxZones = 2\\}
 and plot the horizontal cut of the Stokes parameter
 $S_0$ in the observation and in the source plane:
 
-\cbox{\normalsize Plot/Distribution in Pinhole/Cuts of Stokes/Hori.
+\cbox{\normalsize Spectra/Plot/Distribution in Pinhole/Cuts of Stokes/Hori.
 Cut of S{\small 0}}
-\cbox{\normalsize Plot/Distributions of Propagated Fields/Cuts of
+\cbox{\normalsize Spectra/Plot/Distributions of Propagated Fields/Cuts of
 Stokes/Hori. Cut of S{\small 0}}
 
 \begin{figure}[htb]
@@ -273,24 +276,33 @@ fields to generate photons as input for ray-tracing codes.
    {pictures/ex4\_ztz.pdf}
    \vspace*{-0.2cm}
    \caption{
-   \gti{Horizontal phase-space of generated photons}}
+   {Horizontal phase-space of 100000 photons generated from 100000
+   electrons with Modepin = 1}}
    \label{ex4ztz.pdf}
 \end{figure}
 
-Due to the applied algorithm
-in this examples the photons are generated for an exact beam energy,
-i.e. without energy-spread.
+We set:
 
-To generate photons for electrons with energy-spread the program must
-sample the beam energy in discrete steps. The number of steps can
-be set in the set-up menu.
+\cbox{
+Nelec = 100000\\
+Monte-Carlo mode = 1 \\
+Width of Pinhole = 2.0 \\
+Height of Pinhole = 1.0 \\
+Number of hori. points = 101 \\
+Number of vert. points = 101
+}
 
-Note, if you run the program for another beam energy by hand, to see
-the effect of beam energy deviations, make shure that the undulater is
-set-up such that the fields are not adjusted according to the actual
-energy,
-as it is done, when a fixed harmonic is selected in the undulator
-set-up menu.
+and start the calulations.
+
+The distributions of the generated photons can be plotted in the menu
+
+\cbox{Spectra/Plot/Photons/S0(z,Theta\_z)}
+
+Note: The photons are generated from the electron distribution. For a
+zero emittance and zero energy spread-beam, the plot would only show a
+nearly 100 percent correlation of the of z-coordinate and the
+horizontal slope of the photons. The reason is, that the calculations
+refer to a plane far down-stream of the source.
 
 \subsection{Wigner Distribution}
 

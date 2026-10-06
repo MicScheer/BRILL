@@ -1,82 +1,136 @@
-Curr: ['Current [A]', 0.1]
-EmitH: ['Hor. Emit. [nm-rad]', 4.4]
-EmitV: ['Ver. Emit. [nm-rad]', 0.066]
-BetaH: ['Hori. Beta function', 14.0]
-BetaV: ['Vert. Beta function', 3.4]
-Espread: ['Rel. energy spread', 0.001]
-Disph: ['Hori. Dispersion [mm]', 0.0]
-Dispph: ['Derivative of Hori. Dispersion [mrad]', 0.0]
-Dispv: ['Vert. Dispersion [mm]', 0.0]
-Disppv: ['Derivative of Vert. Dispersion [mrad]', 0.0]
-Perlen: ['Period-length [mm]', 50.0]
-Nper: ['Number of periods', 100]
-Beffv: ['B0 vert. [T]', 1.0]
-Beffh: ['B0 hori. [T]', 0.0]
-Ianalytic: ['Use analytic formular for rad. field', 0]
-Nharm: ['Nharm (>0: overwrites Beff)', 1]
-Harmonic: ['Harmonic [eV]', 100.0]
-Shift: ['Shift [mm] (for spectra only)', 0.0]
-nKvals: ['Number of K values', 101]
-Kmin: ['Kmin', 0.5]
-Kmax: ['Kmax', 3.0]
-Nmin: ['Lowest harmonic', 1]
-Nmax: ['Highest harmonic', 11]
-Mode: ['Brilliance Mode [-1,1,2,3]', 2]
-Mthreads: ['Number of threads (<0: Use all cores)', -1]
-Nelec: ['Nelec', 1]
-Ihbunch: ['Each n_th electron is recorded', 100]
-Modepin: ['Monte-Carlo mode [0,1]', 0]
-Noranone: ['No random change for first e-', 1]
-Nepho: ['Number of Photon Energies', 1]
-EphMin: ['Min. Photon Energy [eV]', 695.0]
-EphMax: ['Max. Photon Energy [eV]', 705.0]
-PinX: ['X of Pinhole [mm]', 10000.0]
-PinY: ['Y of Pinhole [mm]', 0.0]
-PinZ: ['Z of Pinhole [mm]', 0.0]
-PinW: ['Width of Pinhole [mm]', 0.75]
-PinH: ['Height of Pinhole [mm]', 0.75]
-NpinZ: ['Number of hori. points', 51]
-NpinY: ['Number of vert. points', 51]
-ModeSphere: ['Arrange grid points on sphere [0,1]', 0]
-Step: ['Tracking step size [mm]', 0.2]
-Pherror: ['Phase errors', 0.0]
-IFieldProp: ['Propagate radiation field back to origin', 0]
-PinXprop: ['   Long. Position of Plane [mm]', 0.0]
-PinWprop: ['   Width of Pinhole in Plane [mm]', 0.1]
-PinHprop: ['   Height of Pinhole in Plane [mm]', 0.1]
-NpinZprop: ['   Number of hori. points in Plane', 51]
-NpinYprop: ['   Number of vert. points in Plane', 51]
-Ifixseed: ['Fix Seeds [0,1]', 0]
-IfixPhase: ['Random phase for e-', 0]
-PhGshift: ['Global phase shift. 9999.: Hori. amplitude is zero for (PinX,PinY,PinZ)) ', 9999.0]
-GlobPhaseProp: ['Global phase shift. of prop. fields. 9999.: Hori. amplitude is zero for (PinX,PinY,PinZ)) ', 0.0]
-IWigner: ['Calculate Wigner Distributions [-4,-3,-2,-1,0,1]', 0]
-IWigNoFile: ['   Wigner Distribution is not written to file [0,1]', 0]
-NyTheWig: ['   Number of vert. angle steps', 51]
-TheYWig: ['   Vert. angle range', 0.05]
-NzTheWig: ['   Number of hori. angle steps', 51]
-TheZWig: ['   Hori. angle range', 0.05]
-iPhaseSpace: ['   Pattern of five bits to generate photons (Option iGenPho)', 1111]
-Ebeam: ['Beam energy [GeV]', 1.722]
-EbeamMin: ['Min. beam energy [GeV]', 1.716834]
-EbeamMax: ['Max. beam energy [GeV]', 1.7271659999999998]
-dEbeam: ['dEbeam', 0]
-nEfold: ['Number of E-spread steps for Wigner Dist. and photon generation', 1]
-NoSplineEfold: ['   Suppress splines for E-spread folding', 0]
-nElecAmpGenPho: ['Number of electrons to generated photons from field amplitude', 1000000]
-iGenPho: ['   Generate photons from Wigner-Distribution [-1,0,1]', 0]
-Npho: ['Number of photons per electron to be generated', 1]
-ModeRan: ['All grid points (zero) or Npho random grid points (not zero)', '1']
-Mode3d: ['Mode3d [boxes, surf, scat2d, scat3d, inter]', 'boxes']
-Markersize: ['Markersize', 5.0]
-Linewidth: ['Linewidth', 2.0]
-Linecolor: ['Linecolor', 'b']
-NxZones: ['NxZones', 1]
-NyZones: ['NyZones', 1]
-ClearCanvas: ['Clear Canvas', 0]
-Statistic: ['Statistic on plots', True]
-Icohere: ['', 0]
-BunchCharge: ['Not yet', 0.0]
-Bunchlen: ['Not yet', 0.0]
-Modebunch: ['Not yet', 0]
-Modeph: ['Mode for phase-error', 0]
+ $uradphasen
+
+  Mthreads=-1          !Number of threads (<0: Use all cores)
+  Ebeam=1.722          !Beam energy [GeV]
+  Curr=0.1          !Current [A]
+  Step=0.2          !Tracking step size [mm]
+  Nelec=100000          !Nelec
+  Noranone=1          !No random change for first e-
+  IfixPhase=0          !Random phase for e-
+  Icohere=0          !
+  Ihbunch=1          !Each n_th electron is recorded
+  Bunchlen=0.0          !Not yet
+  BunchCharge=0.0          !Not yet
+  Modebunch=0          !Not yet
+  PinX=10000.0          !X of Pinhole [mm]
+  PinY=0.0          !Y of Pinhole [mm]
+  PinZ=0.0          !Z of Pinhole [mm]
+  PinW=2.0          !Width of Pinhole [mm]
+  PinH=1.0          !Height of Pinhole [mm]
+  NpinY=101          !Number of vert. points
+  NpinZ=101          !Number of hori. points
+  Modepin=1          !Monte-Carlo mode [0,1]
+  ModeSphere=0          !Arrange grid points on sphere [0,1]
+  Perlen=50.0          !Period-length [mm]
+  Shift=0.0          !Shift [mm] (for spectra only)
+  Nper=100          !Number of periods
+  Nharm=1          !Nharm (>0: overwrites Beff)
+  harm=100.0          !Harmonic [eV]
+  Beffv=1.0          !B0 vert. [T]
+  Beffh=0.0          !B0 hori. [T]
+  Ianalytic=0          !Use analytic formular for rad. field
+  Nepho=1          !Number of Photon Energies
+  EphMin=695.0          !Min. Photon Energy [eV]
+  EphMax=705.0          !Max. Photon Energy [eV]
+  Espread=0.001          !Rel. energy spread
+  BetaH=14.0          !Hori. Beta function
+  BetaV=3.4          !Vert. Beta function
+  EmitH=4.4          !Hor. Emit. [nm-rad]
+  EmitV=0.066          !Ver. Emit. [nm-rad]
+  Disph=0.0          !Hori. Dispersion [mm]
+  Dispph=0.0          !Derivative of Hori. Dispersion [mrad]
+  Dispv=0.0          !Vert. Dispersion [mm]
+  Disppv=0.0          !Derivative of Vert. Dispersion [mrad]
+  Modeph=0          !Mode for phase-error
+  Pherror=0.0          !Phase errors
+  IFieldProp=1          !Propagate radiation field back to origin
+  PinXprop=0.0          !   Long. Position of Plane [mm]
+  PinWprop=0.1          !   Width of Pinhole in Plane [mm]
+  PinHprop=0.1          !   Height of Pinhole in Plane [mm]
+  NpinYprop=51          !   Number of vert. points in Plane
+  NpinZprop=51          !   Number of hori. points in Plane
+  PhGshift=9999.0          !Global phase shift. 9999.: Hori. amplitude is zero for (PinX,PinY,PinZ)) 
+  IWigner=0          !Calculate Wigner Distributions [-4,-3,-2,-1,0,1]
+  NyTheWig=51          !   Number of vert. angle steps
+  TheYWig=0.05          !   Vert. angle range
+  NzTheWig=51          !   Number of hori. angle steps
+  TheZWig=0.05          !   Hori. angle range
+  iGenPho=0          !   Generate photons from Wigner-Distribution [-1,0,1]
+  iPhaseSpace=1111          !   Pattern of five bits to generate photons (Option iGenPho)
+  nEfold=0          !Number of E-spread steps for Wigner Dist.
+  NoSplineEfold=0          !   Suppress splines for E-spread folding
+  Npho=1          !Number of photons per electron to be generated
+  ModeRan=1          !All grid points (zero) or Npho random grid points (not zero)
+
+ $end
+
+ $seedn
+
+  Ifixseed=0         !Fix Seeds [0,1]
+  irnseed(1)=376577121
+  irnseed(2)=52147852
+  irnseed(3)=-1273034815
+  irnseed(4)=-1963249100
+  irnseed(5)=1195262240
+  irnseed(6)=-1718716574
+  irnseed(7)=-224354675
+  irnseed(8)=432587481
+  irnseed(9)=1692325775
+  irnseed(10)=1934175653
+  irnseed(11)=-107106772
+  irnseed(12)=648589804
+  irnseed(13)=-1919014861
+  irnseed(14)=-1763988460
+  irnseed(15)=-1039845022
+  irnseed(16)=1414926465
+  irnseed(17)=-1214705659
+  irnseed(18)=560082688
+  irnseed(19)=527470902
+  irnseed(20)=-1078636718
+  irnseed(21)=272932485
+  irnseed(22)=-356992740
+  irnseed(23)=-2013991490
+  irnseed(24)=-588501795
+  irnseed(25)=-1010120436
+  irnseed(26)=-1558306344
+  irnseed(27)=-1116776222
+  irnseed(28)=794926823
+  irnseed(29)=-1157173406
+  irnseed(30)=63711032
+  irnseed(31)=-1870802148
+  irnseed(32)=-674825931
+  irnseed(33)=-690546468
+  irnseed(34)=1671737514
+  irnseed(35)=-224394481
+  irnseed(36)=2026233226
+  irnseed(37)=-1141752469
+  irnseed(38)=2061158685
+  irnseed(39)=-1225625467
+  irnseed(40)=-147464566
+  irnseed(41)=1692325775
+  irnseed(42)=1934175653
+  irnseed(43)=-107106772
+  irnseed(44)=648589804
+  irnseed(45)=-1919014861
+  irnseed(46)=-1763988460
+  irnseed(47)=-1039845022
+  irnseed(48)=1414926465
+  irnseed(49)=-1214705659
+  irnseed(50)=560082688
+  irnseed(51)=527470902
+  irnseed(52)=-1078636718
+  irnseed(53)=272932485
+  irnseed(54)=-356992740
+  irnseed(55)=-2013991490
+  irnseed(56)=-588501795
+  irnseed(57)=-1010120436
+  irnseed(58)=-1558306344
+  irnseed(59)=-1116776222
+  irnseed(60)=794926823
+  irnseed(61)=-1157173406
+  irnseed(62)=63711032
+  irnseed(63)=-1870802148
+  irnseed(64)=-674825931
+
+ $end
+

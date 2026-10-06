@@ -5531,19 +5531,21 @@ def hdelete(h='?'):
     return
   #endif type(h) == str and h == '?'
 
-  idh = GetIndexH1(h)
+  idx = GetIndexH1(h)
 
-  if idh < 0:
-    idh = GetIndexH2(h)
-    if idh < 0:
+  if idx < 0:
+    idx = GetIndexH2(h)
+    if idx < 0:
       print("*** Error in hdelete(Histo): Non-existing histogram")
       return -1
     else:
+      H2head[idx][0] += '_deleted'
       H2hh[38] = 1
-    #endif idh < 0
+    #endif idx < 0
   else:
+    H1head[idx][0] += '_deleted'
     H1hh[20] = 1
-  #if idh < 0
+  #if idx < 0
 
   Khdeleted = 1
 
@@ -5617,19 +5619,19 @@ def hmin(h='?'):
     return
   #endif type(h) == str and h == '?'
 
-  idh = GetIndexH1(h)
+  idx = GetIndexH1(h)
 
-  if idh < 0:
-    idh = GetIndexH2(h)
-    if idh < 0:
+  if idx < 0:
+    idx = GetIndexH2(h)
+    if idx < 0:
       print("*** Error in hmin(Histo): Non-existing histogram")
       return -1
     else:
       return H2hh[11]
-    #endif idh < 0
+    #endif idx < 0
   else:
     return H1hh[7]
-  #if idh < 0
+  #if idx < 0
 
 #enddef hmin(h='?')
 
@@ -5701,19 +5703,19 @@ def hmax(h='?'):
     return
   #endif type(h) == str and h == '?'
 
-  idh = GetIndexH1(h)
+  idx = GetIndexH1(h)
 
-  if idh < 0:
-    idh = GetIndexH2(h)
-    if idh < 0:
+  if idx < 0:
+    idx = GetIndexH2(h)
+    if idx < 0:
       print("*** Error in hmax(Histo): Non-existing histogram")
       return -1
     else:
       return H2hh[12]
-    #endif idh < 0
+    #endif idx < 0
   else:
     return H1hh[8]
-  #if idh < 0
+  #if idx < 0
 
 #enddef hmax(h='?')
 
@@ -16693,6 +16695,7 @@ def hplave(idh, plopt='!', Tit='!', xTit='', yTit='', zTit = '', legend='', bloc
 
 
   idx = GetIndexH1(idh)
+  #reakpoint()
 
   if idx >= 0:
     h1 = hget(idh)
@@ -17459,9 +17462,6 @@ def hplot2d(idh, plopt='!', block=False, scalex=1., scaley=1., scalez=1.,
   #print("--- Break in hplot2d ---")
   #reakpoint()
 
-  #print("Break in hplot2d")
-  #reakpoint()
-
   if tit == '': tit = ' '
   if xtit == '': xtit = ' '
   if ytit == '': ytit = ' '
@@ -17570,7 +17570,7 @@ def hplot2d(idh, plopt='!', block=False, scalex=1., scaley=1., scalez=1.,
 
     Quit("Ende in hplot2d")
 
-  elif Imarker:
+  elif Imarker or Iscat2d:
 
     getzone()
 
@@ -17593,21 +17593,19 @@ def hplot2d(idh, plopt='!', block=False, scalex=1., scaley=1., scalez=1.,
     if Colorbarpad != '!':
       fcm = Fig.colorbar(img, pad=Colorbarpad,label=ztit)
       Kcolorbar[Kzone] = 1
-#      Zones[Kzone-1][5] = Kcolorbar
     else:
       fcm = Fig.colorbar(img,label=ztit)
       Kcolorbar[Kzone] = 0
-#      Zones[Kzone-1][5] = Kcolorbar
     #endif Colorbarpad != '!'
 
     fcm.ax.tick_params(labelsize=Axislabelsize)
 
     Axes.append(fcm)
-#    npl(nhpl2d,"x:y","","z",plopt)
 
   elif Iinter == 0:
 
     getzone()
+    #reakpoint()
 
     Ax.tick_params(labelsize=Axislabelsize, pad=Axislabeldist)
     plt.rcParams['axes.labelsize'] = Atitfontsize3d
@@ -17619,19 +17617,14 @@ def hplot2d(idh, plopt='!', block=False, scalex=1., scaley=1., scalez=1.,
 
     txyz(tit,xtit,ytit)
 
-    colmap = Ax.imshow(zsh
-                       ,cmap=cmap, aspect="auto"
-                       ,extent=[xmin,xmax,ymin,ymax] # plot size
-             )
+    colmap = Ax.imshow(zsh,cmap=cmap, aspect="auto",origin="lower",extent=[xmin,xmax,ymin,ymax])
 
     Kcolorbar[Kzone] = 1
 
     if Colorbarpad != '!':
       fcm = Fig.colorbar(colmap, pad=Colorbarpad,label=ztit)
-#      Zones[Kzone-1][5] = Kcolorbar
     else:
       fcm = Fig.colorbar(colmap,label=ztit)
-#      Zones[Kzone-1][5] = Kcolorbar
     #endif
 
     fcm.ax.tick_params(labelsize=Axislabelsize)
@@ -17639,6 +17632,7 @@ def hplot2d(idh, plopt='!', block=False, scalex=1., scaley=1., scalez=1.,
     Axes.append(fcm)
 
   else:
+
     #reakpoint()
     getzone()
 
@@ -17650,7 +17644,7 @@ def hplot2d(idh, plopt='!', block=False, scalex=1., scaley=1., scalez=1.,
                'catrom', 'gaussian', 'bessel', 'mitchell', 'sinc', 'lanczos']
 
     zsh = z.values.reshape(nx,ny)
-#    zsh = zsh.T
+    zsh = zsh.T
 
     if cmap == '' or cmap == '!': cmap=Cmap
 
@@ -17662,11 +17656,8 @@ def hplot2d(idh, plopt='!', block=False, scalex=1., scaley=1., scalez=1.,
 
     #reakpoint()
 
-    colmap = Ax.imshow(zsh,
-                       interpolation='spline36'
-                       ,cmap=cmap, aspect="auto"
-                       ,extent=[xmin,xmax,ymin,ymax] # plot size
-             )
+    colmap = Ax.imshow(zsh,interpolation='spline36',origin="lower",cmap=cmap, aspect="auto"
+                       ,extent=[xmin,xmax,ymin,ymax])
 
     Kcolorbar[Kzone] = 1
 
@@ -17677,7 +17668,6 @@ def hplot2d(idh, plopt='!', block=False, scalex=1., scaley=1., scalez=1.,
     else:
       fcm = Fig.colorbar(colmap)
       Kcolorbar[Kzone] = 1
-#      Zones[Kzone-1][5] = Kcolorbar
     #endif
 
     fcm.set_label(label=ztit, labelpad=Axistitledist, size=Axislabelsize)
@@ -20209,6 +20199,8 @@ def nplot(nt='?',varlis='',select='',weights='',plopt='', legend='',
     return -1
   #endif idn == -1
 
+  #reakpoint()
+
   nt = N
   ntname = Nhead[idn][1]
   nttitle = Nhead[idn][2]
@@ -20510,9 +20502,7 @@ def nplot(nt='?',varlis='',select='',weights='',plopt='', legend='',
         if Ihist or Isurf or Itrisurf or Iinter or Iboxes:
           #if Iinter or Iboxes:   Kcolorbar[Kzone] = 1 wird in hplot gesetzt
 
-#20.5.2024          nproj2(nto,varliso,weights,select,scalex=scalex,scaley=scaley,nx=nx,ny=ny,idh=hist)
           nproj2(nt,varlis,weights,'',scalex=scalex,scaley=scaley,nx=nx,ny=ny,idh=hist)
-#20.5.2024          hplot2d(hist,plopt)
           hplave(hist,plopt)
           iplot = 1
 
@@ -22737,6 +22727,7 @@ def ncopn(nt,ncnam,varlis='',select='',ioverwrite=0):
   global N1, N2, N3, N4, N5, N6, N7,N8,N9,Nv, Nx, Nxy, Nxyz
 
 
+  #reakpoint()
   reset_status()
 
   if type(nt) == Tdf:
@@ -22761,19 +22752,16 @@ def ncopn(nt,ncnam,varlis='',select='',ioverwrite=0):
 
   v = nt.columns
 
-  nc = nclone(nt,ncnam,ncnam,ioverwrite)
+  nc = ncre(ncnam,ncnam,varlis)
 
-  if varlis == '':
-    nc.columns = list(v)
-  else:
-    Quit(nc)
+  varl = nlistcolon(varlis)
 
-    nc.columns = nlistcolon(varlis)
-    Quit()
-  #endif varlis == ''
-
-  for k in range(len(v)):
-    nc[v[k]] = nt[v[k]]
+  for k in range(len(varl)):
+    for l in range(len(v)):
+      if v[l] == varl[k]:
+        nc[varl[k]] = nt[v[l]]
+      #endif
+    #endfor
   #endfor k in range(ncn)
 
   nupdate_header(nc)
