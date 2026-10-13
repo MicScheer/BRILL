@@ -59,7 +59,6 @@ from m_hbook import *
 
 m.WaveFilePrefix = ''
 
-
 def _clearCanvas(kclear=0):
   global ClearCanvas
   #reakpoint()
@@ -748,6 +747,8 @@ def _combomod3d(ev):
 
 
 #+seq,pybrillalias.
+
+global nsto,nflx,nfld,nbun,nfdp,nwig,nwge,namppho,nampele,Modepin
 
 def _saveplot(prefix='pyBrill_plot_'):
 #  global WaveFilePrefix

@@ -1,4 +1,4 @@
-*CMZ :          06/10/2026  11.45.01  by  Michael Scheer
+*CMZ :          07/10/2026  07.28.50  by  Michael Scheer
 *CMZ :  4.02/01 02/09/2026  08.56.08  by  Michael Scheer
 *CMZ :  4.02/00 16/09/2025  09.13.49  by  Michael Scheer
 *CMZ :  4.01/07 18/10/2024  08.57.02  by  Michael Scheer
@@ -324,7 +324,6 @@ c        ifieldprop=1
         print*,''
         ifieldprop=0
       endif
-
       nephogam=nepho*nefold
 
       ianalytic_u=ianalytic
@@ -2269,7 +2268,7 @@ c      if (modewave.ne.0) call util_zeit_kommentar(6,'Leaving urad_phase')
 
       ical=1
       end
-*CMZ :          06/10/2026  11.03.24  by  Michael Scheer
+*CMZ :          07/10/2026  07.27.51  by  Michael Scheer
 *CMZ :  4.02/01 02/09/2026  09.04.08  by  Michael Scheer
 *CMZ :  4.02/00 27/08/2025  14.45.47  by  Michael Scheer
 *CMZ :  4.01/07 18/10/2024  09.41.32  by  Michael Scheer
@@ -2446,6 +2445,8 @@ c     &    fpriv(3,npinzprop_u,npinyprop_u),
         stokesprop=0.0d0
       endif
 
+c Array fieldbunch taken out. Therefor, modepin=1 and ifieldprop=1 not allowed anymore.
+c To reinvent it, check +self,if=fieldbunch in CMZ-file wave.cmz
 
       call urad_field_ini(perlen_u,shift_u,beffv_u,beffh_u,modewave)
 

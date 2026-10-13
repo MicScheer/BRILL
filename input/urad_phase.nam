@@ -44,8 +44,11 @@
 
   Espread=0.001       !Rel. energy spread
 
+  xBeta=0.0           !X-reference for optical functions
   BetaH=14.0          !Hori. Beta function
+  AlphaH=0.0          !Hori. Alpha, i.e. -dBetaH/ds/2.0
   BetaV=3.4           !Vert. Beta function
+  AlphaV=0.0          !Vert. Alpha, i.e. -dBetaV/ds/2.0
   EmitH=4.4           !Hor. Emit. [nm-rad]
   EmitV=0.066         !Ver. Emit. [nm-rad]
   Disph=0.0           !Hori. Dispersion [mm]
