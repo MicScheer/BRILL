@@ -6024,6 +6024,8 @@ def _calc_spec():
   _UpdateVars()
 
   cwd = os.getcwd()
+  brill = os.getenv('BRILL')
+
   _write_urad_phase_nam()
   t0 = time.time()
 
@@ -6039,7 +6041,8 @@ def _calc_spec():
     print('\n',"Starting spectrum calculation with urad_phase_win32.exe")
     print(localtime)
     #os.system(cwd + '\\..\\bin\\urad_phase_win32.exe')
-    os.system('%BRILL%\\bin\\urad_phase_win32.exe')
+    if os.get('BRILL'): os.system('%BRILL%\\bin\\urad_phase_win32.exe')
+    else: os.system(cwd + '\\..\\bin\\urad_phase_win32.exe')
   else:
     if Kdebug == 3:
       print('\n',"Starting spectrum calculation with urad_phase_debug.exe")
@@ -6051,7 +6054,8 @@ def _calc_spec():
       os.system("gdb --command ./startup.ddd $BRILL/bin/urad_phase_debug.exe")
     else:
       print(localtime)
-      os.system("$BRILL/bin/urad_phase.exe")
+      if os.getenv('BRILL'): os.system("$BRILL/bin/urad_phase.exe")
+      else: os.system(cwd + "/../bin/urad_phase.exe")
     #endif
   #endif platform.system() == 'Windows'
 

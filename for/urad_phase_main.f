@@ -1,4 +1,5 @@
-*CMZ :          07/10/2026  07.28.50  by  Michael Scheer
+*CMZ :          14/10/2026  10.12.39  by  Michael Scheer
+*CMZ :  4.03/00 07/10/2026  07.28.50  by  Michael Scheer
 *CMZ :  4.02/01 02/09/2026  08.56.08  by  Michael Scheer
 *CMZ :  4.02/00 16/09/2025  09.13.49  by  Michael Scheer
 *CMZ :  4.01/07 18/10/2024  08.57.02  by  Michael Scheer
@@ -1223,13 +1224,13 @@ c     &          stosum(1:4)*pinw*pinh/nelec_u,stm(1:4)/sqrt(dble(nelec_u)),
             comlin='* i E g y z yp zp'
             write(lunaele,'(a)') trim(comlin)
 
-            callu
+            !allu
             l=1
             lele=1
             lp=iabs(ihbunch)
             do i=1,nelec
               if (electrons_u(l).eq.-9999.) then
-                callu
+                !allu
                 exit
               endif
               yel=electrons_u(l)*1000.
@@ -1780,7 +1781,7 @@ c                  rn=rn/norm2(rn)
                   enddo !nz
                 enddo !ny
 
-                if (kpola.eq.kpola2) close(lunwigw)
+                if (kpola.eq.kpola2.and.iepho.eq.nepho) close(lunwigw)
 
               endif !iwignofile
 
@@ -1825,7 +1826,7 @@ c                  rn=rn/norm2(rn)
                 enddo !itz
               enddo !ity
 
-              if (kpola.eq.kpola2) close(lunwige)
+              if (kpola.eq.kpola2.and.iepho.eq.nepho) close(lunwige)
             endif !(nefold.gt.1) then
 
           enddo !iepho
@@ -1977,7 +1978,8 @@ c      if (igenpho.ne.0) then
       subroutine u
       call util_break
       end
-*CMZ :          08/09/2026  12.41.50  by  Michael Scheer
+*CMZ :          13/10/2026  10.26.21  by  Michael Scheer
+*CMZ :  4.03/00 08/09/2026  12.41.50  by  Michael Scheer
 *CMZ :  4.02/01 31/08/2026  07.37.54  by  Michael Scheer
 *CMZ :  4.02/00 13/09/2025  10.16.17  by  Michael Scheer
 *CMZ :  4.01/07 13/08/2024  10.11.51  by  Michael Scheer
@@ -2074,8 +2076,8 @@ c+seq,uservar.
         npinz_u=npinz
         modepin_u=modepin
 
-        ephmin_u=ephmin_u
-        ephmax_u=ephmax_u
+        ephmin_u=ephmin
+        ephmax_u=ephmax
         banwid_u=banwid
         nepho_u=nepho
 
@@ -2215,7 +2217,7 @@ c              r=xx*(1.0d0+h2/2.0d0-h2**2/8.0d0)
       dispph_u=disppv
       espread_u=espread
 
-      modeph=modeph_u
+      modeph_u=modeph
       pherror_u=pherror
 
 c     urad_amprep calculates stokes_u and arad_u on the m scale
@@ -2268,7 +2270,8 @@ c      if (modewave.ne.0) call util_zeit_kommentar(6,'Leaving urad_phase')
 
       ical=1
       end
-*CMZ :          07/10/2026  07.27.51  by  Michael Scheer
+*CMZ :          13/10/2026  11.48.47  by  Michael Scheer
+*CMZ :  4.03/00 07/10/2026  07.27.51  by  Michael Scheer
 *CMZ :  4.02/01 02/09/2026  09.04.08  by  Michael Scheer
 *CMZ :  4.02/00 27/08/2025  14.45.47  by  Michael Scheer
 *CMZ :  4.01/07 18/10/2024  09.41.32  by  Michael Scheer
@@ -2430,7 +2433,7 @@ c      endif
 
       if (nelec_u.lt.mthreads) mthreads=1
       !allu
-      if (modewave.eq.0) then
+      if (modewave.le.0) then
         mpho=size(photons_u)/mthreads
         allocate(photons(mpho,mthreads))
         photons=0.0
@@ -2456,7 +2459,7 @@ c To reinvent it, check +self,if=fieldbunch in CMZ-file wave.cmz
         parkh=echarge1*dabs(beffh_u)*perlen_u/(twopi1*emasskg1*clight1)
         parkv=echarge1*dabs(beffv_u)*perlen_u/(twopi1*emasskg1*clight1)
 
-        if (modewave.eq.0) then
+        if (modewave.le.0) then
 c*** OBSOLeTE, SEE z0= further down
           zampell=beffv_u*clight1/emom/xkellip**2
           yampell=beffh_u*clight1/emom/xkellip**2
@@ -2496,7 +2499,7 @@ c          !all util_break
       ecdipev=ecdipev1
       emassg=emassg1
 
-      if (modewave.eq.0) then
+      if (modewave.le.0) then
         z0=-zampell*cos(shift_u/2.0d0/perlen_u*twopi1)
         zp0=zpampell*sin(shift_u/2.0d0/perlen_u*twopi1)
         y0=-yampell*cos(shift_u/2.0d0/perlen_u*twopi1)
@@ -3071,7 +3074,7 @@ c          amp0=amp0*dcmplx(0.0d0,dble(pran(1)*twopi1))
             !allutil_break
             do i=1,nper_u
 
-              if (i.eq.1.or.i.eq.nper_u) call util_break
+              !if (i.eq.1.or.i.eq.nper_u) call util_break
 
               r=r0+(i-np2-1)*dr0
               dobs=obs-r
@@ -3278,11 +3281,11 @@ c     &              ampn(3)
 
             !allu
 
-            if (modewave.eq.0) then
+            if (modewave.le.0) then
 
               kmod=0
 
-              if (ielec.eq.1) then
+              if (ielec.eq.1.or.modewave.lt.0) then
                 kmod=1
               else
                 if (jhbunch.ne.0) then
@@ -3457,7 +3460,7 @@ c      enddo !ilo
       !allu
       lpho=0
       do ith=1,mthreads
-        if (modewave.eq.0) then
+        if (modewave.le.0) then
           mpho=npho(ith)-1
           photons_u(lpho+1:lpho+mpho)=photons(1:mpho,ith)
           lpho=lpho+mpho
@@ -4594,7 +4597,7 @@ c tracking stops if trajectory hits this plane
 
       return
       end
-*CMZ :          13/09/2026  08.38.55  by  Michael Scheer
+*CMZ :  4.03/00 13/09/2026  08.38.55  by  Michael Scheer
 *CMZ :  4.02/01 24/09/2025  12.48.34  by  Michael Scheer
 *CMZ :  4.02/00 13/09/2025  10.12.52  by  Michael Scheer
 *CMZ :  4.01/07 11/08/2024  15.26.17  by  Michael Scheer
@@ -6017,7 +6020,7 @@ c              write(66,*)ix,iy,x,y,wlc,sin(wlc)/wlc,dreal(esour(ix,iy)),dimag(e
       endif
 
       end
-*CMZ :          25/09/2026  14.18.37  by  Michael Scheer
+*CMZ :  4.03/00 25/09/2026  14.18.37  by  Michael Scheer
 *CMZ :  4.02/01 28/08/2026  08.14.45  by  Michael Scheer
 *-- Author :    Michael Scheer   05/01/2026
         subroutine urad_phase_amp_genpho(zi,yi,ny,nz,obsv,
