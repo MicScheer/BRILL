@@ -17863,6 +17863,8 @@ def zone(nx=1, ny=1, kzone=1, isame='', projection='2d', visible=False):
 
   global Debug
 
+  #print("1:",kzone)
+
   if Debug:
     try:
       print("Break in zone:",nx,ny,kzone,isame,Kplots[kzone])
@@ -17925,6 +17927,7 @@ def zone(nx=1, ny=1, kzone=1, isame='', projection='2d', visible=False):
 
   #endif Nwins <= 0
 
+  #print("2:",kzone)
   if kzone > nx * ny:
     print("*** Error in zone: kzone > nxzone * nyzone ***")
     return
@@ -17936,6 +17939,7 @@ def zone(nx=1, ny=1, kzone=1, isame='', projection='2d', visible=False):
     window(projection=projection)
     reset_zoom()
   #endif Nwins <= 0
+  #print("3:",kzone)
 
   nxyk = ny*100+nx*10+kzone
   label = str(nx) + "_" + str(ny) + "_" + str(kzone)
@@ -17975,17 +17979,35 @@ def zone(nx=1, ny=1, kzone=1, isame='', projection='2d', visible=False):
     #endif
 
   else:
+    #print("4:",kzone)
 
     if nx != Nxzone or ny != Nyzone or kzone != Kzone:
 
-      if Kplots[kzone-1]:
-        Fig.delaxes(Fig.axes[kzone-1])
-        Kplots[kzone-1] = 0
-        if Kcolorbar[kzone]:
-          Fig.delaxes(Fig.axes[kzone-1])
-          Kcolorbar[kzone] = 0
+      igood = 0
+      try:
+        if Kplots[kzone-1]:
+          igood = 1
+          try: Fig.delaxes(Fig.axes[kzone-1])
+          except: pass
+          igood = 2
+          Kplots[kzone-1] = 0
+          igood = 3
+          if Kcolorbar[kzone]:
+            igood = 4
+            try:Fig.delaxes(Fig.axes[kzone-1])
+            except: pass
+            igood = 5
+            Kcolorbar[kzone] = 0
+            igood = 6
+          #endif
         #endif
-      #endif
+      except:
+        print("*** Problems in zones, igood:",igood)
+        print("*** Nxzone, Nyzone, Kzone:",Nxzone,Nyzone,Kzone)
+        print("*** nx, ny, kzone:",nx,ny,kzone)
+        print("*** Kplots[:13]:",Kplots[:13])
+        print("*** Kcolobar[:13]:",Kcolorbar[:13])
+      #endtry
 
       if projection.lower() == '2d':
         Ax = Fig.add_subplot(ny,nx,kzone,visible=visible,label=label)
@@ -17996,9 +18018,10 @@ def zone(nx=1, ny=1, kzone=1, isame='', projection='2d', visible=False):
         set_plot_params_3d()
       else:
         Ax = Fig.add_subplot(ny,nx,kzone,projection=projection,visible=visible,label=label)
-      #if projection.lower() == '2d'
+      #endif
+
     #endif nx == Nxzone and ny == Nyzone and kzone == Kzone
-    #      Quit()
+
     if kzone < Kzone: print(Fig.axes)
     #      Quit()
   #endif isame == '' and Isame == 0 and IsameGlobal.get() == 0

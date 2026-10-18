@@ -1,4 +1,4 @@
-*CMZ :          13/10/2026  14.09.31  by  Michael Scheer
+*CMZ :          18/10/2026  10.11.26  by  Michael Scheer
 *CMZ :  4.03/00 08/09/2026  12.41.50  by  Michael Scheer
 *CMZ :  4.02/01 31/08/2026  07.37.54  by  Michael Scheer
 *CMZ :  4.02/00 13/09/2025  10.16.17  by  Michael Scheer
@@ -103,9 +103,9 @@
      &  xbeta_u,betah_u,alphah_u,betav_u,alphav_u,espread_u,
      &  disph_u,dispph_u,dispv_u,disppv_u,bunchlen_u,bunchcharge_u,
      &  pinxprop_u,pinwprop_u,pinhprop_u,globphase_u,globphaseprop_u,
-     &  wavzstart,wavystart,wavzamp,wavyamp,defl_u
+     &  wavzstart,wavystart,wavzamp,wavyamp,defl_u,harm_u
 
-      real, dimension(:), allocatable :: photons_u,electrons_u
+      real, dimension(:), allocatable :: photons_u,electrons_u,propweights_u
 
       integer nstep_u,nepho_u,nobsv_u,nbunch_u,npiny_u,npinz_u,ianalytic_u,nharm_u,
      &  nper_u,modeph_u,modepin_u,modesphere_u,noranone_u,nlpoi_u,ifixphase_u,ifold_u,
@@ -120,47 +120,146 @@
       end module uradphasemod
 *KEND.
 
-      subroutine urad_get_photons(
-     &      nelec,noranone,
-     &      perlen,shift,nper,beffv,beffh,
-     &      ebeam,curr,step,
-     &      pinx,piny,pinz,pinw,pinh,npiny,npinz,modepin,
-     &      nepho,ephmin,ephmax,
-     &      xbeta,betah,alphah,betav,alphav,espread,emith,emitv,
-     &      disph,dispph,dispv,disppv,
-     &      modeph,pherror,phgshift,modewave,ndimpho,photons)
+      subroutine urad_get_photons
+     &  (
+     &  nelec,noranone,
+     &  perlen,shift,nper,beffv,beffh,
+     &  nharm,harm,
+     &  ebeam,curr,step,
+     &  pinx,piny,pinz,pinw,pinh,npiny,npinz,modepin,
+     &  nepho,ephmin,ephmax,
+     &  xbeta,betah,alphah,betav,alphav,espread,emith,emitv,
+     &  disph,dispph,dispv,disppv,
+     &  modeph,pherror,phgshift,modewave,
+     &  ifieldprop,npinzprop,npinyprop,
+     &  pinxprop,pinwprop,pinhprop,
+     &  ndimpho,npho,photons,propweights)
 
       use omp_lib
       use uradphasemod
 
       implicit none
 
+*KEEP,PHYCONPARAM.
+c-----------------------------------------------------------------------
+c     phyconparam.cmn
+c-----------------------------------------------------------------------
+
+      complex*16, parameter :: zone1=(1.0d0,0.0d0), zi1=(0.0d0,1.0d0)
+
+      complex*16, dimension(4,3), parameter ::
+     &  vstokes=reshape([
+     &  ( 0.0000000000000000d0,  0.0000000000000000d0),
+     &  ( 0.0000000000000000d0,  0.0000000000000000d0),
+     &  ( 0.0000000000000000d0,  0.0000000000000000d0),
+     &  ( 0.0000000000000000d0,  0.0000000000000000d0),
+     &  ( 0.0000000000000000d0,  0.0000000000000000d0),
+     &  ( 0.0000000000000000d0, -0.70710678118654746d0),
+     &  ( 0.0000000000000000d0, -0.70710678118654746d0),
+     &  ( 0.70710678118654746d0, 0.0000000000000000d0),
+     &  (-0.70710678118654746d0,-0.70710678118654746d0),
+     &  ( 0.70710678118654746d0, 0.0000000000000000d0),
+     &  (-0.70710678118654746d0, 0.0000000000000000d0),
+     &  (-0.70710678118654746d0, 0.0000000000000000d0)
+     &  ],[4,3])
+
+c      vstokes(1,1)=( 0.0d0,        0.0d0)      !horizontal polarization
+c      vstokes(1,2)=( 0.0d0,        0.0d0)
+c      vstokes(1,3)=(-sqrt(1./2.),       -sqrt(1./2.))
+c
+c      vstokes(2,1)=( 0.0d0,        0.0d0)      !right handed polarization
+c      vstokes(2,2)=( 0.0d0,       -sqrt(1./2.))
+c      vstokes(2,3)=(+sqrt(1./2.),        0.0d0)
+c
+c      vstokes(3,1)=( 0.0d0,        0.0d0)      !left handed polarization
+c      vstokes(3,2)=( 0.0d0,       -sqrt(1./2.))
+c      vstokes(3,3)=(-sqrt(1./2.),        0.0d0)
+c
+c      vstokes(4,1)=( 0.0d0,        0.0d0)      !45 degree linear polarization
+c      vstokes(4,2)=( sqrt(1./2.),        0.0d0)
+c      vstokes(4,3)=(-sqrt(1./2.),        0.0d0)
+
+      double precision, parameter ::
+     &  HBAREV1=6.58211889D-16
+     &  ,CLIGHT1=2.99792458D8
+     &  ,EMASSKG1=9.10938188D-31
+     &  ,EMASSE1=0.510998902D6
+     &  ,EMASSG1=0.510998902D-3
+     &  ,ECHARGE1=1.602176462D-19
+     &  ,ERAD1=2.8179380D-15
+     &  ,EPS01=8.854187817D-12
+     &  ,PI1=3.141592653589793D0
+     &  ,rmu04pi1=1.0D-7
+     &  ,dnull1=0.0d0
+     &  ,done1=1.0d0
+     & ,HPLANCK1=6.62606876D-34
+
+      double precision, parameter ::
+     & GRARAD1=PI1/180.0d0
+     & ,RADGRA1=180.0d0/PI1
+     & ,HBAR1=HBAREV1*ECHARGE1
+     & ,WTOE1=CLIGHT1*HPLANCK1/ECHARGE1*1.0d9
+     & ,CQ1=55.0d0/32.0d0/DSQRT(3.0D0)*HBAR1/EMASSKG1/CLIGHT1
+     & ,CGAM1=4.0d0/3.0d0*PI1*ERAD1/EMASSG1**3
+     & ,POL1CON1=8.0d0/5.0d0/DSQRT(3.0D0)
+     & ,POL2CON1=8.0d0/5.0d0/DSQRT(3.0D0)/2.0d0/PI1/3600.0d0
+     &  *EMASSKG1/HBAR1/ERAD1*EMASSG1**5
+     & ,TWOPI1=2.0D0*PI1
+     & ,HALFPI1=PI1/2.0D0
+     & ,sqrttwopi1=sqrt(twopi1)
+     & ,rmu01=4.0D0*PI1/1.0D7
+     & ,alpha1=echarge1**2/(4.0d0*pi1*eps01*hbar1*clight1)
+     & ,gaussn1=1.0d0/sqrt(twopi1)
+     & ,cK934=ECHARGE1/(2.0d0*PI1*EMASSKG1*CLIGHT1)/100.0d0
+     & ,powcon1=cgam1/2.0d0/pi1*clight1*(clight1/1.0d9)**2*emassg1
+     &  ,gamma1=1.0d0/emassg1
+     &  ,emom1=emasse1*dsqrt((gamma1-1.0d0)*(gamma1+1.0d0))
+     &  ,rho1=emom1/clight1
+     &  ,omegac1=1.5d0*gamma1**3*clight1/rho1
+     &  ,ecdipev1=omegac1*hbar1/echarge1
+     &  ,ecdipkev1=ecdipev1/1000.0d0
+
+c-----------------------------------------------------------------------
+c     end of phyconparam.cmn
+c-----------------------------------------------------------------------
+*KEND.
+
       complex*16 rea(3),expsh
 
       real*8
      &  perlen,shift,
-     &  beffv,beffh,
+     &  beffv,beffh,harm,
      &  ebeam,curr,step,
      &  pinx,piny,pinz,pinw,pinh,
      &  ephmin,ephmax,
      &  xbeta,betah,alphah,betav,alphav,espread,emith,emitv,
      &  disph,dispph,dispv,disppv,
      &  pherror,phgshift,
-     &  df,z,zmin,dz,y,ymin,dy
+     &  pinxprop,pinwprop,pinhprop,
+     &  df,z,zmin,dz,y,ymin,dy,dyprop,dzprop
+     &  ,s0sum(100000),s0max,
+     &  wlen1,rhv,perl,park,harm1,gamma,b0eff
 
-      real photons(ndimpho)
+      integer nelec,noranone,nper,npiny,npinz,modepin,nepho,modeph,ifieldprop,iepho,modewave,nharm,
+     &  i,iz,iy,k,ierr,iobs,icbrill,ifrq,iobfr,ndimpho,nobsvprop,npinzprop,npinyprop,l,npho,
+     &  iobrf
 
-      integer nelec,noranone,nper,npiny,npinz,modepin,nepho,modeph,modewave,
-     &  i,iz,iy,k,ierr,iobs,icbrill,ifrq,iobfr,ndimpho
+      integer ModeRan          !All grid points (zero) or Nelec random grid points (not zero)
 
-      real*8, parameter :: EMASSG1=0.510998902D-3, pi1=3.141592653589793d0
+      real photons(9*npho),propweights(npho)
+
+      real s0ran(3)
 
       call util_break
+
+      moderan=1
 
       ebeam_u=ebeam
       gamma_u=ebeam_u/emassg1
 
       mthreads_u=OMP_GET_MAX_THREADS()
+      !mthreads_u=1
+      !print*,"mthreads!!"
 
       npinzo_u=npinz
       npinyo_u=npiny
@@ -171,6 +270,39 @@
       bunchlen_u=0.0d0
       bunchcharge_u=0.0d0
       ihbunch_u=0
+
+      if (nharm.gt.0.and.harm.gt.0.0d0) then
+
+        gamma=ebeam/emassg1
+
+        harm1=harm/nharm
+        wlen1=wtoe1/abs(harm/nharm)
+
+        perl=perlen/1000.0d0
+        park=2.0d0*(wlen1/(perl*1.0d9/2.0d0/gamma**2)-1.0d0)
+
+        if (park.lt.0.0d0) then
+          write(6,*)
+     &      '*** Error in urad_get_photons_main:'
+          write(6,*)
+     &      'Inconsistent values of nharm, harm, and perlen'
+          write(6,*)' '
+          stop
+        endif
+
+        park=sqrt(park)
+        b0eff=park/(echarge1*perl/(2.*pi1*emasskg1*clight1))
+
+        if (beffh.eq.0.0d0.and.beffv.ne.0d0) then
+          beffv=beffv/abs(beffv)*b0eff
+        else if (beffv.eq.0.0d0.and.beffh.ne.0d0) then
+          beffh=beffh/abs(beffh)*b0eff
+        else
+          rhv=beffh/beffv
+          beffh=b0eff/sqrt(1.0d0+1.0d0/rhv**2)*beffh/abs(beffh)
+          beffv=beffh/rhv
+        endif
+      endif
 
       perlen_u=perlen/1000.0d0
       shift_u=shift/1000.0d0
@@ -211,15 +343,17 @@
       deallocate(pow_u,stat=ierr)
       deallocate(nrad_u,stat=ierr)
       deallocate(photons_u,stat=ierr)
+      deallocate(electrons_u,stat=ierr)
 
       allocate(arad_u(6,nobsv_u*nepho_u))
-      allocate(epho_u(nepho))
+      allocate(epho_u(nepho_u))
       allocate(obsv_u(3,nobsv_u))
       allocate(specpow_u(nobsv_u))
       allocate(stokes_u(4,nobsv_u*nepho_u))
       allocate(pow_u(nobsv_u))
       allocate(nrad_u(nobsv_u+1))
-      allocate(photons_u(ndimpho))
+      allocate(photons_u(9*npho))
+      allocate(electrons_u(5*nelec_u))
 
       photons_u=0.0
       arad_u=(0.0d,0.0d0)
@@ -287,43 +421,128 @@
       modeph_u=modeph
       pherror_u=pherror
 
-      call urad_amprep(modewave)
-
-      nrad_u(nobsv_u+1)=sum(nrad_u(1:nobsv_u))
-      stokes_u=stokes_u/1.0d6 ! photons/mm**2
-
-      icbrill=nobsv_u/2+1
-      if (abs(phgshift).eq.9999.0d0) then
-        do ifrq=1,nepho
-          iobfr=icbrill+nobsv_u*(ifrq-1)
-          rea(1:2)=(0.0d0,0.0d0)
-          rea(3)=arad_u(3,iobfr)
-          if (abs(rea(3)).ne.0.0d0) then
-            expsh=rea(3)/abs(rea(3))*1.0d3
-          else
-            expsh=1.0d3
-          endif
-          if (phgshift.eq.-9999.0d0) expsh=expsh*cdexp(dcmplx(0.0d0,-pi1/2.0d0))
-          DO iobs=1,nobsv_u
-            iobfr=iobs+nobsv_u*(ifrq-1)
-            arad_u(1:6,iobfr)=arad_u(1:6,iobfr)/expsh
+      if (ifieldprop.ne.0) then
+        nobsvprop=npinzprop*npinyprop
+        npinzprop_u=npinzprop
+        npinyprop_u=npinyprop
+        nobsvprop_u=nobsvprop
+        pinxprop_u=pinxprop
+        pinwprop_u=pinwprop
+        pinhprop_u=pinhprop
+        deallocate(obsvzprop_u,obsvyprop_u,obsvprop_u,aradprop_u,stokesprop_u,stat=ierr)
+        allocate(
+     &    obsvzprop_u(npinzprop),obsvyprop_u(npinyprop),obsvprop_u(3,nobsvprop),
+     &    aradprop_u(6,nobsvprop*nepho),stokesprop_u(4,nobsvprop*nepho))
+        aradprop_u=(0.0d0,0.0d0)
+        stokesprop_u=0.0d0
+        !all util_break
+        dyprop=pinhprop/dble(max(1,npinyprop-1))/1000.0d0
+        dzprop=pinwprop/dble(max(1,npinzprop-1))/1000.0d0
+        obsvyprop_u(1)=-pinhprop/2.0d0/1000.0d0
+        do iy=2,npinyprop
+          obsvyprop_u(iy)=obsvyprop_u(iy-1)+dyprop
+          if (abs(obsvyprop_u(iy)).lt.1.0d-12) obsvyprop_u(iy)=0.0d0
+        enddo
+        obsvzprop_u(1)=-pinwprop/2.0d0/1000.0d0
+        do iz=2,npinzprop
+          obsvzprop_u(iz)=obsvzprop_u(iz-1)+dzprop
+          if (abs(obsvzprop_u(iz)).lt.1.0d-12) obsvzprop_u(iz)=0.0d0
+        enddo
+        iobs=0
+        do iy=1,npinyprop
+          do iz=1,npinzprop
+            iobs=iobs+1
+            obsvprop_u(1,iobs)=pinxprop/1000.0d0
+            obsvprop_u(2,iobs)=obsvyprop_u(iy)
+            obsvprop_u(3,iobs)=obsvzprop_u(iz)
           enddo
         enddo
-      else if (phgshift.ne.0.0d0) then
-        expsh=cdexp(dcmplx(0.0d0,phgshift))*1.0d3
-        arad_u=arad_u/expsh
-      else
-        arad_u=arad_u/1.0d3
+        !all util_break
+        if (modepin.ne.0) then
+          modepin_u=0
+          nelec_u=1
+          emith_u=0.0d0
+          emitv_u=0.0d0
+          espread_u=0.0d0
+          Ifieldprop_u = 0
+          call urad_amprep(modewave)
+          call urad_phase_prop_classic(mthreads_u)
+          modepin_u=1
+          nelec_u=nelec
+          emith_u=emith/1.0d9
+          emitv_u=emitv/1.0d9
+          espread_u=espread
+        endif
       endif
 
-      do k=1,ndimpho,9
-        photons(k)=photons_u(k)
-        photons(k+1:k+3)=photons_u(k+1:k+3)*1.0e3
-        photons(k+4:k+8)=photons_u(k+4:k+8)/1.0e6
-      enddo
+      call urad_amprep(modewave)
+      nelec=nelec_u
+
+      if (ifieldprop.ne.0) then
+        s0sum=0.0d0
+        s0max=0.0d0
+        do iobs=1,nobsvprop_u
+          do iepho=1,nepho_u
+            iobfr=iobs+(iepho-1)*nobsvprop_u
+            if(stokesprop_u(1,iobfr).gt.s0max) s0max=stokesprop_u(1,iobfr)
+            s0sum(iepho)=s0sum(iepho)+stokesprop_u(1,iobfr)
+          enddo
+        enddo
+      endif
+
+      call util_break
+c      print*,"s0sum,s0max:",s0sum(1:nepho),s0max
+
+      npho=0
+      propweights=0.0
+      if (ifieldprop.ne.0) then
+        do while (.true.)
+          k=-8
+          iepho=0
+          do l=1,ndimpho,9
+            iepho=iepho+1
+            if (iepho.gt.nepho) iepho=1
+c          print*,iepho,photons_u(l)
+            call util_random(3,s0ran)
+            iz=int(s0ran(1)*npinzprop_u)+1
+            iy=int(s0ran(2)*npinyprop_u)+1
+            iobs=(iy-1)*npinzprop_u+iz
+            iobfr=iobs+(iepho-1)*nobsvprop_u
+c            if (s0ran(3).le.stokesprop_u(1,iobfr)/s0sum(iepho)) then
+            npho=npho+1
+            if (npho.gt.nelec*nepho) exit
+            !w(npho)=stokesprop_u(1,iobs)/s0sum
+c            k=k+9
+            k=(npho-1)*9+1
+            k=l
+            photons(k)=photons_u(l)
+c            print*,photons(k)
+              photons(k+1:k+1)=(photons_u(l+1:l+1)+obsvyprop_u(iy))*1.0e3
+              photons(k+2:k+2)=(photons_u(l+2:l+2)+obsvzprop_u(iz))*1.0e3
+              photons(k+3:k+4)=photons_u(l+3:l+4)*1.0e3
+              photons(k+5:k+8)=photons_u(l+5:l+8)/1.0e6
+              propweights(npho)=stokesprop_u(1,iobfr)/s0sum(iepho)
+c            endif
+          enddo
+          if (npho.gt.nelec*nepho) then
+            npho=npho-1
+            exit
+          endif
+        enddo
+      else
+        propweights_u=1.0
+        do k=1,ndimpho,9
+          npho=npho+1
+          photons(k)=photons_u(k)
+          photons(k+1:k+4)=photons_u(k+1:k+4)*1.0e3
+          photons(k+5:k+8)=photons_u(k+5:k+8)/1.0e6
+        enddo
+      endif
+c      print*,"npho:",npho
+      call util_break
 
       end
-*CMZ :          13/10/2026  11.48.47  by  Michael Scheer
+*CMZ :          17/10/2026  14.50.41  by  Michael Scheer
 *CMZ :  4.03/00 07/10/2026  07.27.51  by  Michael Scheer
 *CMZ :  4.02/01 02/09/2026  09.04.08  by  Michael Scheer
 *CMZ :  4.02/00 27/08/2025  14.45.47  by  Michael Scheer
@@ -346,7 +565,7 @@ c     Calculates stokes_u, arad_u, and fbunch on the meter scale
 
       implicit none
 
-*KEEP,PHYCONPARAM.
+*KEEP,PHYCONparam,T=F77.
 c-----------------------------------------------------------------------
 c     phyconparam.cmn
 c-----------------------------------------------------------------------
@@ -593,7 +812,7 @@ c      endif
 
       if (nelec_u.lt.mthreads) mthreads=1
       !allu
-      if (modewave.le.0) then
+      if (modewave.le.0.and.ifieldprop_u.eq.0) then
         mpho=size(photons_u)/mthreads
         allocate(photons(mpho,mthreads))
         photons=0.0
@@ -614,7 +833,9 @@ c To reinvent it, check +self,if=fieldbunch in CMZ-file wave.cmz
       call urad_field_ini(perlen_u,shift_u,beffv_u,beffh_u,modewave)
 
       if (perlen_u.ne.0.0d0) then
+
         emom=emasse1*dsqrt((gamma_u-1.0d0)*(gamma_u+1.0d0))
+
         xkellip=twopi1/perlen_u
         parkh=echarge1*dabs(beffh_u)*perlen_u/(twopi1*emasskg1*clight1)
         parkv=echarge1*dabs(beffv_u)*perlen_u/(twopi1*emasskg1*clight1)
@@ -753,7 +974,7 @@ c      dr0=[xf0-x0,yf0-y0,zf0-z0]
 
       !allutil_break
       if (ibunch.eq.0.or.
-     &    emith_u.eq.0.0d0.and.emitv_u.eq.0.0d0.and.espread_u.eq.0.0d0
+     &  emith_u.eq.0.0d0.and.emitv_u.eq.0.0d0.and.espread_u.eq.0.0d0.and.modewave.ge.0
 c     &    .or.
 c     &    nelecampgenpho_u.ne.0
      &    ) then
@@ -771,7 +992,7 @@ c     &    nelecampgenpho_u.ne.0
         print*,''
       endif
 
-      if (modewave.eq.0) then
+      if (modewave.le.0) then
         electrons_u=-9999.0
         electrons_u(1)=yi
         electrons_u(2)=zi
@@ -1441,7 +1662,7 @@ c     &              ampn(3)
 
             !allu
 
-            if (modewave.le.0) then
+            if (modewave.le.0.and.ifieldprop.eq.0) then
 
               kmod=0
 
@@ -4504,6 +4725,354 @@ cerror 4.7.2018, due to error above, now here
       bxout=-b0halba*dshyky*dsnzkz
       byout= b0halba*dchyky*dcszkz
       bzout=0.0d0
+
+      return
+      end
+*CMZ :  4.03/00 13/09/2026  08.38.55  by  Michael Scheer
+*CMZ :  4.02/01 24/09/2025  12.48.34  by  Michael Scheer
+*CMZ :  4.02/00 13/09/2025  10.12.52  by  Michael Scheer
+*CMZ :  4.01/07 11/08/2024  15.26.17  by  Michael Scheer
+*CMZ :  4.01/05 15/04/2024  09.37.27  by  Michael Scheer
+*CMZ :  4.01/04 28/12/2023  15.30.57  by  Michael Scheer
+*CMZ :  4.01/02 12/05/2023  17.13.05  by  Michael Scheer
+*CMZ :  4.01/00 21/02/2023  16.51.29  by  Michael Scheer
+*-- Author : Michael Scheer
+      subroutine urad_phase_prop_classic(mthreads)
+
+      use omp_lib
+      use uradphasemod
+
+      implicit none
+
+      complex*16 :: czero=(0.0d0,0.0d0),cone=(1.0d0,0.0d0),a3(3),a3p(3)
+
+      double complex, dimension(:), allocatable :: expom,dexpom,phshift
+
+      double complex :: apolh,apolr,apoll,apol45
+      double precision :: dx,dx2,dy,dyph,dzph,dz,y,z,omc,domc,phlowz,phlowy,dzy2,eps(6),
+     &  dr,drred,da,x,xobs,yobs,zobs,rlambda1,ans,stok1,stok2,stok3,stok4,stoknor,enor,
+     &  eabsmaxprop=-1.0d30
+
+      integer :: ktime=0,i,
+     &  mthreads,iy,iz,n,jy,jz,iobs,ieps,ifrq,iobfr,jobs,jobfr
+
+*KEEP,PHYCONparam,T=F77.
+c-----------------------------------------------------------------------
+c     phyconparam.cmn
+c-----------------------------------------------------------------------
+
+      complex*16, parameter :: zone1=(1.0d0,0.0d0), zi1=(0.0d0,1.0d0)
+
+      complex*16, dimension(4,3), parameter ::
+     &  vstokes=reshape([
+     &  ( 0.0000000000000000d0,  0.0000000000000000d0),
+     &  ( 0.0000000000000000d0,  0.0000000000000000d0),
+     &  ( 0.0000000000000000d0,  0.0000000000000000d0),
+     &  ( 0.0000000000000000d0,  0.0000000000000000d0),
+     &  ( 0.0000000000000000d0,  0.0000000000000000d0),
+     &  ( 0.0000000000000000d0, -0.70710678118654746d0),
+     &  ( 0.0000000000000000d0, -0.70710678118654746d0),
+     &  ( 0.70710678118654746d0, 0.0000000000000000d0),
+     &  (-0.70710678118654746d0,-0.70710678118654746d0),
+     &  ( 0.70710678118654746d0, 0.0000000000000000d0),
+     &  (-0.70710678118654746d0, 0.0000000000000000d0),
+     &  (-0.70710678118654746d0, 0.0000000000000000d0)
+     &  ],[4,3])
+
+c      vstokes(1,1)=( 0.0d0,        0.0d0)      !horizontal polarization
+c      vstokes(1,2)=( 0.0d0,        0.0d0)
+c      vstokes(1,3)=(-sqrt(1./2.),       -sqrt(1./2.))
+c
+c      vstokes(2,1)=( 0.0d0,        0.0d0)      !right handed polarization
+c      vstokes(2,2)=( 0.0d0,       -sqrt(1./2.))
+c      vstokes(2,3)=(+sqrt(1./2.),        0.0d0)
+c
+c      vstokes(3,1)=( 0.0d0,        0.0d0)      !left handed polarization
+c      vstokes(3,2)=( 0.0d0,       -sqrt(1./2.))
+c      vstokes(3,3)=(-sqrt(1./2.),        0.0d0)
+c
+c      vstokes(4,1)=( 0.0d0,        0.0d0)      !45 degree linear polarization
+c      vstokes(4,2)=( sqrt(1./2.),        0.0d0)
+c      vstokes(4,3)=(-sqrt(1./2.),        0.0d0)
+
+      double precision, parameter ::
+     &  HBAREV1=6.58211889D-16
+     &  ,CLIGHT1=2.99792458D8
+     &  ,EMASSKG1=9.10938188D-31
+     &  ,EMASSE1=0.510998902D6
+     &  ,EMASSG1=0.510998902D-3
+     &  ,ECHARGE1=1.602176462D-19
+     &  ,ERAD1=2.8179380D-15
+     &  ,EPS01=8.854187817D-12
+     &  ,PI1=3.141592653589793D0
+     &  ,rmu04pi1=1.0D-7
+     &  ,dnull1=0.0d0
+     &  ,done1=1.0d0
+     & ,HPLANCK1=6.62606876D-34
+
+      double precision, parameter ::
+     & GRARAD1=PI1/180.0d0
+     & ,RADGRA1=180.0d0/PI1
+     & ,HBAR1=HBAREV1*ECHARGE1
+     & ,WTOE1=CLIGHT1*HPLANCK1/ECHARGE1*1.0d9
+     & ,CQ1=55.0d0/32.0d0/DSQRT(3.0D0)*HBAR1/EMASSKG1/CLIGHT1
+     & ,CGAM1=4.0d0/3.0d0*PI1*ERAD1/EMASSG1**3
+     & ,POL1CON1=8.0d0/5.0d0/DSQRT(3.0D0)
+     & ,POL2CON1=8.0d0/5.0d0/DSQRT(3.0D0)/2.0d0/PI1/3600.0d0
+     &  *EMASSKG1/HBAR1/ERAD1*EMASSG1**5
+     & ,TWOPI1=2.0D0*PI1
+     & ,HALFPI1=PI1/2.0D0
+     & ,sqrttwopi1=sqrt(twopi1)
+     & ,rmu01=4.0D0*PI1/1.0D7
+     & ,alpha1=echarge1**2/(4.0d0*pi1*eps01*hbar1*clight1)
+     & ,gaussn1=1.0d0/sqrt(twopi1)
+     & ,cK934=ECHARGE1/(2.0d0*PI1*EMASSKG1*CLIGHT1)/100.0d0
+     & ,powcon1=cgam1/2.0d0/pi1*clight1*(clight1/1.0d9)**2*emassg1
+     &  ,gamma1=1.0d0/emassg1
+     &  ,emom1=emasse1*dsqrt((gamma1-1.0d0)*(gamma1+1.0d0))
+     &  ,rho1=emom1/clight1
+     &  ,omegac1=1.5d0*gamma1**3*clight1/rho1
+     &  ,ecdipev1=omegac1*hbar1/echarge1
+     &  ,ecdipkev1=ecdipev1/1000.0d0
+
+c-----------------------------------------------------------------------
+c     end of phyconparam.cmn
+c-----------------------------------------------------------------------
+*KEND.
+c+seq,uservar.
+
+      nobsvprop_u=npinyprop_u*npinzprop_u
+
+      allocate(expom(nobsv_u*nepho_u),dexpom(nobsv_u*nepho_u),phshift(nobsv_u))
+
+c      aradprop_u=(0.0d0,0.0d0)
+
+      if (npinyprop_u.gt.1) then
+        dyph=pinhprop_u/1000.0d0/dble(npinyprop_u-1)
+        phlowy=-pinhprop_u/2000.0d0
+      else
+        dyph=0.0d0
+        phlowy=0.0d0
+      endif
+
+      if (npinzprop_u.gt.1) then
+        dzph=pinwprop_u/1000.0d0/dble(npinzprop_u-1)
+        phlowz=-pinwprop_u/2000.0d0
+      else
+        dzph=0.0d0
+        phlowz=0.0d0
+      endif
+
+c13.9.2026      da=pinw_u/1000.0d0*pinh_u/1000.0d0/dble(max(1,npinz_u-1)*max(1,npiny_u-1))
+      da=pinw_u*pinh_u/dble(max(1,npinz_u-1)*max(1,npiny_u-1))
+
+      n=0
+
+      x=pinxprop_u/1000.0d0
+      y=phlowy-dyph
+      do iy=1,npinyprop_u
+        y=y+dyph
+        if (abs(y).lt.1.0d-12) y=0.0d0
+        z=phlowz-dzph
+        obsvyprop_u(iy)=y
+        do iz=1,npinzprop_u
+          n=n+1
+          z=z+dzph
+          if (abs(z).lt.1.0d-12) z=0.0d0
+          if (iy.eq.1) obsvzprop_u(iz)=z
+          obsvprop_u(1:3,n)=[x,y,z]
+        enddo
+      enddo
+
+      omc=epho_u(1)/(hbarev1*clight1)
+
+      if(nepho_u.gt.1) then
+        domc=(epho_u(2)-epho_u(1))/(hbarev1*clight1)
+      endif
+
+!$OMP PARALLEL NUM_THREADS(mthreads) DEFAULT(PRIVATE)
+!$OMP& SHARED(domc,omc,da,obsvprop_u,obsv_u,nobsv_u,nobsvprop_u,epho_u,nepho_u,aradprop_u,arad_u)
+
+!$OMP DO
+
+      do jobs=1,nobsvprop_u
+c        ith=OMP_GET_THREAD_NUM()+1
+
+        x=obsvprop_u(1,jobs)
+        y=obsvprop_u(2,jobs)
+        z=obsvprop_u(3,jobs)
+
+        DO IOBS=1,NOBSV_u
+
+c13.9.2026          XOBS=OBSV_u(1,IOBS)/1000.0d0
+c13.9.2026          YOBS=OBSV_u(2,IOBS)/1000.0d0
+c13.9.2026          ZOBS=OBSV_u(3,IOBS)/1000.0d0
+
+          XOBS=OBSV_u(1,IOBS)
+          YOBS=OBSV_u(2,IOBS)
+          ZOBS=OBSV_u(3,IOBS)
+
+          dx=xobs-x
+          dx2=dx*dx
+          DY=YOBS-y
+          DZ=ZOBS-z
+          DZY2=DZ*DZ+DY*DY
+
+C     TO MAKE SURE THAT TAYLOR-EXPANSION IS VALID
+
+          IF (DZY2.GT.0.01D0*dx2) THEN
+            WRITE(6,*)'*** ERROR IN URAD_phase_prop_classic ***'
+            WRITE(6,*)'CHECK INPUT FILE AND INCREASE PinX'
+            WRITE(6,*)'*** PROGRAM ABORTED ***'
+            STOP
+          ENDIF
+
+          EPS(1)=DZY2/dx2
+          DO IEPS=2,6
+            EPS(IEPS)=EPS(IEPS-1)*EPS(1)
+          ENDDO !IEPS
+
+c      TAYLOR-EXPANSION DONE WITH REDUCE
+c     IN "WTAY1.RED";
+c     on rounded;
+c     on numval;
+c     precision 13;
+c     F:=SQRT(1+EPS);
+c     DR:=TAY1(F,EPS,6);
+c     ON FORT;
+c     OUT "RED.FOR";
+c     DR;
+c     SHUT "RED.FOR";
+C ans is actually reduce by 1.0 to avoid large overall phase
+
+          ans=-0.0205078125D0*eps(6)+0.02734375D0*eps(5)
+     &      -0.0390625D0*eps(4)+
+     &      0.0625D0*eps(3)-0.125D0*eps(2)+0.5D0*eps(1)
+
+          DR=DABS(dx*(ANS+1.0D0))
+          DRRED=-DABS(dx*ANS)
+
+          IF (DR.NE.0.0d0) THEN
+            EXPOM(IOBS)=CDEXP(DCMPLX(0.0d0,DRRED*OMC))/DR
+          ELSE
+            EXPOM(IOBS)=1.0D0
+          ENDIF
+
+          if (nepho_u.gt.1) then
+            DEXPOM(IOBS)=CDEXP(DCMPLX(0.0d0,DRRED*DOMC))
+          endif
+c            print*,ith,iobs,expom(iobs)
+c+seq,dum2.
+        ENDDO   !NOBS
+
+        DO ifrq=1,nepho_u
+
+          jOBFR=jOBS+NOBSVprop_u*(ifrq-1)
+
+          RLAMBDA1=epho_u(ifrq)/WTOE1*1.0D9   !1/lambda[m]=1/(wtoe1/freq*1.e-9)
+
+          DO IOBS=1,NOBSV_u
+
+            IOBFR=IOBS+NOBSV_u*(ifrq-1)
+
+            IF (ifrq.EQ.1) THEN
+              PHSHIFT(IOBS)=EXPOM(IOBS)
+            ELSE
+              PHSHIFT(IOBS)=PHSHIFT(IOBS)*DEXPOM(IOBS)
+            ENDIF   !(ifrq.EQ.1)
+
+            if (dx.gt.0.0d0) then
+              aradprop_u(1:6,jobfr)=aradprop_u(1:6,jobfr)+
+     &          arad_u(1:6,iobfr)*PHSHIFT(IOBS)*da*rlambda1
+            else
+              aradprop_u(1:6,jobfr)=aradprop_u(1:6,jobfr)+
+     &          dconjg(arad_u(1:6,iobfr))*PHSHIFT(IOBS)*da*rlambda1
+            endif
+          ENDDO   !NFREQ
+
+        ENDDO  !NOBSV
+
+      ENDDO !nobsvprop_u
+
+!$OMP END DO
+
+!$OMP END PARALLEL
+
+      eabsmaxprop=-1.0d30
+
+      if (ifieldprop_u.ne.2) then
+
+        do ifrq=1,nepho_u
+          do jobs=1,nobsvprop_u
+
+            jobfr=jobs+nobsvprop_u*(ifrq-1)
+
+            apolh=
+     &        aradprop_u(1,jobfr)*dconjg(vstokes(1,1))+
+     &        aradprop_u(2,jobfr)*dconjg(vstokes(1,2))+
+     &        aradprop_u(3,jobfr)*dconjg(vstokes(1,3))
+
+            apolr=
+     &        aradprop_u(1,jobfr)*dconjg(vstokes(2,1))+
+     &        aradprop_u(2,jobfr)*dconjg(vstokes(2,2))+
+     &        aradprop_u(3,jobfr)*dconjg(vstokes(2,3))
+
+            apoll=
+     &        aradprop_u(1,jobfr)*dconjg(vstokes(3,1))+
+     &        aradprop_u(2,jobfr)*dconjg(vstokes(3,2))+
+     &        aradprop_u(3,jobfr)*dconjg(vstokes(3,3))
+
+            apol45=
+     &        aradprop_u(1,jobfr)*dconjg(vstokes(4,1))+
+     &        aradprop_u(2,jobfr)*dconjg(vstokes(4,2))+
+     &        aradprop_u(3,jobfr)*dconjg(vstokes(4,3))
+
+            stok1=dreal(
+     &        apolr*conjg(apolr)+
+     &        apoll*conjg(apoll))
+
+            stok2=-stok1+
+     &        dreal(2.*apolh*conjg(apolh))
+
+            stok3=
+     &        dreal(2.*apol45*conjg(apol45))-
+     &        stok1
+
+            stok4=dreal(
+     &        apolr*conjg(apolr)-
+     &        apoll*conjg(apoll))
+
+            stokesprop_u(1,jobfr)=stok1
+            stokesprop_u(2,jobfr)=stok2
+            stokesprop_u(3,jobfr)=stok3
+            stokesprop_u(4,jobfr)=stok4
+
+          enddo
+        enddo
+
+      endif !(ifieldprop_u.ne.2)
+
+      IOBFR=nobsv_u/2+1+NOBSV_u*(nepho_u/2)
+      jobfr=nobsvprop_u/2+1+nobsvprop_u*(nepho_u/2)
+
+      a3=arad_u(1:3,iobfr)
+      a3p=aradprop_u(1:3,jobfr)
+
+c      print*,sqrt(norm2(dreal(a3*dconjg(a3)))),sqrt(norm2(dreal(a3p*dconjg(a3p))))
+c      enor=sqrt(norm2(dreal(a3*dconjg(a3)))/norm2(dreal(a3p*dconjg(a3p))))
+c      print*,enor
+c      enor=norm2(dreal(a3*dconjg(a3)))/norm2(dreal(a3p*dconjg(a3))))
+c      print*,enor
+c      stoknor=enor**2
+c      stop
+c      stoknor=enor**2
+c      stokesprop_u=stokesprop_u/stoknor
+c      aradprop_u=aradprop_u/enor
+
+c      print*,enor,1.0d0/enor,stoknor,1.0d0/stoknor
+c      obsvprop_u=obsvprop_u*1000.0d0
+
+      deallocate(expom,dexpom,phshift)
 
       return
       end

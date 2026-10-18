@@ -1,4 +1,4 @@
-*CMZ :          14/10/2026  12.20.23  by  Michael Scheer
+*CMZ :          18/10/2026  10.29.40  by  Michael Scheer
 *CMZ :  4.03/00 07/10/2026  07.28.50  by  Michael Scheer
 *CMZ :  4.02/01 02/09/2026  08.56.08  by  Michael Scheer
 *CMZ :  4.02/00 16/09/2025  09.13.49  by  Michael Scheer
@@ -56,6 +56,8 @@
 
       program urad_get_photons_main
 
+c      use uradphasemod
+
       implicit none
 
       real*8 ::
@@ -67,8 +69,8 @@
      &  ,  PinX=10000.0       !X of Pinhole [mm]
      &  ,  PinY=0.0           !Y of Pinhole [mm]
      &  ,  PinZ=0.0           !Z of Pinhole [mm]
-     &  ,  PinW=2.0           !Width of Pinhole [mm]
-     &  ,  PinH=1.0           !Height of Pinhole [mm]
+     &  ,  PinW=0.75          !Width of Pinhole [mm]
+     &  ,  PinH=0.75           !Height of Pinhole [mm]
 
      &  ,  Perlen=50.0        !Period-length [mm]
      &  ,  Shift=0.0          !Shift [mm] (for spectra only)
@@ -79,15 +81,15 @@
      &  ,  EphMin=695.0       !Min. Photon Energy [eV]
      &  ,  EphMax=705.0       !Max. Photon Energy [eV]
 
-     &  ,  Espread=0.001      !Rel. energy spread
+     &  ,  Espread=0.0 !0.001      !Rel. energy spread
 
      &  ,  xBeta=0.0          !X-reference for optical functions
      &  ,  BetaH=14.0         !Hori. Beta function
      &  ,  AlphaH=0.0         !Hori. Alpha, i.e. -dBetaH/ds/2.0
      &  ,  BetaV=3.4          !Vert. Beta function
      &  ,  AlphaV=0.0         !Vert. Alpha, i.e. -dBetaV/ds/2.0
-     &  ,  EmitH=4.4          !Hor. Emit. [nm-rad]
-     &  ,  EmitV=0.066        !Ver. Emit. [nm-rad]
+     &  ,  EmitH=0.0 !4.4          !Hor. Emit. [nm-rad]
+     &  ,  EmitV=0.0 !0.066        !Ver. Emit. [nm-rad]
      &  ,  Disph=0.0          !Hori. Dispersion [mm]
      &  ,  Dispph=0.0         !Derivative of Hori. Dispersion [mrad]
      &  ,  Dispv=0.0          !Vert. Dispersion [mm]
@@ -95,25 +97,37 @@
      &  ,  Pherror=0.0        !Phase errors
      &  ,  PhGshift=9999.0    !Global phase shift. 9999.: Hori. amplitude is zero for (PinX,PinY,PinZ))
 
+     &  ,  PinXprop=0.0       !   Long. Position of Plane [mm]
+     &  ,  PinWprop=0.1       !   Width of Pinhole in Plane [mm]
+     &  ,  PinHprop=0.1       !   Height of Pinhole in Plane [mm]
+
+c      real*8 w(1000000)
+c      common/wc/w
+
       integer ::
 
-     &  Nelec=1000000         !Nelec
+     &  Nelec=1000000        !Nelec
      &  ,  Noranone=1         !No random change for first e-
 
      &  ,  Nharm=1            !Number of harmonic Harm referes to, overwrites Beffv and Beffh
 
-     &  ,  NpinY=51           !Number of vert. points
-     &  ,  NpinZ=51           !Number of hori. points
+     &  ,  NpinY=101           !Number of vert. points
+     &  ,  NpinZ=101           !Number of hori. points
      &  ,  Modepin=1          !Monte-Carlo mode [0,1]
 
      &  ,  Nper=100           !Number of periods
 
      &  ,  Nepho=1            !Number of Photon Energies
      &  ,  Modeph=0           !Mode for phase-error
-     &  ,  ModeRan=1          !All grid points (zero) or Nelec random grid points (not zero)
 
-      real, dimension (:), allocatable ::  photons
+     &  ,  IFieldProp=1       !Propagate radiation field back to origin and add to photon distribution
 
+     &  ,  NpinYprop=101       !   Number of vert. points in Plane
+     &  ,  NpinZprop=101       !   Number of hori. points in Plane
+
+      real, dimension (:), allocatable ::  photons,propweights
+
+      !First electron, first photon-energy
       !photons(1) = Ephoton
       !photons(2) = y
       !photons(3) = z
@@ -123,10 +137,12 @@
       !photons(7) = S1
       !photons(8) = S2
       !photons(9) = S3
+
+      !First electron, second photon-energy
       !photons(10) = Ephoton
       !...
 
-      integer :: modewave=-1, ndimpho,luno,k, kwrite=1
+      integer :: modewave=-1, ndimpho,luno,k, kwrite=1,iz,iy,iobsv,npho,n
 
       real*8 b0eff,park,wlen1,rhv,perl,harm1,gamma
 
@@ -214,56 +230,28 @@ c     end of phyconparam.cmn
 c-----------------------------------------------------------------------
 *KEND.
 
-      if (nharm.gt.0.and.harm.gt.0.0d0) then
-
-        gamma=ebeam/emassg1
-
-        harm1=harm/nharm
-        wlen1=wtoe1/abs(harm/nharm)
-
-        perl=perlen/1000.0d0
-        park=2.0d0*(wlen1/(perl*1.0d9/2.0d0/gamma**2)-1.0d0)
-
-        if (park.lt.0.0d0) then
-          write(6,*)
-     &      '*** Error in urad_get_photons_main:'
-          write(6,*)
-     &      'Inconsistent values of nharm, harm, and perlen'
-          write(6,*)' '
-          stop
-        endif
-
-        park=sqrt(park)
-        b0eff=park/(echarge1*perl/(2.*pi1*emasskg1*clight1))
-
-        if (beffh.eq.0.0d0.and.beffv.ne.0d0) then
-          beffv=beffv/abs(beffv)*b0eff
-        else if (beffv.eq.0.0d0.and.beffh.ne.0d0) then
-          beffh=beffh/abs(beffh)*b0eff
-        else
-          rhv=beffh/beffv
-          beffh=b0eff/sqrt(1.0d0+1.0d0/rhv**2)*beffh/abs(beffh)
-          beffv=beffh/rhv
-        endif
-      endif
-
       if (modepin.eq.0) then
-        ndimpho=9*nepho*nelec*npinz*npiny
-        allocate(photons(ndimpho))
+        npho=nepho*nelec*npinz*npiny
       else
-        ndimpho=9*nepho*nelec
-        allocate(photons(9*nepho*nelec))
+        npho=nepho*nelec
       endif
+
+      ndimpho=9*npho
+
+      allocate(photons(ndimpho))
+      allocate(propweights(npho))
 
       call urad_get_photons(
-     &      nelec,noranone,
-     &      perlen,shift,nper,beffv,beffh,
-     &      ebeam,curr,step,
-     &      pinx,piny,pinz,pinw,pinh,npiny,npinz,modepin,
-     &      nepho,ephmin,ephmax,
-     &      xbeta,betah,alphah,betav,alphav,espread,emith,emitv,
-     &      disph,dispph,dispv,disppv,
-     &      modeph,pherror,phgshift,modewave,ndimpho,photons)
+     &  nelec,noranone,
+     &  perlen,shift,nper,beffv,beffh,nharm,harm,
+     &  ebeam,curr,step,
+     &  pinx,piny,pinz,pinw,pinh,npiny,npinz,modepin,
+     &  nepho,ephmin,ephmax,
+     &  xbeta,betah,alphah,betav,alphav,espread,emith,emitv,
+     &  disph,dispph,dispv,disppv,
+     &  modeph,pherror,phgshift,modewave,
+     &  ifieldprop,npinzprop,npinyprop,pinxprop,pinwprop,pinhprop,
+     &  ndimpho,npho,photons,propweights)
 
       call util_break
 
@@ -271,8 +259,10 @@ c-----------------------------------------------------------------------
 
         open(newunit=luno,file='get_photons.pho')
 
-        do k=1,ndimpho,9
-          write(luno,*) photons(k),pinx*1000.,photons(k+1:k+8)
+        n=0
+        do k=1,npho*9,9
+          n=n+1
+          write(luno,*) photons(k),pinx,photons(k+1:k+8),propweights(n)
         enddo
 
         close(luno)
@@ -280,4 +270,3 @@ c-----------------------------------------------------------------------
       endif
 
       end
-
