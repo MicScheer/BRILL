@@ -1,4 +1,4 @@
-*CMZ :          18/10/2026  10.29.40  by  Michael Scheer
+*CMZ :          26/10/2026  10.07.23  by  Michael Scheer
 *CMZ :  4.03/00 07/10/2026  07.28.50  by  Michael Scheer
 *CMZ :  4.02/01 02/09/2026  08.56.08  by  Michael Scheer
 *CMZ :  4.02/00 16/09/2025  09.13.49  by  Michael Scheer
@@ -100,6 +100,8 @@ c      use uradphasemod
      &  ,  PinXprop=0.0       !   Long. Position of Plane [mm]
      &  ,  PinWprop=0.1       !   Width of Pinhole in Plane [mm]
      &  ,  PinHprop=0.1       !   Height of Pinhole in Plane [mm]
+
+     &  ,  S0thresh=1.0e-6    !   Rel. minimum of S0 for photons to be randomized in source
 
 c      real*8 w(1000000)
 c      common/wc/w
@@ -251,9 +253,9 @@ c-----------------------------------------------------------------------
      &  disph,dispph,dispv,disppv,
      &  modeph,pherror,phgshift,modewave,
      &  ifieldprop,npinzprop,npinyprop,pinxprop,pinwprop,pinhprop,
-     &  ndimpho,npho,photons,propweights)
+     &  ndimpho,npho,photons,propweights,s0thresh)
 
-      call util_break
+      !allutil_break
 
       if (kwrite.ne.0) then
 

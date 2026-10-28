@@ -1,4 +1,4 @@
-*CMZ :          14/10/2026  10.12.39  by  Michael Scheer
+*CMZ :          27/10/2026  09.25.46  by  Michael Scheer
 *CMZ :  4.03/00 07/10/2026  07.28.50  by  Michael Scheer
 *CMZ :  4.02/01 02/09/2026  08.56.08  by  Michael Scheer
 *CMZ :  4.02/00 16/09/2025  09.13.49  by  Michael Scheer
@@ -63,6 +63,7 @@
       include 'phyconparam.cmn'
 *KEND.
 
+
       complex*16 :: czero=(0.0d0,0.0d0),cone=(1.0d0,0.0d0),amp(6),ci=(0.0d0,1.0d0),
      &  apoll,apol45,apolh,apolr,e(3),b(3),crn(3)
 
@@ -100,7 +101,7 @@
      &  ,dum5(5),wigslope(2),wigoffset(2),wigz,wigy,wigzp,wigyp
      &  ,ezr,ezi,eyr,eyi,zob,yob,zp,yp,wigvox,wigflux,wigfluxincut,
      &  wigfluxin,eps=1.0d-12,wigzcut,wigycut,wigmin,wigcenmax,w,fdwigtztymax,w0000,
-     &  wigzcutw,wigycutw,depho,wint, g1=1.0d0
+     &  wigzcutw,wigycutw,depho,wint, g1=1.0d0,s0thresh
 
       real xran(1),rr(2),whit,dpp,
      &  axr,axi,ayr,ayi,azr,azi,
@@ -110,19 +111,20 @@
       real sigzr,sigyr,sigzpr,sigypr,zminr,zmaxr,yminr,ymaxr,tzminr,tzmaxr,tyminr,tymaxr
 
       real, dimension(:,:,:,:,:), allocatable :: wigreal
-      real, dimension(:), allocatable :: photonsw,photonsa,electrons,electronsa
+      real, dimension(:), allocatable :: photonsw,photonsa,electrons,electronsa,
+     &  photonssource,propweights
 
-      integer :: idebug=0,noranone,i,ktime=1,iwig,ieof,ndimpho,ndimapho=9,ndimele,
+      integer :: idebug=0,noranone,i,k,ktime=1,iwig,ieof,ndimpho,ndimapho=9,ndimele,
      &  npiny,npinz,nper,nephogam,nepho,modeold,modeph,modepin,isym,ifixphase,ifold,modesphere,
-     &  nharmo,nharm,iy,iz,iobs,kalloerr,nwigpho,
-     &  mthreads,nelec,icohere,ihbunch,iepho,iobph,iel,modebunch,ifieldprop,ifieldsym,
+     &  nharm,iy,iz,iobs,kalloerr,nwigpho,ifieldpropnam,
+     &  mthreads,nelec,nelecnam,icohere,ihbunch,iepho,iobph,iel,modebunch,ifieldprop,ifieldsym,
      &  modewave=0,isto,nlpoi=0,nobsvprop,npinyprop,npinzprop,iywig,izwig,iypin,izpin,
-     &  iwigner,iwignofile,iwigcheck,jz,jy,ic,iobsv,iobfr,nobsv,modepino,
+     &  iwigner,iwignofile,iwigcheck,jz,jy,ic,iobsv,iobfr,nobsv,modepinnam,
      &  ispline=1,nz,ny,ntz,nty,itz,ity,ianalytic,kpola,kpol,idone,iesourext,
      &  mz,my,mtz,mty,nzl,nzh,nyl,nyh,kepho,kpola1,kpola2,
      &  ianalytico,ierr,izobs,iyobs,lunwige,lunwig,lunpin,kwigpho,nzyprop,lunapho,lunaele,nefoldo,
      &  iwighor,iwigver,nwigcenhit,nwigincut,nosplineefold,iefold,nefold,icbrill,icbrillprop,
-     &  igenpho,nelecampgenpho,iphasespace,igenphonofile,npho,ngam,ith,moderan,npola(5),nthreads,lele,lp
+     &  igenpho,nelecampgenpho,iphasespace,igenphonofile,npho,ngam,ith,moderan,npola(5),nthreads,lele,lp,mw
 
       namelist/uradphasen/
      &  perlen,shift,nper,beffv,beffh,
@@ -132,11 +134,11 @@
      &  mthreads,nelec,icohere,ihbunch,modeph,modebunch,ifieldprop,ifieldsym,iwignofile,
      &  iwigner,nelecampgenpho,igenpho,iphasespace,igenphonofile,moderan,
      &  iwigcheck,ianalytic,
-     &  betah,betav,alphah,alphav,emith,emitv,espread,wigzp,wigyp,wigz,wigy,
+     &  xbeta,betah,betav,alphah,alphav,emith,emitv,espread,wigzp,wigyp,wigz,wigy,
      &  disph,dispph,dispv,disppv,bunchcharge,bunchlen,
      &  nzwig,nywig,thezwig,theywig,nzthewig,nythewig,pinhwig,pinwwig,globphase,globphaseprop,
      &  iwighor,iwigver,npho,
-     &  wigzcut,wigycut,wigzcutw,wigycutw,nefold,nosplineefold
+     &  wigzcut,wigycut,wigzcutw,wigycutw,nefold,nosplineefold,s0thresh
 
       integer, parameter :: nfoldp=16
 
@@ -202,29 +204,40 @@ c      call util_random_init(isize,iseed)
 
       close(luna)
 
+      moderan=1
+
       if (mthreads.lt.0) then
         mthreads=OMP_GET_MAX_THREADS()
       else if (mthreads.eq.0) then
         mthreads=1
       endif
 
+      mthreadso_u=mthreads
+
       if (iwigner.ge.0) then
         call util_file_delete('urad_phase.wig',kstat)
         call util_file_delete('urad_phase_espread.wig',kstat)
       endif
 
-      if (igenpho.ge.0) then
-        call util_file_delete('genpho.pho',kstat)
-        call util_file_delete('genpho.elc',kstat)
+      nelecnam=nelec
+      ifieldpropnam=ifieldprop
+
+      if (ifieldprop.ne.0.and.igenpho.eq.0.and.modepin.ne.0) then
+        print*,""
+        print*,"*** iFieldProp and ModePin both not zero only allowed for iGenPho not zero ***"
+        print*,"Nelec set 1, ModePin set zero!"
+        print*,""
+        nelec=1
+        modepin=0
       endif
 
       if (nelecampgenpho.gt.0) nelec=1
 
-      if (nelec.lt.mthreads) then
+      if (nelec.lt.mthreads.and.modepin.ne.0) then
         mthreads=1
       endif
 
-      if (mod(nelec,mthreads).ne.0) then
+      if (mod(nelec,mthreads).ne.0.and.modepin.ne.0) then
         nelec=nelec/mthreads*mthreads
         write(6,*)""
         write(6,*)"--- Nelec adapted to number of threads"
@@ -239,15 +252,11 @@ c      call util_random_init(isize,iseed)
       igenpho_u=igenpho
       nelecampgenpho_u=nelecampgenpho
 
-      ianalytic=-ianalytic
+      ianalytic=0
+      ianalytic_u=ianalytic
 
       if  (iwigner.eq.0) then
         iwigcheck=0
-      else
-        if (ianalytic.ne.0) then
-          iwigner=-1
-        endif
-c        ifieldprop=1
       endif
 
       !all util_break
@@ -299,17 +308,6 @@ c        ifieldprop=1
 
       allocate(g(nefold))
 
-      if (ianalytic.gt.0 .and. (nefold.gt.1.or.nepho.gt.1)) then
-        print*,''
-        print*,'*** Warning: Ianalytic > 0 only correct for nefold <= 1 and nepho=1 ***'
-        print*,'*** nefold and nepho set one and Epho = (Ephmin+Ephmax)/2.0 ***'
-        print*,''
-        nefold=1
-        nepho=1
-        ephmin=(ephmin+ephmax)/2.0d0
-        ephmax=ephmin
-      endif
-
       if (modepin.ne.0 .and. nefold.gt.1) then
         print*,''
         print*,'*** Warning: modepin not zero and nefold greater than 1***'
@@ -318,21 +316,30 @@ c        ifieldprop=1
         modepin=0
       endif
 
-      if (modepin.ne.0 .and. ifieldprop.ne.0) then
+      if (modepin.eq.0 .and. igenpho.gt.0) then
         print*,''
-        print*,'*** Warning: Both Modepin and IfieldProp not zero***'
-        print*,'*** IfieldProp set zero ***'
+        print*,'*** Warning: modepin is zero and igenpho not ***'
+        print*,'*** igenpho set zero ***'
         print*,''
-        ifieldprop=0
+        igenpho=0
       endif
+
+c      if (igenpho.gt.0.and.ihbunch.eq.0) then
+c        print*,''
+c        print*,'*** Warning: iGenPho not zero but Ihbunch ***'
+c        print*,'*** Ihbunch set 1 ***'
+c        print*,''
+c        ihbunch=1
+c      endif
+
+c      if (modepin.ne.0 .and. ifieldprop.ne.0) then
+c        print*,''
+c        print*,'*** Warning: Both Modepin and IfieldProp not zero***'
+c        print*,'*** IfieldProp set zero ***'
+c        print*,''
+c        ifieldprop=0
+c      endif
       nephogam=nepho*nefold
-
-      ianalytic_u=ianalytic
-
-      if (modeph.ne.0.and.ianalytic.ne.0) then
-        write(6,*) '*** Modeph and ianalytic must not be non-zero both ***'
-        write(6,*) '*** Modeph overwritten with ianlaytic ***'
-      endif
 
       allocate(esourpin(npinz,npiny),
      &  esourzypine(6,npinz,npiny,nepho),
@@ -373,45 +380,6 @@ c        ifieldprop=1
 
       !allutil_break
 
-      if (ianalytic.ne.0) then
-
-        ihbunch=0
-        pinxprop=0.0d0
-
-        allocate(arad_u(6,nobsv*nepho),specpow_u(nobsv),stokes_u(4,nobsv*nepho),pow_u(nobsv),
-     &    obsv_u(3,nobsv))
-
-        powe=0.0d0
-        powetot=0.0d0
-
-        iobsv=0
-        yy=ymin-dypin
-        do iy=1,npiny
-          yy=yy+dypin
-          zz=zmin-dzpin
-          do iz=1,npinz
-            iobsv=iobsv+1
-            zz=zz+dzpin
-            obsv_u(1,iobsv)=pincen(1)
-            obsv_u(2,iobsv)=yy
-            obsv_u(3,iobsv)=zz
-          enddo
-        enddo
-
-        allocate(epho_u(nepho))
-
-        if (nepho.eq.1) then
-          epho_u(1)=(ephmin+ephmax)/2.0d0
-        else
-          depho=(ephmax-ephmin)/dble(nepho-1)
-          epho_u(1)=ephmin
-          do iepho=2,nepho
-            epho_u(iepho)=epho_u(iepho-1)+depho
-          enddo
-        endif
-
-      endif !(ianalytic.eq.0)
-
       if (nefold.gt.1) then
         ebeammin=ebeam*(1.0d0-ebeamnsig*espread)
         debeam=2.0d0*ebeamnsig*espread/dble(nefold-1)*ebeam
@@ -430,7 +398,6 @@ c        ifieldprop=1
 
       if (nharm.gt.0.and.harm.gt.0.0d0) then
 
-        nharmo=nharm
         harm1=harm/nharm
         wlen1=wtoe1/abs(harm/nharm)
 
@@ -459,9 +426,10 @@ c        ifieldprop=1
           beffv=beffh/rhv
         endif
 
+        nharm=0
+
       else
 
-        nharmo=0
         perl=perlen/1000.0d0
         b0eff=sqrt(beffh**2+beffv**2)
         park=b0eff*(echarge1*perl/(2.*pi1*emasskg1*clight1))
@@ -475,11 +443,6 @@ c        ifieldprop=1
       endif
 
       defl_u=park
-
-      if (nharmo.gt.0.and.ianalytic.ne.0 .and. (nharm*harm1.lt.ephmin.or.nharm*harm1.gt.ephmax)) then
-        write(6,*) '*** Warning: nharm*harm .lt. ephmin .or. nharm*harm.gt.ephmax.'
-        write(6,*) '*** This may result in problems for IANALYTIC not zero ***)'
-      endif
 
       nharm_u=nharm
 
@@ -612,7 +575,7 @@ c     &      esourzypol(2,nz,ny,nepho,nefold))
 
       rn=0.0d0
 
-      modepino=modepin
+      modepinnam=modepin
       if (ifold.ne.0) modepin=2
       ifixphase_u=ifixphase
       ifold_u=ifold
@@ -664,14 +627,6 @@ c     &      esourzypol(2,nz,ny,nepho,nefold))
       emithold=emith
       emitvold=emitv
 
-      if (igenpho.ne.0.and.emith.ne.0.0d0.and.emitv.ne.0.0d0) then
-        print*,""
-        print*,"*** Emittanz set zero for all calculations except photon generation due to iGenPho ***"
-        print*,""
-        emith=0.0d0
-        emitv=0.0d0
-      endif
-
 c      if (nelecampgenpho.ne.0.and.emith.ne.0.0d0.and.emitv.ne.0.0d0) then
 c        print*,""
 c        print*,"*** Emittanz set zero for all calculations except photon generation due to nelecampgenpho ***"
@@ -716,7 +671,7 @@ c      endif
       open(newunit=lunpin,file='urad_phase.pin')
       write(luna,*)npinz,npiny,pinw,pinh
       write(luna,*)pincen
-      write(luna,*)modepino,ifold,ifixphase,ifieldprop,nelec,ihbunch,-ianalytic
+      write(luna,*)modepin,ifold,ifixphase,ifieldprop,nelec,ihbunch,-ianalytic
       write(luna,*)betah,emith,betav,emitv,espread
       write(luna,*)npinzprop,npinyprop,pinxprop,pinwprop,pinhprop
       write(luna,*)nzthewig,nythewig,thezwig,theywig
@@ -733,7 +688,7 @@ c      endif
           g(iefold)=1.0d0
         endif
         gsum=gsum+g(iefold)
-      enddo
+      enddo !iefold
 
       !allutil_break
 
@@ -742,24 +697,21 @@ c      endif
 
       ebeam=ebeammin-debeam
 
-      if (ianalytic.le.0) then
-        open(newunit=lunfld,file='urad_phase.fld')
-        comlin='* urad_phase.fld'
-        write(lunfld,'(a)') trim(comlin)
-        comlin='* x y z iEgam iEbeam Egam Ebeam S0 S1 S2 S3 P ' //
-     &    'ExRe ExIm EyRe EyIm EzRe EzIm ' //
-     &    'BxRe BxIm ByRe ByIm BzRe BzIm nx ny nz g whit'
-        write(lunfld,'(a)') trim(comlin)
+      open(newunit=lunfld,file='urad_phase.fld')
+      comlin='* urad_phase.fld'
+      write(lunfld,'(a)') trim(comlin)
+      comlin='* x y z iEgam iEbeam Egam Ebeam S0 S1 S2 S3 P ' //
+     &  'ExRe ExIm EyRe EyIm EzRe EzIm ' //
+     &  'BxRe BxIm ByRe ByIm BzRe BzIm nx ny nz g whit'
+      write(lunfld,'(a)') trim(comlin)
 c        open(newunit=lung,file='urad_phase.geo')
-        open(newunit=lunflx,file='urad_phase.flx')
-        comlin='* urad_phase.flx'
-        write(lunflx,'(a)') trim(comlin)
-        comlin='* iEgam iEbeam Egam Ebeam S0 S1 S2 S3 ErrS0 ErrS1  ErrS2 ErrS3 g'
-        write(lunflx,'(a)') trim(comlin)
-      endif
+      open(newunit=lunflx,file='urad_phase.flx')
+      comlin='* urad_phase.flx'
+      write(lunflx,'(a)') trim(comlin)
+      comlin='* iEgam iEbeam Egam Ebeam S0 S1 S2 S3 ErrS0 ErrS1  ErrS2 ErrS3 g'
+      write(lunflx,'(a)') trim(comlin)
 
       if (ifieldprop.ne.0.or.ianalytic.gt.0) then
-
         open(newunit=lunfdp,file='urad_phase.fdp')
         comlin='* urad_phase.fdp'
         write(lunfdp,'(a)') trim(comlin)
@@ -797,67 +749,54 @@ c        open(newunit=lung,file='urad_phase.geo')
 
         !allutil_break
 
-        do iepho=1,nepho
+        igenpho_u=igenpho
 
-          if (ianalytic.gt.0) then
+        modewave_u=modewave
 
-            ifieldprop=0
-            pinxprop=0.0d0
+        if (igenpho.ne.0) then
 
-            call undulator_source_analytic(curr,banwid,park,gamma,npinzprop,npinyprop,
-     &        pinxprop,pinwprop/1000.0d0,pinhprop/1000.0d0,epho_u(iepho)/hbarev1,
-     &        perlen/1000.0d0,
-     &        nper,0.0d0,wigoffset/1000.0d0,wigslope/1000.0d0,esour,nharm,ajj,
-     &        gspecnor,genor,fdmaxana,fluxana)
+          npho=nepho*nelecnam
+          ndimpho=ndimapho*npho
+          allocate(photonssource(ndimpho))
+          photonssource=0.0
 
-            esourzy(3,:,:,iepho,iefold)=esour(:,:)
+          allocate(propweights_u(npho),propweights(npho))
+          propweights=0.0
 
-            iobs=0
-            do iy=1,npinyprop
-              do iz=1,npinzprop
-                iobs=iobs+1
-                iobph=iobs+nzyprop*(iepho-1)
-                aradprop_u(3,iobph)=esourzy(3,iz,iy,iepho,iefold)
-                call util_e_to_stokes(aradprop_u(1:3,iobph),specnor_si,stokesprop_u(:,iobph))
-                stokesprope(:,iobph,iefold)=stokesprop_u(:,iobph)
-              enddo
-            enddo
+          mw=-2
+          modewave_u=-2
+          emith=emith*1.0d9
+          emitv=emitv*1.0d9
 
-          else if (ianalytic.lt.0) then
+          call urad_get_photons(
+     &      nelec,noranone,
+     &      perlen,shift,nper,beffv,beffh,
+     &      nharm,harm,
+     &      ebeam,curr,step,
+     &      pinx,piny,pinz,pinw,pinh,npiny,npinz,modepin,
+     &      nepho,ephmin,ephmax,
+     &      xbeta,betah,alphah,betav,alphav,espread,emith,emitv,
+     &      disph,dispph,dispv,disppv,
+     &      modeph,pherror,phgshift,mw,  !modewave=-2
+     &      ifieldprop,npinzprop,npinyprop,
+     &      pinxprop,pinwprop,pinhprop,
+     &      ndimpho,npho,photonssource,propweights,s0thresh)
 
-            call undulator_source_analytic(curr,banwid,park,gamma,npinz,npiny,
-     &        pinx/1000.0d0,pinw/1000.0d0,pinh/1000.0d0,epho_u(iepho)/hbarev1,perlen/1000.0d0,
-     &        nper,pinx/1000.0d0,wigoffset/1000.0d0,wigslope/1000.0d0,esourpin,nharm,ajj,
-     &        gspecnor,genor,fdmaxana,fluxana)
+          do k=1,ndimpho,9
+            photons_u(k)=photons_u(k)
+            photons_u(k+1:k+4)=photonssource(k+1:k+4)/1.0e3
+            photons_u(k+5:k+8)=photonssource(k+5:k+8)*1.0e6
+          enddo
 
-c              print*,"fdmaxana:",sngl(fdmaxana)
+          modewave=modewave_u
 
-            esourzypin(3,:,:,iepho,iefold)=esourpin(:,:)
-            !allutil_break
-            iobs=0
-            do iy=1,npiny
-              do iz=1,npinz
-                iobs=iobs+1
-                iobph=iobs+nobsv_u*(iepho-1)
-                arad_u(3,iobph)=esourpin(iz,iy)
-                stokes_u(1,iobph)=abs(esourpin(iz,iy))**2*specnor_si
-                stokese(1,iobph,iefold)=stokes_u(1,iobph)
-              enddo
-            enddo
-            !allutil_break
+          !allutil_break
 
-          endif !ianalytic
+        else
 
-        enddo !nepho
-
-        if (ianalytic.eq.0) then
-
-          !allu
           if (nelec.gt.0) then
             ndimpho=ndimapho*nepho*nelec
             if (modepin.eq.0) ndimpho=ndimpho*nobsv
-c            print*,ndimpho
-            !allu
             if (ihbunch.ne.0 .and. ihbunch.lt.nelec_u) ndimpho=ndimpho/iabs(ihbunch)
             allocate(photons_u(ndimpho),electrons_u(5*nelec))
           endif
@@ -873,146 +812,134 @@ c            print*,ndimpho
      &      modeph,pherror,phgshift,modewave
      &      )
 
-          powe(:,iefold)=pow_u(:)
+        endif !igenpho
 
-          !allutil_break
-
-          if (ihbunch_u.gt.0.and.nelec_u.gt.1) then
-            if (iefold.eq.1) then
-              open(newunit=lunbun,file='urad_phase.bun')
-              comlin='* urad_phase.bun'
-              write(lunbun,'(a)') trim(comlin)
-              comlin='* jbun isub ibu bunchx xi yi zi zpi ypi xf yf zf ypf zpf Ee dEe Egam x y z '//
-     &          'iEgam Egam Flux S0 S1 S2 S3 P fb28 dt ' //
-     &          'ExRe ExIm EyRe EyIm EzRe EzIm ' //
-     &          'BxRe BxIm ByRe ByIm BzRe BzIm g'
-              write(lunbun,'(a)') trim(comlin)
-c        else
-c          open(newunit=lunbun,file='urad_phase.bun',access='append')
-            endif
-
-            do iel=1,nelec_u/iabs(ihbunch_u)*nepho
-              if(fbunch_u(21,iel).ne.0.0d0) then
-                write(lunbun,*)fbunch_u(:,iel),g(iefold)
-              endif
-            enddo
-            !close(lunbun)
-          else if (ihbunch_u.lt.0.and.nelec_u.gt.1) then
-            !allutil_break
-            if (iefold.eq.1) then
-              open(newunit=lunbun,file='urad_phase.bun')
-              comlin='* urad_phase.bun'
-              write(lunbun,'(a)') trim(comlin)
-              comlin='* jbun isub ibu bunchx xi yi zi zpi ypi xf yf zf ypf zpf Ee dEe Egam x y z '//
-     &          'iEgam Egam Flux S0 S1 S2 S3 P fb28 dt ' //
-     &          'ExRe ExIm EyRe EyIm EzRe EzIm ' //
-     &          'BxRe BxIm ByRe ByIm BzRe BzIm g'
-              write(lunbun,'(a)') trim(comlin)
-c        else
-c          open(newunit=lunbun,file='urad_phase.bun',access='append')
-            endif
-
-            do iel=1,nobsv_u*nelec_u/iabs(ihbunch_u)*nephogam
-              if(fbunch_u(21,iel).ne.0.0d0) then
-                write(lunbun,*)fbunch_u(:,iel),g(iefold)
-              endif
-            enddo
-            !close(lunbun)
-          endif
-
-          if (modepin.ne.1) then
-            do iepho=1,nepho
-              iobs=0
-              do iy=1,npiny
-                do iz=1,npinz
-                  iobs=iobs+1
-                  iobph=iobs+npinz*npiny*(iepho-1)
-                  esourzypin(:,iz,iy,iepho,iefold)=arad_u(:,iobph)
-                enddo
-              enddo
-            enddo
-            stokese(:,:,iefold)=stokes_u(:,:)
-          endif
-
-          !all util_break
-
-        endif !ianalytic.eq.0
+        powe(:,iefold)=pow_u(:)
 
         !allutil_break
 
-        if (ianalytic.le.0) then
+        if (ihbunch_u.gt.0.and.nelec_u.gt.1.and.igenpho.eq.0) then
+          if (iefold.eq.1) then
+            open(newunit=lunbun,file='urad_phase.bun')
+            comlin='* urad_phase.bun'
+            write(lunbun,'(a)') trim(comlin)
+            comlin='* jbun isub ibu bunchx xi yi zi zpi ypi xf yf zf ypf zpf Ee dEe Egam x y z '//
+     &        'iEgam Egam Flux S0 S1 S2 S3 P fb28 dt ' //
+     &        'ExRe ExIm EyRe EyIm EzRe EzIm ' //
+     &        'BxRe BxIm ByRe ByIm BzRe BzIm g'
+            write(lunbun,'(a)') trim(comlin)
+c        else
+c          open(newunit=lunbun,file='urad_phase.bun',access='append')
+          endif
+
+          do iel=1,nelec_u/iabs(ihbunch_u)*nepho
+            if(fbunch_u(21,iel).ne.0.0d0) then
+              write(lunbun,*)fbunch_u(:,iel),g(iefold)
+            endif
+          enddo
+          !close(lunbun)
+        else if (ihbunch_u.lt.0.and.nelec_u.gt.1.and.igenpho.eq.0) then
+          !allutil_break
+          if (iefold.eq.1) then
+            open(newunit=lunbun,file='urad_phase.bun')
+            comlin='* urad_phase.bun'
+            write(lunbun,'(a)') trim(comlin)
+            comlin='* jbun isub ibu bunchx xi yi zi zpi ypi xf yf zf ypf zpf Ee dEe Egam x y z '//
+     &        'iEgam Egam Flux S0 S1 S2 S3 P fb28 dt ' //
+     &        'ExRe ExIm EyRe EyIm EzRe EzIm ' //
+     &        'BxRe BxIm ByRe ByIm BzRe BzIm g'
+            write(lunbun,'(a)') trim(comlin)
+c        else
+c          open(newunit=lunbun,file='urad_phase.bun',access='append')
+          endif
+
+          do iel=1,nobsv_u*nelec_u/iabs(ihbunch_u)*nephogam
+            if(fbunch_u(21,iel).ne.0.0d0) then
+              write(lunbun,*)fbunch_u(:,iel),g(iefold)
+            endif
+          enddo
+          !close(lunbun)
+        endif
+
+        if (modepin.ne.1) then
+          do iepho=1,nepho
+            iobs=0
+            do iy=1,npiny
+              do iz=1,npinz
+                iobs=iobs+1
+                iobph=iobs+npinz*npiny*(iepho-1)
+                esourzypin(:,iz,iy,iepho,iefold)=arad_u(:,iobph)
+              enddo
+            enddo
+          enddo
+          stokese(:,:,iefold)=stokes_u(:,:)
+        endif
+
+        !all util_break
 
 c          print*,"S0_max:",sngl(maxval(stokes_u))
 
-          !allutil_break
+        !allutil_break
 
-          do iepho=1,nepho
-            do iobs=1,nobsv_u
+        do iepho=1,nepho
+          do iobs=1,nobsv_u
 
-              !if (modepin.ne.0 .and. iobs.ne.icbrill) cycle
+            !if (modepin.ne.0 .and. iobs.ne.icbrill) cycle
 
-              iobph=iobs+nobsv_u*(iepho-1)
+            iobph=iobs+nobsv_u*(iepho-1)
 
-              amp=arad_u(1:6,iobph)*clight1 !Just to avoid underflows
+            amp=arad_u(1:6,iobph)*clight1 !Just to avoid underflows
 
-              if (ianalytic.eq.0) then
-                rn(1)=
-     &            real(amp(2)*conjg(amp(6))-amp(3)*conjg(amp(5)))
-                rn(2)=
-     &            real(amp(3)*conjg(amp(4))-amp(1)*conjg(amp(6)))
-                rn(3)=
-     &            real(amp(1)*conjg(amp(5))-amp(2)*conjg(amp(4)))
+            if (nrad_u(iobs).gt.0) then
+
+              whit=1.0/nrad_u(iobs)
+
+              rn(1)=
+     &          real(amp(2)*conjg(amp(6))-amp(3)*conjg(amp(5)))
+              rn(2)=
+     &          real(amp(3)*conjg(amp(4))-amp(1)*conjg(amp(6)))
+              rn(3)=
+     &          real(amp(1)*conjg(amp(5))-amp(2)*conjg(amp(4)))
 
 c                rn=rn/norm2(rn)
-                rn(2)=rn(2)/rn(1)
-                rn(3)=rn(3)/rn(1)
-                rn(1)=sqrt(1.0d0-(rn(2)**2+rn(3)**2))
+              rn(2)=rn(2)/rn(1)
+              rn(3)=rn(3)/rn(1)
+              rn(1)=sqrt(1.0d0-(rn(2)**2+rn(3)**2))
 
-              else
-                rn=0.0d0
-              endif
+            else
+              rn=0.0d0
+              whit=0.0d0
+            endif
 
-              amp=arad_u(1:6,iobph)/clight1
+            write(lunfld,'(3(1pe17.8e3),2i10,30(1pe17.8e3))')
+     &        obsv_u(1:3,iobs)*1000.0d0,
+     &        iepho,iefold,
+     &        epho_u(iepho),buffe(iefold),stokes_u(1:4,iobph),pow_u(iobs),
+     &        real(arad_u(1,iobph)),imag(arad_u(1,iobph)),
+     &        real(arad_u(2,iobph)),imag(arad_u(2,iobph)),
+     &        real(arad_u(3,iobph)),imag(arad_u(3,iobph)),
+     &        real(arad_u(4,iobph)),imag(arad_u(4,iobph)),
+     &        real(arad_u(5,iobph)),imag(arad_u(5,iobph)),
+     &        real(arad_u(6,iobph)),imag(arad_u(6,iobph)),
+     &        rn,g(iefold),whit
 
-              axr=real(arad_u(1,iobph))
-              axi=imag(arad_u(1,iobph))
-              ayr=real(arad_u(2,iobph))
-              ayi=imag(arad_u(2,iobph))
-              azr=real(arad_u(3,iobph))
-              azi=imag(arad_u(3,iobph))
+          enddo !iobs=1,nobsv_u
 
-              if (nrad_u(iobs).gt.0) then
-                whit=1.0/nrad_u(iobs)
-              else
-                whit=0.0d0
-              endif
-
-              write(lunfld,'(3(1pe17.8e3),2i10,30(1pe17.8e3))')
-     &          obsv_u(1:3,iobs)*1000.0d0,
-     &          iepho,iefold,
-     &          epho_u(iepho),buffe(iefold),stokes_u(1:4,iobph),pow_u(iobs),
-     &          real(arad_u(1,iobph)),imag(arad_u(1,iobph)),
-     &          real(arad_u(2,iobph)),imag(arad_u(2,iobph)),
-     &          real(arad_u(3,iobph)),imag(arad_u(3,iobph)),
-     &          real(arad_u(4,iobph)),imag(arad_u(4,iobph)),
-     &          real(arad_u(5,iobph)),imag(arad_u(5,iobph)),
-     &          real(arad_u(6,iobph)),imag(arad_u(6,iobph)),
-     &          rn,g(iefold),whit
-
-            enddo !iobs=1,nobsv_u
-
-          enddo !iepho
-
-        endif !(ianalytic.le.0) then
+        enddo !iepho
 
         !allutil_break
+
         if (ifieldprop.ne.0.and.ianalytic.le.0) then
 
-          write(6,*) ''
-          write(6,*) 'Starting Field-Propagation'
-          write(6,*) ''
+          if (igenpho.eq.0) then
 
-          call urad_phase_prop(mthreads)
+            write(6,*) ''
+            write(6,*) 'Starting Field-Propagation'
+            write(6,*) ''
+
+            call urad_phase_prop(mthreads)
+
+          endif
 
           stokesprope(:,:,iefold)=stokesprop_u(:,:)
 
@@ -1026,10 +953,6 @@ c                rn=rn/norm2(rn)
               enddo
             enddo
           enddo
-
-        endif
-
-        if (ifieldprop.ne.0.or.ianalytic.gt.0) then
 
           do iobs=1,nobsvprop_u
             do iepho=1,nepho
@@ -1105,77 +1028,75 @@ c          print*,"S0_prop_max:",sngl(maxval(stokesprop_u))
 
         endif !ifieldprop
 
-        if (ianalytic.le.0) then
-          !allu
-          do iepho=1,nepho
+        !allu
+        do iepho=1,nepho
 
-            if (modepin.eq.0.and.npinz_u.ge.3.and.npiny_u.ge.3) then
+          if (modepin.eq.0.and.npinz_u.ge.3.and.npiny_u.ge.3) then
 
-              do isto=1,4
-                iobs=0
-                do iz=1,npinz_u
-                  do iy=1,npiny_u
-                    iobs=iobs+1
-                    iobph=iobs+nobsv_u*(iepho-1)
-                    s(iz,iy)=stokes_u(isto,iobph)
-                  enddo
-                enddo
-                call util_spline_integral_2d(npinz_u,npiny_u,z,y,s,stosum(isto),kstat)
-                stosume(isto,iepho,iefold)=stosum(isto)
-              enddo !isto
-
-              write(lunflx,*)iepho,iefold,epho_u(iepho),buffe(iefold),stosume(:,iepho,iefold),
-     &          '0.0 0.0 0.0 0.0',g(iefold)
-
-            else if (modepin.ne.0) then
-
-c              iobph=1+nobsv_u*(iepho-1)
-c              stosum=stokes_u(1:4,iobph)
-
-              stosum=0.0d0
-              stm=0.0d0
-              do iobs=1,nobsv_u
-                iobph=iobs+nobsv_u*(iepho-1)
-                !print*,iobs,iepho,iobph,stokes_u(1:4,iobph)
-                if (nrad_u(iobs).gt.0) then
-                  stosum(1:4)=stosum(1:4)+stokes_u(1:4,iobph)*pinw*pinh/nrad_u(iobs)
-                  stm(5:8)=stm(5:8)+(stokes_u(1:4,iobph)*pinw*pinh/nrad_u(iobs))**2
-                endif
-              enddo
-
-              !allu
-c              stm(1:4)=(stosum(1:4)/nelec_u)**2
-c              stm(5:8)=stm(5:8)/nelec_u
-c              stm(1:4)=sqrt(stm(5:8)-stm(1:4))
-              stm(1:4)=(stosum(1:4)/nobsv)**2
-              stm(5:8)=stm(5:8)/nobsv
-              stm(1:4)=sqrt(stm(5:8)-stm(1:4))
-
-              write(lunflx,*)iepho,iefold,epho_u(iepho),buffe(iefold),
-c     &          stosum(1:4)*pinw*pinh/nelec_u,stm(1:4)/sqrt(dble(nelec_u)),
-     &          stosum(1:4)/nobsv,stm(1:4)/sqrt(dble(nobsv)),
-     &          g(iefold)
-
-            else
-
+            do isto=1,4
               iobs=0
-              stosum=0.0d0
               do iz=1,npinz_u
                 do iy=1,npiny_u
                   iobs=iobs+1
                   iobph=iobs+nobsv_u*(iepho-1)
-                  stosum=stosum+stokes_u(1:4,iobph)
+                  s(iz,iy)=stokes_u(isto,iobph)
                 enddo
               enddo
-              write(lunflx,*)iepho,iefold,epho_u(iepho),buffe(iefold),stosum*pinw*pinh,
-     &          g(iefold)
-            endif
+              call util_spline_integral_2d(npinz_u,npiny_u,z,y,s,stosum(isto),kstat)
+              stosume(isto,iepho,iefold)=stosum(isto)
+            enddo !isto
 
-          enddo !nepho
+            write(lunflx,*)iepho,iefold,epho_u(iepho),buffe(iefold),stosume(:,iepho,iefold),
+     &        '0.0 0.0 0.0 0.0',g(iefold)
 
-        endif !(ianalytic.le.0) then
+          else if (modepin.ne.0) then
 
-        if (nelecampgenpho.eq.0) then
+c              iobph=1+nobsv_u*(iepho-1)
+c              stosum=stokes_u(1:4,iobph)
+
+            stosum=0.0d0
+            stm=0.0d0
+            do iobs=1,nobsv_u
+              iobph=iobs+nobsv_u*(iepho-1)
+              !print*,iobs,iepho,iobph,stokes_u(1:4,iobph)
+              if (nrad_u(iobs).gt.0) then
+                stosum(1:4)=stosum(1:4)+stokes_u(1:4,iobph)*pinw*pinh/nrad_u(iobs)
+                stm(5:8)=stm(5:8)+(stokes_u(1:4,iobph)*pinw*pinh/nrad_u(iobs))**2
+              endif
+            enddo
+
+            !allu
+c              stm(1:4)=(stosum(1:4)/nelec_u)**2
+c              stm(5:8)=stm(5:8)/nelec_u
+c              stm(1:4)=sqrt(stm(5:8)-stm(1:4))
+            stm(1:4)=(stosum(1:4)/nobsv)**2
+            stm(5:8)=stm(5:8)/nobsv
+            stm(1:4)=sqrt(stm(5:8)-stm(1:4))
+
+            write(lunflx,*)iepho,iefold,epho_u(iepho),buffe(iefold),
+c     &          stosum(1:4)*pinw*pinh/nelec_u,stm(1:4)/sqrt(dble(nelec_u)),
+     &        stosum(1:4)/nobsv,stm(1:4)/sqrt(dble(nobsv)),
+     &        g(iefold)
+
+          else
+
+            iobs=0
+            stosum=0.0d0
+            do iz=1,npinz_u
+              do iy=1,npiny_u
+                iobs=iobs+1
+                iobph=iobs+nobsv_u*(iepho-1)
+                stosum=stosum+stokes_u(1:4,iobph)
+              enddo
+            enddo
+            write(lunflx,*)iepho,iefold,epho_u(iepho),buffe(iefold),stosum*pinw*pinh,
+     &        g(iefold)
+          endif
+
+        enddo !nepho
+
+
+        if (igenpho.gt.0) then
 
           !allu
 
@@ -1188,161 +1109,71 @@ c     &          stosum(1:4)*pinw*pinh/nelec_u,stm(1:4)/sqrt(dble(nelec_u)),
           open(newunit=lunapho,file='ampgenpho.pho')
           comlin='* ampgenpho.pho'
           write(lunapho,'(a)') trim(comlin)
-          comlin='* iGam iEle iEgam iEfold Ebeam g Egam x y z yp zp S0 S1 S2 S3'
+c            comlin='* iGam iEle iEgam iEfold Ebeam g Egam x y z yp zp S0 S1 S2 S3 Weight'
+          comlin='* Egam x y z yp zp S0 S1 S2 S3 Weight'
           write(lunapho,'(a)') trim(comlin)
+          callutil_break
+c            l=1
+c            lele=1
+c            lp=max(1,iabs(ihbunch))
+c            do iel=1,nelec,lp
+          npho=0
+          do l=1,int(size(photons_u)),9
+            npho=npho+1
+c                do iepho=1,nepho
+            yg=photons_u(l+1)*1000.
+            zg=photons_u(l+2)*1000.
+            ypg=photons_u(l+3)*1000.
+            zpg=photons_u(l+4)*1000.
+c              dpp=electrons_u(5*(npho-1)+5)
 
-          l=1
-          lele=1
-          lp=max(1,iabs(ihbunch))
-          do iel=1,nelec,lp
-            do i=1,ngam
-              do iepho=1,nepho
-                yg=photons_u(l+1)*1000.
-                zg=photons_u(l+2)*1000.
-                ypg=photons_u(l+3)*1000.
-                zpg=photons_u(l+4)*1000.
-                dpp=electrons_u(5*(iel-1)+5)
-                write(lunapho,*) i,lele,iepho,iefold,ebeam*(1.0+dpp),
-     &            g(iefold),
-     &            photons_u(l:l),pinx,yg,zg,ypg,zpg,
-     &            photons_u(l+5:l+8)/1.0e6
-                l=l+ndimapho
-              enddo
-            enddo
-            if (iel.eq.1) then
-              lele=lele-1+lp
-            else
-              lele=lele+lp
-            endif
+c              write(lunapho,*) i,npho,iepho,iefold,ebeam*(1.0+dpp),
+c     &          g(iefold),
+c     &          photons_u(l:l),pinx,yg,zg,ypg,zpg,
+c     &          photons_u(l+5:l+8)/1.0e6*propweights(npho)
+
+            write(lunapho,*)
+     &        photons_u(l:l),pinx,yg,zg,ypg,zpg,
+     &        photons_u(l+5:l+8)/1.0e6,propweights(npho)
+
           enddo
 
+          callutil_break
           if (electrons_u(1).ne.-9999.) then
 
             open(newunit=lunaele,file='ampgenpho.elc')
             comlin='* ampgenpho.elc'
             write(lunaele,'(a)') trim(comlin)
-            comlin='* i E g y z yp zp'
+            comlin='* y z yp zp E'
             write(lunaele,'(a)') trim(comlin)
 
             !allu
             l=1
-            lele=1
-            lp=iabs(ihbunch)
-            do i=1,nelec
+            lele=0
+            lp=max(1,iabs(ihbunch_u))
+            do i=1,nelec*5/lp,5
               if (electrons_u(l).eq.-9999.) then
                 !allu
                 exit
               endif
+              lele=lele+1
               yel=electrons_u(l)*1000.
               zel=electrons_u(l+1)*1000.
               ypel=electrons_u(l+2)*1000.
               zpel=electrons_u(l+3)*1000.
-              dpp=electrons_u(5*(i-1)+5)
-              write(lunaele,*) lele,ebeam*(1.0+dpp),
-     &          g(iefold),yel-pinx/1000.*ypel,zel-pinx/1000.*zpel,ypel,zpel
+              dpp=electrons_u(l+4)
+              write(lunaele,*) lele,ebeam*(1.0+dpp),yel,zel,ypel,zpel
+c     &            g(iefold),yel-pinx/1000.*ypel,zel-pinx/1000.*zpel,ypel,zpel
               l=l+5
-              if (i.eq.1) then
-                lele=lele-1+lp
-              else
-                lele=lele+lp
-              endif
+c                if (i.eq.1) then
+c                  lele=lele-1+lp
+c                else
+c                  lele=lele+lp
+c                endif
             enddo
           endif
 
-        else if (nelecampgenpho.ne.0.and.nelec.eq.1) then
-
-c          write(6,*) ''
-c          write(6,*) 'Starting photon generation from field amplitude'
-c          write(6,*) ''
-
-          sigzr=sngl(sqrt(betah*emithold)*1000.0d0)
-          sigyr=sngl(sqrt(betav*emitvold)*1000.0d0)
-          sigzpr=sngl(sqrt(emithold/betah)*1000.0d0)
-          sigypr=sngl(sqrt(emitvold/betav)*1000.0d0)
-
-          if (moderan.gt.0) then
-            ngam=npho
-          else
-            ngam=nobsv
-          endif
-
-          !allutil_break
-          if (iefold.eq.1) then
-            ndimpho=ndimapho*ngam*nepho*nelecampgenpho
-            ndimele=4*nelecampgenpho
-            allocate(photonsa(ndimpho),electronsa(ndimele))
-c            allocate(photonsa(5000000),electronsa(100000))
-            open(newunit=lunapho,file='ampgenpho.pho')
-            comlin='* ampgenpho.pho'
-            write(lunapho,'(a)') trim(comlin)
-            comlin='* iGam iEle iEgam iEfold Ebeam g Egam x y z yp zp S0 S1 S2 S3'
-            write(lunapho,'(a)') trim(comlin)
-            open(newunit=lunaele,file='ampgenpho.elc')
-            comlin='* ampgenpho.elc'
-            write(lunaele,'(a)') trim(comlin)
-            comlin='* i E g y z yp zp'
-            write(lunaele,'(a)') trim(comlin)
-          endif
-
-          call urad_phase_amp_genpho(zi_u,yi_u,npiny,npinz,obsv_u,
-     &      moderan,nelecampgenpho,noranone,ngam,nepho,
-     &      sngl(ephmin),sngl(ephmax),
-     &      sigzr/1000.,sigzpr/1000.,sigyr/1000.,sigypr/1000.,
-     &      ndimpho,photonsa,ndimele,electronsa,
-     &      arad_u,specnor_si)
-
-          if (iefold.eq.nefold) then
-            if (ktime.eq.1) then
-              call util_zeit_kommentar_delta(6,"Writing ampgenpho.pho and ampgenpho.elc",0)
-            else
-              print*,"Writing ampgenpho.pho and ampgenpho.elc"
-            endif
-          endif
-
-          !allutil_break
-
-          l=1
-          do iel=1,nelecampgenpho
-            do i=1,ngam
-              do iepho=1,nepho
-                zg=photonsa(l+1)*1000.
-                yg=photonsa(l+2)*1000.
-                zpg=photonsa(l+3)*1000.
-                ypg=photonsa(l+4)*1000.
-                write(lunapho,*) i,iel,iepho,iefold,ebeam,g(iefold),
-     &            photonsa(l:l),pinx,yg,zg,ypg,zpg,
-     &            photonsa(l+5:l+8)/1.0e6
-                l=l+ndimapho
-              enddo
-            enddo
-          enddo
-
-          l=1
-          do i=1,nelecampgenpho
-            zel=electronsa(l)*1000.
-            yel=electronsa(l+1)*1000.
-            zpel=electronsa(l+2)*1000.
-            ypel=electronsa(l+3)*1000.
-            write(lunaele,*) i,ebeam,g(iefold),yel-pinx/1000.*ypel,zel-pinx/1000.*zpel,ypel,zpel
-            l=l+4
-          enddo
-
-          if (iefold.eq.nefold) then
-            close(lunapho)
-            close(lunaele)
-          endif
-
-c          if (ktime.eq.1) then
-c            call util_zeit_kommentar_delta(6,"Done",0)
-c          else
-c            print*,"Done"
-c          endif
-
-c          print*,' '
-c          print*,' '
-
-        endif !nelecampgenpho
-
+          endif !(igenpho.gt.0)
         if (iefold.eq.nefold) then
           espread=espreadorig
           espread_u=espread
@@ -1354,7 +1185,7 @@ c          print*,' '
       stokesetot=0.0d0
       ebeamrange=buffe(nefold)-buffe(1)
 
-      call util_break
+      !allutil_break
       if (ianalytic.eq.0) then
 
         iobs=0
@@ -1837,148 +1668,12 @@ c                  rn=rn/norm2(rn)
 
       !all util_break
 
-      if (igenpho.ne.0) then
-
-        write(6,*) ''
-        write(6,*) 'Starting photon generation from Wigner distribution'
-        write(6,*) ''
-
-        sigzr=sngl(sqrt(betah*emithold)*1000.0d0)
-        sigyr=sngl(sqrt(betav*emitvold)*1000.0d0)
-        sigzpr=sngl(sqrt(emithold/betah)*1000.0d0)
-        sigypr=sngl(sqrt(emitvold/betav)*1000.0d0)
-
-        ngam=npho*nelec
-        allocate(photonsw(7*ngam*nepho),electrons(4*nelec))
-
-        if (igenpho.gt.0) then
-          allocate(wigreal(npola(5),nz,ny,ntz,nty))
-          if (nefold.gt.1) then
-            wigreal(kpola,:,:,:,:)=sngl(wigefold(:,:,:,:,nefold+1))
-          else
-            wigreal(kpola,:,:,:,:)=sngl(wig(:,:,:,:))
-          endif
-
-        else
-
-          open(newunit=lunwige,file='urad_phase_espread.wig',iostat=kstat)
-
-          if (kstat.ne.0) then
-            open(newunit=lunwigw,file='urad_phase.wig',iostat=kstat)
-            if (kstat.eq.0) then
-              stop '*** Error: Could not open urad_phase_espread.wig or urad_phase.wig ***'
-            endif
-          endif
-          stop "*** Baustelle ***"
-          do while (.true.)
-          enddo
-        endif
-
-        mz=npinzprop
-        my=npinyprop
-        mtz=nzthewig
-        mty=nythewig
-
-        zminr=sngl(zprop(1))
-        zmaxr=sngl(zprop(npinzprop))
-        if (iphasespace/1000.eq.0) then
-c          zminr=(zminr+zmaxr)/2.
-c          zmaxr=zminr
-          mz=-nz
-        endif
-
-        iphasespace=iphasespace-iphasespace/1000*1000
-        yminr=sngl(yprop(1))
-        ymaxr=sngl(yprop(npinyprop))
-        if (iphasespace/100.eq.0) then
-c          yminr=(yminr+ymaxr)/2.
-c          ymaxr=yminr
-          my=-ny
-        endif
-
-        iphasespace=iphasespace-iphasespace/100*100
-        tzminr=sngl(-thezwig/2.0d0)
-        tzmaxr=sngl(thezwig/2.0d0)
-        if (iphasespace/10.eq.0) then
-c          tzminr=(tzminr+tzmaxr)/2.
-c          tzmaxr=tzminr
-          mtz=-mtz
-        endif
-
-        iphasespace=iphasespace-iphasespace/10*10
-        tyminr=sngl(-theywig/2.0d0)
-        tymaxr=sngl(theywig/2.0d0)
-
-        if (iphasespace.eq.0) then
-c          tyminr=(tyminr+tymaxr)/2.
-c          tymaxr=tyminr
-          mty=-mty
-        endif
-
-        nthreads=1
-        do ith=1,nthreads
-          call urad_phase_genpho(
-     &      nthreads,ith,moderan,nelec,noranone,npho,npola,mz,my,mtz,mty,nepho,
-     &      zminr,zmaxr,yminr,ymaxr,
-     &      tzminr,tzmaxr,tyminr,tymaxr,
-     &      sngl(ephmin),sngl(ephmax),
-     &      sigzr,sigzpr,sigyr,sigypr,
-     &      photonsw,electrons,
-     &      wigreal)
-        enddo
-
-        if (ktime.eq.1) then
-          call util_zeit_kommentar_delta(6,"Writing genpho.pho and genpho.elc",0)
-        else
-          print*,"Writing genpho.pho and genpho.elc"
-        endif
-
-        open(newunit=lunwig,file='genpho.pho')
-
-        l=1
-        do i=1,npho*nelec*nepho*nthreads
-          write(lunwig,*) i,photonsw(l:l+6)
-          l=l+7
-        enddo
-
-        close(lunwig)
-
-c      if (igenpho.ne.0) then
-
-        open(newunit=lunwig,file='genpho.elc')
-
-        l=1
-        do i=1,nelec
-          write(lunwig,*) i,electrons(l:l+3)
-          l=l+4
-        enddo
-
-        close(lunwig)
-
-        if (ktime.eq.1) then
-          call util_zeit_kommentar_delta(6,"Done",0)
-        else
-          print*,"Done"
-        endif
-
-        print*,' '
-        print*,' '
-
-      endif !igenpho
-
-      if (ktime.eq.1) then
-        call util_zeit_kommentar_delta(6,'Done',1)
-        print*,''
-        print*,''
-        print*,''
-      endif
-
       end
 
       subroutine u
-      call util_break
+      !allutil_break
       end
-*CMZ :          13/10/2026  10.26.21  by  Michael Scheer
+*CMZ :          20/10/2026  11.02.17  by  Michael Scheer
 *CMZ :  4.03/00 08/09/2026  12.41.50  by  Michael Scheer
 *CMZ :  4.02/01 31/08/2026  07.37.54  by  Michael Scheer
 *CMZ :  4.02/00 13/09/2025  10.16.17  by  Michael Scheer
@@ -2032,11 +1727,11 @@ c+seq,uservar.
 
       nobsv=npinz*npiny
 
-      if (modepin.ne.0.and.nelec.eq.1) then
-        print*,""
-        print*,"        *** Warning in urad_phase: Nelec = 1 and ModePin = 1"
-        print*,""
-      endif
+c      if (modepin.ne.0.and.nelec.eq.1) then
+c        print*,""
+c        print*,"        *** Warning in urad_phase: Nelec = 1 and ModePin = 1"
+c        print*,""
+c      endif
 
       ebeam_u=ebeam
       gamma_u=ebeam_u/emassg1
@@ -2270,7 +1965,7 @@ c      if (modewave.ne.0) call util_zeit_kommentar(6,'Leaving urad_phase')
 
       ical=1
       end
-*CMZ :          13/10/2026  11.48.47  by  Michael Scheer
+*CMZ :          24/10/2026  15.05.14  by  Michael Scheer
 *CMZ :  4.03/00 07/10/2026  07.27.51  by  Michael Scheer
 *CMZ :  4.02/01 02/09/2026  09.04.08  by  Michael Scheer
 *CMZ :  4.02/00 27/08/2025  14.45.47  by  Michael Scheer
@@ -2432,8 +2127,9 @@ c      endif
       !allu
 
       if (nelec_u.lt.mthreads) mthreads=1
-      !allu
-      if (modewave.le.0) then
+
+      if (igenpho_u.gt.0) then
+        deallocate(photons,stat=ierr)
         mpho=size(photons_u)/mthreads
         allocate(photons(mpho,mthreads))
         photons=0.0
@@ -2454,7 +2150,9 @@ c To reinvent it, check +self,if=fieldbunch in CMZ-file wave.cmz
       call urad_field_ini(perlen_u,shift_u,beffv_u,beffh_u,modewave)
 
       if (perlen_u.ne.0.0d0) then
+
         emom=emasse1*dsqrt((gamma_u-1.0d0)*(gamma_u+1.0d0))
+
         xkellip=twopi1/perlen_u
         parkh=echarge1*dabs(beffh_u)*perlen_u/(twopi1*emasskg1*clight1)
         parkv=echarge1*dabs(beffv_u)*perlen_u/(twopi1*emasskg1*clight1)
@@ -2592,8 +2290,8 @@ c      dr0=[xf0-x0,yf0-y0,zf0-z0]
       enddo
 
       !allutil_break
-      if (ibunch.eq.0.or.
-     &    emith_u.eq.0.0d0.and.emitv_u.eq.0.0d0.and.espread_u.eq.0.0d0
+      if (nelec.gt.1.and.(ibunch.eq.0.or.
+     &  emith_u.eq.0.0d0.and.emitv_u.eq.0.0d0.and.espread_u.eq.0.0d0.and.modewave.ge.0)
 c     &    .or.
 c     &    nelecampgenpho_u.ne.0
      &    ) then
@@ -2601,6 +2299,7 @@ c     &    nelecampgenpho_u.ne.0
         ibunch=0
         nelec=1
         nelec_u=1
+        print*,"*** Warning: Due to zero emittance and e-spread, Nelec set 1! ***"
       else
         iemit=1
       endif
@@ -2611,7 +2310,7 @@ c     &    nelecampgenpho_u.ne.0
         print*,''
       endif
 
-      if (modewave.eq.0) then
+      if (modewave.eq.-1) then
         electrons_u=-9999.0
         electrons_u(1)=yi
         electrons_u(2)=zi
@@ -2652,7 +2351,7 @@ c     &    nelecampgenpho_u.ne.0
             eall(4,i)=ypi
             eall(5,i)=zpi
             eall(6,i)=dpp
-            if (modewave.eq.0) then
+            if (modewave.ne.-1) then
               kmod=0
               if (i.eq.1) then
                 kmod=1
@@ -2664,7 +2363,11 @@ c     &    nelecampgenpho_u.ne.0
                 endif
               endif
               if (kmod.ne.0) then
-                electrons_u(lele+1:lele+5)=eall(2:6,i)
+                electrons_u(lele+1:lele+1)=yi-ypi*x0
+                electrons_u(lele+2:lele+2)=zi-zpi*x0
+                electrons_u(lele+3:lele+3)=ypi
+                electrons_u(lele+4:lele+4)=zpi
+                electrons_u(lele+5:lele+5)=dpp
                 lele=lele+5
               endif
             endif
@@ -2834,7 +2537,7 @@ c      anor=sqrt(1.0d0/specnor_si)
 !$OMP& stokesv,icbrill,obsv_u,emassg,debeam,dispv_u,disppv_u,
 !$OMP& betah_u,alphah_u,betav_u,alphav_u,emith_u,emitv_u,disph_u,dispph_u,
 !$OMP& pran,pranall,eall,fillb,r0,dr0,iamppin,iamppincirc,pc,phase0,pr,banwid_u,
-!$OMP& pw,ph,idebug,pcbrill,wsstokes,vn,bunchlen_u,modebunch_u,icohere_u)
+!$OMP& pw,ph,idebug,pcbrill,wsstokes,vn,bunchlen_u,modebunch_u,icohere_u,igenpho_u)
 !$OMP& SHARED(mthreads,stokes,pherr,expphiran,lbunch,lnbunch,modepin_u,fieldbunch,npinzo_u,nobsvo,dzpin,dypin,
 !$OMP& fbunch_u,jcharge,jeneloss,jvelofield,iemit,noranone,arad,pow,photons,
 !$OMP& nrad_u,zmin,ymin,phgsh,fprop,stokesprop,npho,mpho)
@@ -3074,7 +2777,7 @@ c          amp0=amp0*dcmplx(0.0d0,dble(pran(1)*twopi1))
             !allutil_break
             do i=1,nper_u
 
-              !if (i.eq.1.or.i.eq.nper_u) call util_break
+              !if (i.eq.1.or.i.eq.nper_u) !allutil_break
 
               r=r0+(i-np2-1)*dr0
               dobs=obs-r
@@ -3268,6 +2971,8 @@ c     &              ampn(3)
 
             !allu
 
+            if (sum(abs(amp)).gt.0.0d0) amp=amp/sum(abs(amp))
+
             rn(1)=
      &        real(amp(2)*conjg(amp(6))-amp(3)*conjg(amp(5)))
             rn(2)=
@@ -3281,7 +2986,7 @@ c     &              ampn(3)
 
             !allu
 
-            if (modewave.le.0) then
+            if (modewave.lt.0.and.ifieldprop.eq.0.or.igenpho_u.gt.0) then
 
               kmod=0
 
@@ -3331,7 +3036,7 @@ c              print*,jhbunch,ith,ilo,ielec
 c            endif
 c          endif
 
-            if (jhbunch.ne.0) then
+            if (jhbunch.ne.0.and.modewave.eq.0) then
               if (
      &            ((iamppin.eq.3.or.kobsv.eq.icbrill).and.jhbunch.gt.0.and.
      &            mod(ielec,jhbunch).eq.0) .or.
@@ -3460,7 +3165,7 @@ c      enddo !ilo
       !allu
       lpho=0
       do ith=1,mthreads
-        if (modewave.le.0) then
+        if (modewave.lt.0.or.igenpho_u.gt.0) then
           mpho=npho(ith)-1
           photons_u(lpho+1:lpho+mpho)=photons(1:mpho,ith)
           lpho=lpho+mpho
@@ -6401,6 +6106,486 @@ c                photons(ngam)=(erx**2+eix**2+ery**2+eiy**2+erz**2+eiz**2)*specn
       endif !moderan
 
       !allutil_break
+      end
+*CMZ :          28/10/2026  09.46.15  by  Michael Scheer
+*CMZ :  4.03/00 08/09/2026  12.41.50  by  Michael Scheer
+*CMZ :  4.02/01 31/08/2026  07.37.54  by  Michael Scheer
+*CMZ :  4.02/00 13/09/2025  10.16.17  by  Michael Scheer
+*CMZ :  4.01/07 13/08/2024  10.11.51  by  Michael Scheer
+*CMZ :  4.01/05 26/04/2024  10.49.56  by  Michael Scheer
+*CMZ :  4.01/04 28/12/2023  15.30.57  by  Michael Scheer
+*CMZ :  4.01/02 12/05/2023  17.13.05  by  Michael Scheer
+*CMZ :  4.01/00 21/02/2023  16.51.29  by  Michael Scheer
+*-- Author : Michael Scheer
+
+      subroutine urad_get_photons(
+     &  nelec,noranone,
+     &  perlen,shift,nper,beffv,beffh,
+     &  nharm,harm,
+     &  ebeam,curr,step,
+     &  pinx,piny,pinz,pinw,pinh,npiny,npinz,modepin,
+     &  nepho,ephmin,ephmax,
+     &  xbeta,betah,alphah,betav,alphav,espread,emith,emitv,
+     &  disph,dispph,dispv,disppv,
+     &  modeph,pherror,phgshift,modewave,
+     &  ifieldprop,npinzprop,npinyprop,
+     &  pinxprop,pinwprop,pinhprop,
+     &  ndimpho,npho,photons,propweights,s0thresh)
+
+      use omp_lib
+      use uradphasemod
+
+      implicit none
+
+*KEEP,phyconparam.
+      include 'phyconparam.cmn'
+*KEND.
+
+      complex*16 rea(3),expsh
+
+      real*8
+     &  perlen,shift,
+     &  beffv,beffh,harm,
+     &  ebeam,curr,step,
+     &  pinx,piny,pinz,pinw,pinh,
+     &  ephmin,ephmax,
+     &  xbeta,betah,alphah,betav,alphav,espread,emith,emitv,
+     &  disph,dispph,dispv,disppv,
+     &  pherror,phgshift,
+     &  pinxprop,pinwprop,pinhprop,
+     &  df,z,zmin,dz,y,ymin,dy,dyprop,dzprop,
+     &  wlen1,rhv,perl,park,harm1,gamma,b0eff,s0thresh
+
+      integer nelec,noranone,nper,npiny,npinz,modepin,nepho,modeph,ifieldprop,iepho,modewave,nharm,
+     &  i,iz,iy,k,ierr,iobs,icbrill,ifrq,iobfr,ndimpho,nobsvprop,npinzprop,npinyprop,l,npho,
+     &  iobrf
+
+      integer ModeRan,ihbunch !All grid points (zero) or Nelec random grid points (not zero)
+
+      real photons(9*npho),propweights(npho)
+
+      real s0ran(3)
+
+      real*8 :: SPECNOR_SI = 5.0007272079722076d+39
+
+      moderan=1
+
+      ebeam_u=ebeam
+      gamma_u=ebeam_u/emassg1
+
+      if (modewave.eq.-1) mthreads_u=OMP_GET_MAX_THREADS()
+      !mthreads_u=1
+      !print*,"mthreads!!"
+
+      npinzo_u=npinz
+      npinyo_u=npiny
+
+      nelec_u=nelec
+      noranone_u=noranone
+      icohere_u=0
+      bunchlen_u=0.0d0
+      bunchcharge_u=0.0d0
+
+      if (modewave.eq.-1) ihbunch_u=0
+      ihbunch=ihbunch_u
+
+      if (nharm.gt.0.and.harm.gt.0.0d0) then
+
+        gamma=ebeam/emassg1
+
+        harm1=harm/nharm
+        wlen1=wtoe1/abs(harm/nharm)
+
+        perl=perlen/1000.0d0
+        park=2.0d0*(wlen1/(perl*1.0d9/2.0d0/gamma**2)-1.0d0)
+
+        if (park.lt.0.0d0) then
+          write(6,*)
+     &      '*** Error in urad_get_photons_main:'
+          write(6,*)
+     &      'Inconsistent values of nharm, harm, and perlen'
+          write(6,*)' '
+          stop
+        endif
+
+        park=sqrt(park)
+        b0eff=park/(echarge1*perl/(2.*pi1*emasskg1*clight1))
+
+        if (beffh.eq.0.0d0.and.beffv.ne.0d0) then
+          beffv=beffv/abs(beffv)*b0eff
+        else if (beffv.eq.0.0d0.and.beffh.ne.0d0) then
+          beffh=beffh/abs(beffh)*b0eff
+        else
+          rhv=beffh/beffv
+          beffh=b0eff/sqrt(1.0d0+1.0d0/rhv**2)*beffh/abs(beffh)
+          beffv=beffh/rhv
+        endif
+      endif
+
+      perlen_u=perlen/1000.0d0
+      shift_u=shift/1000.0d0
+      nper_u=nper
+      beffv_u=beffv
+      beffh_u=beffh
+
+      step_u=step/1000.0d0
+      nstep_u=max(1,nint(perlen_u/step_u))
+
+      curr_u=curr
+
+      pincen_u=[pinx,piny,pinz]/1000.d0
+      pinw_u=pinw/1000.0d0
+      pinh_u=pinh/1000.0d0
+      npiny_u=npiny
+      npinz_u=npinz
+      modepin_u=modepin
+
+      ephmin_u=ephmin
+      ephmax_u=ephmax
+      banwid_u=0.001d0
+      nepho_u=nepho
+
+      npiny_u=max(1,npiny_u)
+      npinz_u=max(1,npinz_u)
+
+      phgshift_u=0.0d0
+
+      nobsv_u=npiny_u*npinz_u
+      nobsv_u=npiny_u*npinz_u
+
+      deallocate(arad_u,stat=ierr)
+      deallocate(epho_u,stat=ierr)
+      deallocate(obsv_u,stat=ierr)
+      deallocate(specpow_u,stat=ierr)
+      deallocate(stokes_u,stat=ierr)
+      deallocate(pow_u,stat=ierr)
+      deallocate(nrad_u,stat=ierr)
+      deallocate(photons_u,stat=ierr)
+      deallocate(electrons_u,stat=ierr)
+
+      allocate(arad_u(6,nobsv_u*nepho_u))
+      allocate(epho_u(nepho_u))
+      allocate(obsv_u(3,nobsv_u))
+      allocate(specpow_u(nobsv_u))
+      allocate(stokes_u(4,nobsv_u*nepho_u))
+      allocate(pow_u(nobsv_u))
+      allocate(nrad_u(nobsv_u+1))
+      allocate(photons_u(9*npho))
+      allocate(electrons_u(5*nelec_u))
+
+      photons_u=0.0
+      arad_u=(0.0d,0.0d0)
+      specpow_u=0.0d0
+      stokes_u=0.0d0
+      pow_u=0.0d0
+      nrad_u=0
+
+      !allutil_break
+
+      if (npiny_u.eq.1) then
+        dy=0.0d0
+        ymin=pincen_u(2)
+      else
+        dy=pinh_u/(npiny_u-1)
+        ymin=pincen_u(2)-pinh_u/2.0d0
+      endif
+
+      if (npinz_u.eq.1) then
+        dz=0.0d0
+        zmin=pincen_u(3)
+      else
+        dz=pinw_u/(npinz_u-1)
+        zmin=pincen_u(3)-pinw_u/2.0d0
+      endif
+
+      iobs=0
+      y=ymin-dy
+      do iy=1,npiny_u
+        y=y+dy
+        z=zmin-dz
+        if (abs(y).le.1.0d-15) y=0.0d0
+        do iz=1,npinz_u
+          iobs=iobs+1
+          z=z+dz
+          if (abs(z).le.1.0d-15) z=0.0d0
+          obsv_u(1,iobs)=pincen_u(1)
+          obsv_u(2,iobs)=y
+          obsv_u(3,iobs)=z
+        enddo
+      enddo
+
+      nepho_u=max(1,nepho_u)
+
+      if (nepho_u.gt.1) then
+        df=(ephmax-ephmin)/(nepho_u-1)
+        do i=1,nepho_u
+          epho_u(i)=ephmin+(i-1)*df
+        enddo
+      else
+        epho_u(1)=(ephmin+ephmax)/2.0d0
+      endif
+
+      xbeta_u=xbeta
+      betah_u=betah
+      alphah_u=alphah
+      betav_u=betav
+      alphav_u=alphav
+      emith_u=emith/1.0d9
+      emitv_u=emitv/1.0d9
+      disph_u=disph
+      dispph_u=dispph
+      dispv_u=dispv
+      dispph_u=disppv
+      espread_u=espread
+
+      modeph_u=modeph
+      pherror_u=pherror
+
+      if (ifieldprop.ne.0) then
+        nobsvprop=npinzprop*npinyprop
+        npinzprop_u=npinzprop
+        npinyprop_u=npinyprop
+        nobsvprop_u=nobsvprop
+        pinxprop_u=pinxprop
+        pinwprop_u=pinwprop
+        pinhprop_u=pinhprop
+        deallocate(obsvzprop_u,obsvyprop_u,obsvprop_u,aradprop_u,stokesprop_u,stat=ierr)
+        allocate(
+     &    obsvzprop_u(npinzprop),obsvyprop_u(npinyprop),obsvprop_u(3,nobsvprop),
+     &    aradprop_u(6,nobsvprop*nepho),stokesprop_u(4,nobsvprop*nepho))
+        aradprop_u=(0.0d0,0.0d0)
+        stokesprop_u=0.0d0
+        !all util_break
+        dyprop=pinhprop/dble(max(1,npinyprop-1))/1000.0d0
+        dzprop=pinwprop/dble(max(1,npinzprop-1))/1000.0d0
+        obsvyprop_u(1)=-pinhprop/2.0d0/1000.0d0
+        do iy=2,npinyprop
+          obsvyprop_u(iy)=obsvyprop_u(iy-1)+dyprop
+          if (abs(obsvyprop_u(iy)).lt.1.0d-12) obsvyprop_u(iy)=0.0d0
+        enddo
+        obsvzprop_u(1)=-pinwprop/2.0d0/1000.0d0
+        do iz=2,npinzprop
+          obsvzprop_u(iz)=obsvzprop_u(iz-1)+dzprop
+          if (abs(obsvzprop_u(iz)).lt.1.0d-12) obsvzprop_u(iz)=0.0d0
+        enddo
+        iobs=0
+        do iy=1,npinyprop
+          do iz=1,npinzprop
+            iobs=iobs+1
+            obsvprop_u(1,iobs)=pinxprop/1000.0d0
+            obsvprop_u(2,iobs)=obsvyprop_u(iy)
+            obsvprop_u(3,iobs)=obsvzprop_u(iz)
+          enddo
+        enddo
+        !all util_break
+        if (modepin.ne.0) then
+          modepin_u=0
+          nelec_u=1
+          emith_u=0.0d0
+          emitv_u=0.0d0
+          espread_u=0.0d0
+          Ifieldprop_u = 0
+          ihbunch_u=0
+          call urad_amprep(modewave)
+          call urad_phase_prop_classic(mthreads_u)
+          stokesprop_u=stokesprop_u*specnor_si/1.0d6
+          modepin_u=1
+          nelec_u=nelec
+          emith_u=emith/1.0d9
+          emitv_u=emitv/1.0d9
+          espread_u=espread
+        endif
+      endif
+
+      ihbunch_u=ihbunch
+
+      call urad_amprep(modewave)
+
+      stokes_u=stokes_u/1.0d6
+
+      nelec=nelec_u
+
+      call urad_source_folded_photons(nelec,ifieldprop,nepho,ndimpho,npho,photons,propweights,
+     &  s0thresh)
+
+      ihbunch_u=ihbunch
+
+      end
+*CMZ :          28/10/2026  09.50.30  by  Michael Scheer
+*CMZ :  4.03/00 08/09/2026  12.41.50  by  Michael Scheer
+*CMZ :  4.02/01 31/08/2026  07.37.54  by  Michael Scheer
+*CMZ :  4.02/00 13/09/2025  10.16.17  by  Michael Scheer
+*CMZ :  4.01/07 13/08/2024  10.11.51  by  Michael Scheer
+*CMZ :  4.01/05 26/04/2024  10.49.56  by  Michael Scheer
+*CMZ :  4.01/04 28/12/2023  15.30.57  by  Michael Scheer
+*CMZ :  4.01/02 12/05/2023  17.13.05  by  Michael Scheer
+*CMZ :  4.01/00 21/02/2023  16.51.29  by  Michael Scheer
+*-- Author : Michael Scheer
+      subroutine urad_source_folded_photons(nelec,ifieldprop,nepho,ndimpho,nphoin,
+     &  photons,propweights,s0thresh)
+
+      use uradphasemod
+
+      implicit none
+
+      real*8 depho,s0sum(nepho),s0meanprop(nepho),s0maxprop(nepho),p,dy,dz,s0max(nepho),s0thresh,
+     &  s0fluxprop,s0fluxpin
+
+      real :: photons(9*nphoin),propweights(nphoin)
+      real s0ran(3)
+
+      integer :: nelec,ifieldprop,nepho,ndimpho,npho,nphoin,nphothresh,
+     &  k,l,iy,iz,iepho,iobfr,iobs,kcount,maxcount=100000,ks0max
+
+      if (nepho.gt.1) then
+        depho=epho_u(2)-epho_u(1)
+      else
+        depho=0.0d0
+      endif
+
+      npho=0
+      propweights=0.0
+
+      if (ifieldprop.ne.0) then
+
+        s0meanprop=0.0d0
+        s0sum=0.0d0
+        s0maxprop=0.0d0
+        s0max=0.0d0
+
+c        do iobs=1,nobsv_u
+c          do iepho=1,nepho_u
+c            iobfr=iobs+(iepho-1)*nobsv_u
+c            if(stokes_u(1,iobfr).gt.s0max(iepho)) s0max(iepho)=stokes_u(1,iobfr)
+c          enddo
+c        enddo
+
+        do l=1,ndimpho,9
+          if (nepho.gt.1) then
+            iepho=nint(photons_u(l)/depho)+1
+          else
+            iepho=1
+          endif
+          if (photons_u(l+5).gt.s0max(iepho)) then
+            ks0max=l
+            s0max(iepho)=photons_u(l+5)
+          endif
+        enddo
+
+        nphothresh=0
+        do l=1,ndimpho,9
+          if (nepho.gt.1) then
+            iepho=nint(photons_u(l)/depho)+1
+          else
+            iepho=1
+          endif
+          if (photons_u(l+5).ge.s0max(iepho)*s0thresh) then
+            nphothresh=nphothresh+1
+            s0sum(iepho)=s0sum(iepho)+photons_u(l+5)
+          endif
+        enddo
+
+c        print*,ks0max,photons_u(ks0max+5)
+
+        do iobs=1,nobsv_u
+          iepho=nepho/2+1
+          iobfr=iobs+(iepho-1)*nobsv_u
+          if (nrad_u(iobs).ne.0) then
+            s0fluxpin=s0fluxpin+stokes_u(1,iobfr)/nrad_u(iobs)
+          endif
+        enddo
+
+        do iobs=1,nobsvprop_u
+          do iepho=1,nepho_u
+            iobfr=iobs+(iepho-1)*nobsvprop_u
+            if(stokesprop_u(1,iobfr).gt.s0maxprop(iepho)) s0maxprop(iepho)=stokesprop_u(1,iobfr)
+            s0meanprop(iepho)=s0meanprop(iepho)+stokesprop_u(1,iobfr)
+          enddo
+        enddo
+
+        s0meanprop=s0meanprop/nobsvprop_u
+
+        s0fluxpin=s0fluxpin/nobsv_u*pinw_u*pinh_u
+        s0fluxprop=s0meanprop(nepho/2+1)*pinwprop_u/1000.0d0*pinhprop_u/1000.0d0
+
+c        stokesprop_u=stokesprop_u/s0fluxprop*s0fluxpin
+
+        do iobs=1,nobsvprop_u
+          do iepho=1,nepho_u
+            iobfr=iobs+(iepho-1)*nobsvprop_u
+            if(stokesprop_u(1,iobfr).gt.s0maxprop(iepho)) s0maxprop(iepho)=stokesprop_u(1,iobfr)
+            s0meanprop(iepho)=s0meanprop(iepho)+stokesprop_u(1,iobfr)
+          enddo
+        enddo
+
+        s0meanprop=s0meanprop/nobsvprop_u
+
+c        if (ifieldprop.ne.0) then
+c          print*,s0fluxpin,s0fluxprop,s0fluxpin/s0fluxprop
+c        endif
+
+c        print*,s0max,s0maxprop
+c        print*,s0sum,s0meanprop
+
+        k=1
+        npho=0
+        do l=1,ndimpho,9
+          npho=npho+1
+          k=l
+          if (nepho.gt.1) then
+            iepho=nint(photons_u(l)/depho)+1
+          else
+            iepho=1
+          endif
+          if (photons_u(l+5).lt.s0max(iepho)*s0thresh) then
+            photons(k)=photons_u(k)
+            photons(k+1:k+4)=photons_u(k+1:k+4)*1.0e3
+            photons(k+5:k+8)=photons_u(k+5:k+8)/1.0e6
+     &        *s0fluxpin/s0fluxprop
+            cycle
+          endif
+c          kcount=0
+c          do while (.true.)
+c            kcount=kcount+1
+c            if(kcount.gt.maxcount) then
+c              print*,"*** Warning in urad_source_folded_photons: More than 100000 tries to randomize photon exceeded"
+c              print*,"*** Skipping photon"
+c              exit
+c            endif
+c          call util_random(3,s0ran)
+            call util_random(2,s0ran)
+            iz=int(s0ran(1)*npinzprop_u)+1
+            iy=int(s0ran(2)*npinyprop_u)+1
+            iobs=(iy-1)*npinzprop_u+iz
+            iobfr=iobs+(iepho-1)*nobsvprop_u
+            dy=obsvyprop_u(iy)
+            dz=obsvyprop_u(iz)
+            p=stokesprop_u(1,iobfr)
+c           if (s0ran(3)*s0maxprop(iepho).le.p) then
+              photons(k)=photons_u(l)
+              photons(k+1)=(photons_u(l+1)+dy)*1.0e3
+              photons(k+2)=(photons_u(l+2)+dz)*1.0e3
+              photons(k+3:k+4)=photons_u(l+3:l+4)*1.0e3
+              photons(k+5:k+8)=photons_u(l+5:l+8)/1.0e6
+              propweights(npho)=p/s0meanprop(iepho)
+c              exit
+c            endif
+c          enddo !while
+        enddo
+      else
+        propweights_u=1.0
+        do k=1,ndimpho,9
+          npho=npho+1
+          photons(k)=photons_u(k)
+          photons(k+1:k+4)=photons_u(k+1:k+4)*1.0e3
+          photons(k+5:k+8)=photons_u(k+5:k+8)/1.0e6
+     &      *s0fluxpin/s0fluxprop
+          propweights(npho)=1.0
+        enddo
+      endif
+c      print*,"npho:",npho
+      !allutil_break
+
       end
 *CMZ :  4.01/04 17/11/2023  11.59.33  by  Michael Scheer
 *CMZ :  4.00/17 04/10/2022  08.10.22  by  Michael Scheer

@@ -1,4 +1,4 @@
-*CMZ :          18/10/2026  10.11.26  by  Michael Scheer
+*CMZ :          28/10/2026  09.46.15  by  Michael Scheer
 *CMZ :  4.03/00 08/09/2026  12.41.50  by  Michael Scheer
 *CMZ :  4.02/01 31/08/2026  07.37.54  by  Michael Scheer
 *CMZ :  4.02/00 13/09/2025  10.16.17  by  Michael Scheer
@@ -111,17 +111,16 @@
      &  nper_u,modeph_u,modepin_u,modesphere_u,noranone_u,nlpoi_u,ifixphase_u,ifold_u,
      &  nobsvprop_u,npinyprop_u,npinzprop_u,npinzo_u,npinyo_u,ifieldprop_u,ifieldsym_u
 
-      integer nelecampgenpho_u,igenpho_u
+      integer nelecampgenpho_u,igenpho_u,ngenpho_u
 
       integer
-     &  ibunch_u,ihbunch_u,mthreads_u,nelec_u,icohere_u,modebunch_u,
+     &  ibunch_u,ihbunch_u,mthreadso_u,mthreads_u,nelec_u,icohere_u,modebunch_u,modewave_u,
      &  kalloarad_u,kalloepho_u,kalloobsv_u,kalloaradprop_u,kallostokes_u,kallostokesprop_u
 
       end module uradphasemod
 *KEND.
 
-      subroutine urad_get_photons
-     &  (
+      subroutine urad_get_photons(
      &  nelec,noranone,
      &  perlen,shift,nper,beffv,beffh,
      &  nharm,harm,
@@ -133,7 +132,7 @@
      &  modeph,pherror,phgshift,modewave,
      &  ifieldprop,npinzprop,npinyprop,
      &  pinxprop,pinwprop,pinhprop,
-     &  ndimpho,npho,photons,propweights)
+     &  ndimpho,npho,photons,propweights,s0thresh)
 
       use omp_lib
       use uradphasemod
@@ -236,28 +235,27 @@ c-----------------------------------------------------------------------
      &  disph,dispph,dispv,disppv,
      &  pherror,phgshift,
      &  pinxprop,pinwprop,pinhprop,
-     &  df,z,zmin,dz,y,ymin,dy,dyprop,dzprop
-     &  ,s0sum(100000),s0max,
-     &  wlen1,rhv,perl,park,harm1,gamma,b0eff
+     &  df,z,zmin,dz,y,ymin,dy,dyprop,dzprop,
+     &  wlen1,rhv,perl,park,harm1,gamma,b0eff,s0thresh
 
       integer nelec,noranone,nper,npiny,npinz,modepin,nepho,modeph,ifieldprop,iepho,modewave,nharm,
      &  i,iz,iy,k,ierr,iobs,icbrill,ifrq,iobfr,ndimpho,nobsvprop,npinzprop,npinyprop,l,npho,
      &  iobrf
 
-      integer ModeRan          !All grid points (zero) or Nelec random grid points (not zero)
+      integer ModeRan,ihbunch !All grid points (zero) or Nelec random grid points (not zero)
 
       real photons(9*npho),propweights(npho)
 
       real s0ran(3)
 
-      call util_break
+      real*8 :: SPECNOR_SI = 5.0007272079722076d+39
 
       moderan=1
 
       ebeam_u=ebeam
       gamma_u=ebeam_u/emassg1
 
-      mthreads_u=OMP_GET_MAX_THREADS()
+      if (modewave.eq.-1) mthreads_u=OMP_GET_MAX_THREADS()
       !mthreads_u=1
       !print*,"mthreads!!"
 
@@ -269,7 +267,9 @@ c-----------------------------------------------------------------------
       icohere_u=0
       bunchlen_u=0.0d0
       bunchcharge_u=0.0d0
-      ihbunch_u=0
+
+      if (modewave.eq.-1) ihbunch_u=0
+      ihbunch=ihbunch_u
 
       if (nharm.gt.0.and.harm.gt.0.0d0) then
 
@@ -361,6 +361,8 @@ c-----------------------------------------------------------------------
       stokes_u=0.0d0
       pow_u=0.0d0
       nrad_u=0
+
+      !allutil_break
 
       if (npiny_u.eq.1) then
         dy=0.0d0
@@ -465,8 +467,10 @@ c-----------------------------------------------------------------------
           emitv_u=0.0d0
           espread_u=0.0d0
           Ifieldprop_u = 0
+          ihbunch_u=0
           call urad_amprep(modewave)
           call urad_phase_prop_classic(mthreads_u)
+          stokesprop_u=stokesprop_u*specnor_si/1.0d6
           modepin_u=1
           nelec_u=nelec
           emith_u=emith/1.0d9
@@ -475,59 +479,180 @@ c-----------------------------------------------------------------------
         endif
       endif
 
+      ihbunch_u=ihbunch
+
       call urad_amprep(modewave)
+
+      stokes_u=stokes_u/1.0d6
+
       nelec=nelec_u
 
-      if (ifieldprop.ne.0) then
-        s0sum=0.0d0
-        s0max=0.0d0
-        do iobs=1,nobsvprop_u
-          do iepho=1,nepho_u
-            iobfr=iobs+(iepho-1)*nobsvprop_u
-            if(stokesprop_u(1,iobfr).gt.s0max) s0max=stokesprop_u(1,iobfr)
-            s0sum(iepho)=s0sum(iepho)+stokesprop_u(1,iobfr)
-          enddo
-        enddo
-      endif
+      call urad_source_folded_photons(nelec,ifieldprop,nepho,ndimpho,npho,photons,propweights,
+     &  s0thresh)
 
-      call util_break
-c      print*,"s0sum,s0max:",s0sum(1:nepho),s0max
+      ihbunch_u=ihbunch
+
+      end
+*CMZ :          28/10/2026  09.50.30  by  Michael Scheer
+*CMZ :  4.03/00 08/09/2026  12.41.50  by  Michael Scheer
+*CMZ :  4.02/01 31/08/2026  07.37.54  by  Michael Scheer
+*CMZ :  4.02/00 13/09/2025  10.16.17  by  Michael Scheer
+*CMZ :  4.01/07 13/08/2024  10.11.51  by  Michael Scheer
+*CMZ :  4.01/05 26/04/2024  10.49.56  by  Michael Scheer
+*CMZ :  4.01/04 28/12/2023  15.30.57  by  Michael Scheer
+*CMZ :  4.01/02 12/05/2023  17.13.05  by  Michael Scheer
+*CMZ :  4.01/00 21/02/2023  16.51.29  by  Michael Scheer
+*-- Author : Michael Scheer
+      subroutine urad_source_folded_photons(nelec,ifieldprop,nepho,ndimpho,nphoin,
+     &  photons,propweights,s0thresh)
+
+      use uradphasemod
+
+      implicit none
+
+      real*8 depho,s0sum(nepho),s0meanprop(nepho),s0maxprop(nepho),p,dy,dz,s0max(nepho),s0thresh,
+     &  s0fluxprop,s0fluxpin
+
+      real :: photons(9*nphoin),propweights(nphoin)
+      real s0ran(3)
+
+      integer :: nelec,ifieldprop,nepho,ndimpho,npho,nphoin,nphothresh,
+     &  k,l,iy,iz,iepho,iobfr,iobs,kcount,maxcount=100000,ks0max
+
+      if (nepho.gt.1) then
+        depho=epho_u(2)-epho_u(1)
+      else
+        depho=0.0d0
+      endif
 
       npho=0
       propweights=0.0
+
       if (ifieldprop.ne.0) then
-        do while (.true.)
-          k=-8
-          iepho=0
-          do l=1,ndimpho,9
-            iepho=iepho+1
-            if (iepho.gt.nepho) iepho=1
-c          print*,iepho,photons_u(l)
-            call util_random(3,s0ran)
+
+        s0meanprop=0.0d0
+        s0sum=0.0d0
+        s0maxprop=0.0d0
+        s0max=0.0d0
+
+c        do iobs=1,nobsv_u
+c          do iepho=1,nepho_u
+c            iobfr=iobs+(iepho-1)*nobsv_u
+c            if(stokes_u(1,iobfr).gt.s0max(iepho)) s0max(iepho)=stokes_u(1,iobfr)
+c          enddo
+c        enddo
+
+        do l=1,ndimpho,9
+          if (nepho.gt.1) then
+            iepho=nint(photons_u(l)/depho)+1
+          else
+            iepho=1
+          endif
+          if (photons_u(l+5).gt.s0max(iepho)) then
+            ks0max=l
+            s0max(iepho)=photons_u(l+5)
+          endif
+        enddo
+
+        nphothresh=0
+        do l=1,ndimpho,9
+          if (nepho.gt.1) then
+            iepho=nint(photons_u(l)/depho)+1
+          else
+            iepho=1
+          endif
+          if (photons_u(l+5).ge.s0max(iepho)*s0thresh) then
+            nphothresh=nphothresh+1
+            s0sum(iepho)=s0sum(iepho)+photons_u(l+5)
+          endif
+        enddo
+
+c        print*,ks0max,photons_u(ks0max+5)
+
+        do iobs=1,nobsv_u
+          iepho=nepho/2+1
+          iobfr=iobs+(iepho-1)*nobsv_u
+          if (nrad_u(iobs).ne.0) then
+            s0fluxpin=s0fluxpin+stokes_u(1,iobfr)/nrad_u(iobs)
+          endif
+        enddo
+
+        do iobs=1,nobsvprop_u
+          do iepho=1,nepho_u
+            iobfr=iobs+(iepho-1)*nobsvprop_u
+            if(stokesprop_u(1,iobfr).gt.s0maxprop(iepho)) s0maxprop(iepho)=stokesprop_u(1,iobfr)
+            s0meanprop(iepho)=s0meanprop(iepho)+stokesprop_u(1,iobfr)
+          enddo
+        enddo
+
+        s0meanprop=s0meanprop/nobsvprop_u
+
+        s0fluxpin=s0fluxpin/nobsv_u*pinw_u*pinh_u
+        s0fluxprop=s0meanprop(nepho/2+1)*pinwprop_u/1000.0d0*pinhprop_u/1000.0d0
+
+c        stokesprop_u=stokesprop_u/s0fluxprop*s0fluxpin
+
+        do iobs=1,nobsvprop_u
+          do iepho=1,nepho_u
+            iobfr=iobs+(iepho-1)*nobsvprop_u
+            if(stokesprop_u(1,iobfr).gt.s0maxprop(iepho)) s0maxprop(iepho)=stokesprop_u(1,iobfr)
+            s0meanprop(iepho)=s0meanprop(iepho)+stokesprop_u(1,iobfr)
+          enddo
+        enddo
+
+        s0meanprop=s0meanprop/nobsvprop_u
+
+c        if (ifieldprop.ne.0) then
+c          print*,s0fluxpin,s0fluxprop,s0fluxpin/s0fluxprop
+c        endif
+
+c        print*,s0max,s0maxprop
+c        print*,s0sum,s0meanprop
+
+        k=1
+        npho=0
+        do l=1,ndimpho,9
+          npho=npho+1
+          k=l
+          if (nepho.gt.1) then
+            iepho=nint(photons_u(l)/depho)+1
+          else
+            iepho=1
+          endif
+          if (photons_u(l+5).lt.s0max(iepho)*s0thresh) then
+            photons(k)=photons_u(k)
+            photons(k+1:k+4)=photons_u(k+1:k+4)*1.0e3
+            photons(k+5:k+8)=photons_u(k+5:k+8)/1.0e6
+     &        *s0fluxpin/s0fluxprop
+            cycle
+          endif
+c          kcount=0
+c          do while (.true.)
+c            kcount=kcount+1
+c            if(kcount.gt.maxcount) then
+c              print*,"*** Warning in urad_source_folded_photons: More than 100000 tries to randomize photon exceeded"
+c              print*,"*** Skipping photon"
+c              exit
+c            endif
+c          call util_random(3,s0ran)
+            call util_random(2,s0ran)
             iz=int(s0ran(1)*npinzprop_u)+1
             iy=int(s0ran(2)*npinyprop_u)+1
             iobs=(iy-1)*npinzprop_u+iz
             iobfr=iobs+(iepho-1)*nobsvprop_u
-c            if (s0ran(3).le.stokesprop_u(1,iobfr)/s0sum(iepho)) then
-            npho=npho+1
-            if (npho.gt.nelec*nepho) exit
-            !w(npho)=stokesprop_u(1,iobs)/s0sum
-c            k=k+9
-            k=(npho-1)*9+1
-            k=l
-            photons(k)=photons_u(l)
-c            print*,photons(k)
-              photons(k+1:k+1)=(photons_u(l+1:l+1)+obsvyprop_u(iy))*1.0e3
-              photons(k+2:k+2)=(photons_u(l+2:l+2)+obsvzprop_u(iz))*1.0e3
+            dy=obsvyprop_u(iy)
+            dz=obsvyprop_u(iz)
+            p=stokesprop_u(1,iobfr)
+c           if (s0ran(3)*s0maxprop(iepho).le.p) then
+              photons(k)=photons_u(l)
+              photons(k+1)=(photons_u(l+1)+dy)*1.0e3
+              photons(k+2)=(photons_u(l+2)+dz)*1.0e3
               photons(k+3:k+4)=photons_u(l+3:l+4)*1.0e3
               photons(k+5:k+8)=photons_u(l+5:l+8)/1.0e6
-              propweights(npho)=stokesprop_u(1,iobfr)/s0sum(iepho)
+              propweights(npho)=p/s0meanprop(iepho)
+c              exit
 c            endif
-          enddo
-          if (npho.gt.nelec*nepho) then
-            npho=npho-1
-            exit
-          endif
+c          enddo !while
         enddo
       else
         propweights_u=1.0
@@ -536,13 +661,15 @@ c            endif
           photons(k)=photons_u(k)
           photons(k+1:k+4)=photons_u(k+1:k+4)*1.0e3
           photons(k+5:k+8)=photons_u(k+5:k+8)/1.0e6
+     &      *s0fluxpin/s0fluxprop
+          propweights(npho)=1.0
         enddo
       endif
 c      print*,"npho:",npho
-      call util_break
+      !allutil_break
 
       end
-*CMZ :          17/10/2026  14.50.41  by  Michael Scheer
+*CMZ :          24/10/2026  15.05.14  by  Michael Scheer
 *CMZ :  4.03/00 07/10/2026  07.27.51  by  Michael Scheer
 *CMZ :  4.02/01 02/09/2026  09.04.08  by  Michael Scheer
 *CMZ :  4.02/00 27/08/2025  14.45.47  by  Michael Scheer
@@ -811,8 +938,9 @@ c      endif
       !allu
 
       if (nelec_u.lt.mthreads) mthreads=1
-      !allu
-      if (modewave.le.0.and.ifieldprop_u.eq.0) then
+
+      if (igenpho_u.gt.0) then
+        deallocate(photons,stat=ierr)
         mpho=size(photons_u)/mthreads
         allocate(photons(mpho,mthreads))
         photons=0.0
@@ -973,8 +1101,8 @@ c      dr0=[xf0-x0,yf0-y0,zf0-z0]
       enddo
 
       !allutil_break
-      if (ibunch.eq.0.or.
-     &  emith_u.eq.0.0d0.and.emitv_u.eq.0.0d0.and.espread_u.eq.0.0d0.and.modewave.ge.0
+      if (nelec.gt.1.and.(ibunch.eq.0.or.
+     &  emith_u.eq.0.0d0.and.emitv_u.eq.0.0d0.and.espread_u.eq.0.0d0.and.modewave.ge.0)
 c     &    .or.
 c     &    nelecampgenpho_u.ne.0
      &    ) then
@@ -982,6 +1110,7 @@ c     &    nelecampgenpho_u.ne.0
         ibunch=0
         nelec=1
         nelec_u=1
+        print*,"*** Warning: Due to zero emittance and e-spread, Nelec set 1! ***"
       else
         iemit=1
       endif
@@ -992,7 +1121,7 @@ c     &    nelecampgenpho_u.ne.0
         print*,''
       endif
 
-      if (modewave.le.0) then
+      if (modewave.eq.-1) then
         electrons_u=-9999.0
         electrons_u(1)=yi
         electrons_u(2)=zi
@@ -1033,7 +1162,7 @@ c     &    nelecampgenpho_u.ne.0
             eall(4,i)=ypi
             eall(5,i)=zpi
             eall(6,i)=dpp
-            if (modewave.eq.0) then
+            if (modewave.ne.-1) then
               kmod=0
               if (i.eq.1) then
                 kmod=1
@@ -1045,7 +1174,11 @@ c     &    nelecampgenpho_u.ne.0
                 endif
               endif
               if (kmod.ne.0) then
-                electrons_u(lele+1:lele+5)=eall(2:6,i)
+                electrons_u(lele+1:lele+1)=yi-ypi*x0
+                electrons_u(lele+2:lele+2)=zi-zpi*x0
+                electrons_u(lele+3:lele+3)=ypi
+                electrons_u(lele+4:lele+4)=zpi
+                electrons_u(lele+5:lele+5)=dpp
                 lele=lele+5
               endif
             endif
@@ -1215,7 +1348,7 @@ c      anor=sqrt(1.0d0/specnor_si)
 !$OMP& stokesv,icbrill,obsv_u,emassg,debeam,dispv_u,disppv_u,
 !$OMP& betah_u,alphah_u,betav_u,alphav_u,emith_u,emitv_u,disph_u,dispph_u,
 !$OMP& pran,pranall,eall,fillb,r0,dr0,iamppin,iamppincirc,pc,phase0,pr,banwid_u,
-!$OMP& pw,ph,idebug,pcbrill,wsstokes,vn,bunchlen_u,modebunch_u,icohere_u)
+!$OMP& pw,ph,idebug,pcbrill,wsstokes,vn,bunchlen_u,modebunch_u,icohere_u,igenpho_u)
 !$OMP& SHARED(mthreads,stokes,pherr,expphiran,lbunch,lnbunch,modepin_u,fieldbunch,npinzo_u,nobsvo,dzpin,dypin,
 !$OMP& fbunch_u,jcharge,jeneloss,jvelofield,iemit,noranone,arad,pow,photons,
 !$OMP& nrad_u,zmin,ymin,phgsh,fprop,stokesprop,npho,mpho)
@@ -1455,7 +1588,7 @@ c          amp0=amp0*dcmplx(0.0d0,dble(pran(1)*twopi1))
             !allutil_break
             do i=1,nper_u
 
-              !if (i.eq.1.or.i.eq.nper_u) call util_break
+              !if (i.eq.1.or.i.eq.nper_u) !allutil_break
 
               r=r0+(i-np2-1)*dr0
               dobs=obs-r
@@ -1649,6 +1782,8 @@ c     &              ampn(3)
 
             !allu
 
+            if (sum(abs(amp)).gt.0.0d0) amp=amp/sum(abs(amp))
+
             rn(1)=
      &        real(amp(2)*conjg(amp(6))-amp(3)*conjg(amp(5)))
             rn(2)=
@@ -1662,7 +1797,7 @@ c     &              ampn(3)
 
             !allu
 
-            if (modewave.le.0.and.ifieldprop.eq.0) then
+            if (modewave.lt.0.and.ifieldprop.eq.0.or.igenpho_u.gt.0) then
 
               kmod=0
 
@@ -1712,7 +1847,7 @@ c              print*,jhbunch,ith,ilo,ielec
 c            endif
 c          endif
 
-            if (jhbunch.ne.0) then
+            if (jhbunch.ne.0.and.modewave.eq.0) then
               if (
      &            ((iamppin.eq.3.or.kobsv.eq.icbrill).and.jhbunch.gt.0.and.
      &            mod(ielec,jhbunch).eq.0) .or.
@@ -1841,7 +1976,7 @@ c      enddo !ilo
       !allu
       lpho=0
       do ith=1,mthreads
-        if (modewave.le.0) then
+        if (modewave.lt.0.or.igenpho_u.gt.0) then
           mpho=npho(ith)-1
           photons_u(lpho+1:lpho+mpho)=photons(1:mpho,ith)
           lpho=lpho+mpho
