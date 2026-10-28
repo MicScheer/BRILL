@@ -748,9 +748,15 @@ def _combomod3d(ev):
 
 #+seq,pybrillalias.
 
-global nsto,nflx,nfld,nbun,nfdp,nwig,nwge,namppho,nampele,Modepin
+global nsto,nflx,nfld,nbun,nfdp,nwig,nwge,Modepin
+global namppho,nampele
 
 def _saveplot(prefix='pyBrill_plot_'):
+  global Nhead,NLast,NVarlisLast, NSelectLast,NWeightLast
+  Nhead = m.Nhead
+  NSelectLast = m.NSelectLast
+  NWeightLast = m.NWeightLast
+  NLast = m.NLast
 #  global WaveFilePrefix
   global KZone_B
   m.WaveFilePrefix = prefix
@@ -1162,7 +1168,7 @@ def startup(sfile='ntupplot_startup.py'):
   WnText,S_nText,S_nAngle,S_nTcolor,S_nTsize,S_nTndc,S_nTextX,S_nTextY, \
   DictText,DictTextO, S_nHalign,S_nValign, WnFillColor, S_nFillColor, \
   WnMerge,S_nName2,S_nVars2,S_nName1,S_nVars1,S_nName12,S_nVars12,Merge,MergeO, \
-  WavesMode
+  WavesMode,NWeightLast
 
   global Nplot, NNplot, S_nOpt3d
 
@@ -1224,7 +1230,7 @@ def _showMenu(menu):
   WnText,S_nText,S_nAngle,S_nTcolor,S_nTsize,S_nTndc,S_nTextX,S_nTextY, \
   DictText,DictTextO, S_nHalign,S_nValign, WnFillColor, S_nFillColor, \
   WnMerge,S_nName2,S_nVars2,S_nName1,S_nVars1,S_nName12,S_nVars12,Merge,MergeO, \
-  WavesMode
+  WavesMode,NWeightLast
 
   global Nplot, NNplot, S_nOpt3d
 
@@ -1339,7 +1345,7 @@ def _clFillColor():
   WnText,S_nText,S_nAngle,S_nTcolor,S_nTsize,S_nTndc,S_nTextX,S_nTextY, \
   DictText,DictTextO, S_nHalign,S_nValign, WnFillColor, S_nFillColor, \
   WnMerge,S_nName2,S_nVars2,S_nName1,S_nVars1,S_nName12,S_nVars12,Merge,MergeO, \
-  WavesMode
+  WavesMode,NWeightLast
 
   global Nplot, NNplot, S_nOpt3d
 
@@ -1370,7 +1376,7 @@ def _nFillColor():
   WnText,S_nText,S_nAngle,S_nTcolor,S_nTsize,S_nTndc,S_nTextX,S_nTextY, \
   DictText,DictTextO, S_nHalign,S_nValign, WnFillColor, S_nFillColor, \
   WnMerge,S_nName2,S_nVars2,S_nName1,S_nVars1,S_nName12,S_nVars12,Merge,MergeO, \
-  WavesMode
+  WavesMode,NWeightLast
 
   global Nplot, NNplot, S_nOpt3d
 
@@ -1415,7 +1421,7 @@ def _clText():
   WnText,S_nText,S_nAngle,S_nTcolor,S_nTsize,S_nTndc,S_nTextX,S_nTextY, \
   DictText,DictTextO, S_nHalign,S_nValign, WnFillColor, S_nFillColor, \
   WnMerge,S_nName2,S_nVars2,S_nName1,S_nVars1,S_nName12,S_nVars12,Merge,MergeO, \
-  WavesMode
+  WavesMode,NWeightLast
 
   global Nplot, NNplot, S_nOpt3d
 
@@ -1489,7 +1495,7 @@ def _cnText():
   WnText,S_nText,S_nAngle,S_nTcolor,S_nTsize,S_nTndc,S_nTextX,S_nTextY, \
   DictText,DictTextO, S_nHalign,S_nValign, WnFillColor, S_nFillColor, \
   WnMerge,S_nName2,S_nVars2,S_nName1,S_nVars1,S_nName12,S_nVars12,Merge,MergeO, \
-  WavesMode
+  WavesMode,NWeightLast
 
   global Nplot, NNplot, S_nOpt3d
 
@@ -1515,17 +1521,17 @@ def _nText():
   WnText,S_nText,S_nAngle,S_nTcolor,S_nTsize,S_nTndc,S_nTextX,S_nTextY, \
   DictText,DictTextO, S_nHalign,S_nValign, WnFillColor, S_nFillColor, \
   WnMerge,S_nName2,S_nVars2,S_nName1,S_nVars1,S_nName12,S_nVars12,Merge,MergeO, \
-  WavesMode
+  WavesMode,NWeightLast
 
   global Nplot, NNplot, S_nOpt3d
 
 #---------------------------------------------------------------------------
 
 
-  if not len(Nhead):
+  if not len(m.Nhead):
     nError("  No Ntuple defined so far!  ")
     return
-  #endif not len(Nhead)
+  #endif not len(m.Nhead)
 
   DictTextO = deepcopy(DictText)
 
@@ -1575,7 +1581,7 @@ def _clDump():
   WnText,S_nText,S_nAngle,S_nTcolor,S_nTsize,S_nTndc,S_nTextX,S_nTextY, \
   DictText,DictTextO, S_nHalign,S_nValign, WnFillColor, S_nFillColor, \
   WnMerge,S_nName2,S_nVars2,S_nName1,S_nVars1,S_nName12,S_nVars12,Merge,MergeO, \
-  WavesMode
+  WavesMode,NWeightLast
 
   global Nplot, NNplot, S_nOpt3d
 
@@ -1614,7 +1620,7 @@ def _clDump():
   nFile = S_nFile.get()
   if nFile == '': nFile = 'ntuple.dat'
 
-  global NLast, NSelectLast, NVarlisLast, NSelectLast
+  global NLast, NVarlisLast, NSelectLast
 
   NLast = snam
   NVarlisLast = svar
@@ -1646,17 +1652,17 @@ def _nDump():
   WnText,S_nText,S_nAngle,S_nTcolor,S_nTsize,S_nTndc,S_nTextX,S_nTextY, \
   DictText,DictTextO, S_nHalign,S_nValign, WnFillColor, S_nFillColor, \
   WnMerge,S_nName2,S_nVars2,S_nName1,S_nVars1,S_nName12,S_nVars12,Merge,MergeO, \
-  WavesMode
+  WavesMode,NWeightLast
 
   global Nplot, NNplot, S_nOpt3d
 
 #---------------------------------------------------------------------------
 
 
-  if not len(Nhead):
+  if not len(m.Nhead):
     nError("  No Ntuple defined so far!  ")
     return
-  #endif not len(Nhead)
+  #endif not len(m.Nhead)
 
   WnDump = _nTopLevel('Dump')
 
@@ -1669,16 +1675,16 @@ def _nDump():
 
   try:
     nid = GetIndexN(NLast)
-    nhead = Nhead[nid]
+    nhead = m.Nhead[nid]
     nNam = nhead[1]
   except:
-    nNam = Nhead[-1][1]
+    nNam = m.Nhead[-1][1]
     nid = GetIndexN(nNam)
-    nhead = Nhead[nid]
+    nhead = m.Nhead[nid]
 
   NiLast = nid
   NLast = nNam
-#  nNam = Nhead[-1][1]
+#  nNam = m.Nhead[-1][1]
 #  nid = GetIndexN(nNam)
 
   varlis = list(Ntup[nid].columns)
@@ -1771,7 +1777,7 @@ def _clRead():
   WnText,S_nText,S_nAngle,S_nTcolor,S_nTsize,S_nTndc,S_nTextX,S_nTextY, \
   DictText,DictTextO, S_nHalign,S_nValign, WnFillColor, S_nFillColor, \
   WnMerge,S_nName2,S_nVars2,S_nName1,S_nVars1,S_nName12,S_nVars12,Merge,MergeO, \
-  WavesMode
+  WavesMode,NWeightLast
 
   global Nplot, NNplot, S_nOpt3d
 
@@ -1832,17 +1838,17 @@ def _nRead():
   WnText,S_nText,S_nAngle,S_nTcolor,S_nTsize,S_nTndc,S_nTextX,S_nTextY, \
   DictText,DictTextO, S_nHalign,S_nValign, WnFillColor, S_nFillColor, \
   WnMerge,S_nName2,S_nVars2,S_nName1,S_nVars1,S_nName12,S_nVars12,Merge,MergeO, \
-  WavesMode
+  WavesMode,NWeightLast
 
   global Nplot, NNplot, S_nOpt3d
 
 #---------------------------------------------------------------------------
 
 
-  if not len(Nhead):
+  if not len(m.Nhead):
     nError("  No Ntuple defined so far!  ")
     return
-  #endif not len(Nhead)
+  #endif not len(m.Nhead)
 
   WnRead = _nTopLevel('Read')
 
@@ -1856,7 +1862,7 @@ def _nRead():
   snsep = S_nSep.get()
   if snsep == '': snsep = 'none'
 
-  nNam = Nhead[-1][1]
+  nNam = m.Nhead[-1][1]
   framelabentry(WnRead,'Ntuple',nNam,S_nName,MyFont,widlab,wident)
   nFile = 'ntuple.dat'
   framelabentry(WnRead,'File',nFile,S_nFile,MyFont,widlab,wident)
@@ -1894,7 +1900,7 @@ def _clMerge():
   WnText,S_nText,S_nAngle,S_nTcolor,S_nTsize,S_nTndc,S_nTextX,S_nTextY, \
   DictText,DictTextO, S_nHalign,S_nValign, WnFillColor, S_nFillColor, \
   WnMerge,S_nName2,S_nVars2,S_nName1,S_nVars1,S_nName12,S_nVars12,Merge,MergeO, \
-  WavesMode
+  WavesMode,NWeightLast
 
   global Nplot, NNplot, S_nOpt3d
 
@@ -1934,7 +1940,7 @@ def _nMerge():
   WnText,S_nText,S_nAngle,S_nTcolor,S_nTsize,S_nTndc,S_nTextX,S_nTextY, \
   DictText,DictTextO, S_nHalign,S_nValign, WnFillColor, S_nFillColor, \
   WnMerge,S_nName2,S_nVars2,S_nName1,S_nVars1,S_nName12,S_nVars12,Merge,MergeO, \
-  WavesMode
+  WavesMode,NWeightLast
 
   global Nplot, NNplot, S_nOpt3d
 
@@ -1982,7 +1988,7 @@ def _clCreate():
   WnText,S_nText,S_nAngle,S_nTcolor,S_nTsize,S_nTndc,S_nTextX,S_nTextY, \
   DictText,DictTextO, S_nHalign,S_nValign, WnFillColor, S_nFillColor, \
   WnMerge,S_nName2,S_nVars2,S_nName1,S_nVars1,S_nName12,S_nVars12,Merge,MergeO, \
-  WavesMode
+  WavesMode,NWeightLast
 
   global Nplot, NNplot, S_nOpt3d
 
@@ -2022,7 +2028,7 @@ def _nCreate():
   WnText,S_nText,S_nAngle,S_nTcolor,S_nTsize,S_nTndc,S_nTextX,S_nTextY, \
   DictText,DictTextO, S_nHalign,S_nValign, WnFillColor, S_nFillColor, \
   WnMerge,S_nName2,S_nVars2,S_nName1,S_nVars1,S_nName12,S_nVars12,Merge,MergeO, \
-  WavesMode
+  WavesMode,NWeightLast
 
   global Nplot, NNplot, S_nOpt3d
 
@@ -2072,7 +2078,7 @@ def _clNull():
   WnText,S_nText,S_nAngle,S_nTcolor,S_nTsize,S_nTndc,S_nTextX,S_nTextY, \
   DictText,DictTextO, S_nHalign,S_nValign, WnFillColor, S_nFillColor, \
   WnMerge,S_nName2,S_nVars2,S_nName1,S_nVars1,S_nName12,S_nVars12,Merge,MergeO, \
-  WavesMode
+  WavesMode,NWeightLast
 
   global Nplot, NNplot, S_nOpt3d
 
@@ -2124,7 +2130,7 @@ def _nNull():
   WnText,S_nText,S_nAngle,S_nTcolor,S_nTsize,S_nTndc,S_nTextX,S_nTextY, \
   DictText,DictTextO, S_nHalign,S_nValign, WnFillColor, S_nFillColor, \
   WnMerge,S_nName2,S_nVars2,S_nName1,S_nVars1,S_nName12,S_nVars12,Merge,MergeO, \
-  WavesMode
+  WavesMode,NWeightLast
 
   global Nplot, NNplot, S_nOpt3d
 
@@ -2182,7 +2188,7 @@ def _clTitle():
   WnText,S_nText,S_nAngle,S_nTcolor,S_nTsize,S_nTndc,S_nTextX,S_nTextY, \
   DictText,DictTextO, S_nHalign,S_nValign, WnFillColor, S_nFillColor, \
   WnMerge,S_nName2,S_nVars2,S_nName1,S_nVars1,S_nName12,S_nVars12,Merge,MergeO, \
-  WavesMode
+  WavesMode,NWeightLast
 
   global Nplot, NNplot, S_nOpt3d
 
@@ -2230,7 +2236,7 @@ def _nTitle():
   WnText,S_nText,S_nAngle,S_nTcolor,S_nTsize,S_nTndc,S_nTextX,S_nTextY, \
   DictText,DictTextO, S_nHalign,S_nValign, WnFillColor, S_nFillColor, \
   WnMerge,S_nName2,S_nVars2,S_nName1,S_nVars1,S_nName12,S_nVars12,Merge,MergeO, \
-  WavesMode
+  WavesMode,NWeightLast
 
   global Nplot, NNplot, S_nOpt3d
 
@@ -2285,7 +2291,7 @@ def _clInfo():
   WnText,S_nText,S_nAngle,S_nTcolor,S_nTsize,S_nTndc,S_nTextX,S_nTextY, \
   DictText,DictTextO, S_nHalign,S_nValign, WnFillColor, S_nFillColor, \
   WnMerge,S_nName2,S_nVars2,S_nName1,S_nVars1,S_nName12,S_nVars12,Merge,MergeO, \
-  WavesMode
+  WavesMode,NWeightLast
 
   global Nplot, NNplot, S_nOpt3d
 
@@ -2322,17 +2328,17 @@ def _nInfo():
   WnText,S_nText,S_nAngle,S_nTcolor,S_nTsize,S_nTndc,S_nTextX,S_nTextY, \
   DictText,DictTextO, S_nHalign,S_nValign, WnFillColor, S_nFillColor, \
   WnMerge,S_nName2,S_nVars2,S_nName1,S_nVars1,S_nName12,S_nVars12,Merge,MergeO, \
-  WavesMode
+  WavesMode,NWeightLast
 
   global Nplot, NNplot, S_nOpt3d
 
 #---------------------------------------------------------------------------
 
 
-  if not len(Nhead):
+  if not len(m.Nhead):
     nError("  No Ntuple defined so far!  ")
     return
-  #endif not len(Nhead)
+  #endif not len(m.Nhead)
 
   WnInfo = _nTopLevel('Info')
 
@@ -2343,7 +2349,7 @@ def _nInfo():
   widlab = 10
   wident = 10
 
-  nNam = Nhead[-1][1]
+  nNam = m.Nhead[-1][1]
   framelabentry(WnInfo,'Name',nNam,S_nName,MyFont,widlab,wident)
 
   fbot = Frame(WnInfo)
@@ -2371,7 +2377,7 @@ def _clDelete():
   WnText,S_nText,S_nAngle,S_nTcolor,S_nTsize,S_nTndc,S_nTextX,S_nTextY, \
   DictText,DictTextO, S_nHalign,S_nValign, WnFillColor, S_nFillColor, \
   WnMerge,S_nName2,S_nVars2,S_nName1,S_nVars1,S_nName12,S_nVars12,Merge,MergeO, \
-  WavesMode
+  WavesMode,NWeightLast
 
   global Nplot, NNplot, S_nOpt3d
 
@@ -2408,17 +2414,17 @@ def _nDelete():
   WnText,S_nText,S_nAngle,S_nTcolor,S_nTsize,S_nTndc,S_nTextX,S_nTextY, \
   DictText,DictTextO, S_nHalign,S_nValign, WnFillColor, S_nFillColor, \
   WnMerge,S_nName2,S_nVars2,S_nName1,S_nVars1,S_nName12,S_nVars12,Merge,MergeO, \
-  WavesMode
+  WavesMode,NWeightLast
 
   global Nplot, NNplot, S_nOpt3d
 
 #---------------------------------------------------------------------------
 
 
-  if not len(Nhead):
+  if not len(m.Nhead):
     nError("  No Ntuple defined so far!  ")
     return
-  #endif not len(Nhead)
+  #endif not len(m.Nhead)
 
   WnDelete = _nTopLevel('Delete')
 
@@ -2429,7 +2435,7 @@ def _nDelete():
   widlab = 10
   wident = 10
 
-  nNam = Nhead[-1][1]
+  nNam = m.Nhead[-1][1]
   framelabentry(WnDelete,'Name',nNam,S_nName,MyFont,widlab,wident)
 
   fbot = Frame(WnDelete)
@@ -2457,7 +2463,7 @@ def _clStat():
   WnText,S_nText,S_nAngle,S_nTcolor,S_nTsize,S_nTndc,S_nTextX,S_nTextY, \
   DictText,DictTextO, S_nHalign,S_nValign, WnFillColor, S_nFillColor, \
   WnMerge,S_nName2,S_nVars2,S_nName1,S_nVars1,S_nName12,S_nVars12,Merge,MergeO, \
-  WavesMode
+  WavesMode,NWeightLast
 
   global Nplot, NNplot, S_nOpt3d
 
@@ -2475,7 +2481,7 @@ def _clStat():
     return
   #endif
 
-  global NLast, NSelectLast, NVarlisLast, NSelectLast
+  global NLast, NVarlisLast, NSelectLast
   NLast = snam
   NSelectLast = ssel
   NVarlisLast = svars
@@ -2506,17 +2512,17 @@ def _nStat():
   WnText,S_nText,S_nAngle,S_nTcolor,S_nTsize,S_nTndc,S_nTextX,S_nTextY, \
   DictText,DictTextO, S_nHalign,S_nValign, WnFillColor, S_nFillColor, \
   WnMerge,S_nName2,S_nVars2,S_nName1,S_nVars1,S_nName12,S_nVars12,Merge,MergeO, \
-  WavesMode
+  WavesMode,NWeightLast
 
   global Nplot, NNplot, S_nOpt3d
 
 #---------------------------------------------------------------------------
 
 
-  if not len(Nhead):
+  if not len(m.Nhead):
     nError("  No Ntuple defined so far!  ")
     return
-  #endif not len(Nhead)
+  #endif not len(m.Nhead)
 
   WnStat = _nTopLevel('Stat')
 
@@ -2527,9 +2533,9 @@ def _nStat():
   widlab = 15
   wident = 15
 
-  nNam = Nhead[-1][1]
+  nNam = m.Nhead[-1][1]
   nid = GetIndexN(nNam)
-  nhead = Nhead[nid]
+  nhead = m.Nhead[nid]
 
   nvar = nhead[3]
   svar = nhead[4][0]
@@ -2569,7 +2575,7 @@ def _clPlot():
   WnText,S_nText,S_nAngle,S_nTcolor,S_nTsize,S_nTndc,S_nTextX,S_nTextY, \
   DictText,DictTextO, S_nHalign,S_nValign, WnFillColor, S_nFillColor, \
   WnMerge,S_nName2,S_nVars2,S_nName1,S_nVars1,S_nName12,S_nVars12,Merge,MergeO, \
-  WavesMode
+  WavesMode,NWeightLast
 
   global Nplot, NNplot, S_nOpt3d
 
@@ -2660,7 +2666,7 @@ def _clPlot():
 
   #plotoptions(splopt)
 
-  global NLast, NSelectLast, NVarlisLast
+  global NLast, NVarlisLast,NSelectLast,NWeightLast
 
   if type(h) == int and h == -1:
     if nexists(snam) == 0:
@@ -2668,24 +2674,22 @@ def _clPlot():
       return
     #endif
     NLast = snam
-    NVarlisLast = svars
-    NSelectLast = ssel
     nplot(snam,svars,ssel,swei,splopt,sleg,scx,scy,scz,sct,'','HnPlot',scol,isort)
   else:
     if scx == 1.0 and scy == 1.0 and scz == 1.0 and ssel == '' and swei == '':
       NLast = snam
-      NVarlisLast = svars
-      NSelectLast = ssel
       hplot(snam,splopt,legend=sleg)
     else:
       snamN = snam + "_N"
       nh = hcopn(snam,snamN,svars)
       NLast = snamN
-      NVarlisLast = svars
-      NSelectLast = ssel
       nplot(snamN,svars,ssel,swei,splopt,sleg,scx,scy,scz,sct,'','HnPlot',scol,isort)
     #endif
   #endif
+
+  NVarlisLast = svars
+  NSelectLast = ssel
+  NWeightLast = swei
 
   WnPlot.destroy()
 #enddef _clPlot()
@@ -2711,23 +2715,23 @@ def _nPlot():
   WnText,S_nText,S_nAngle,S_nTcolor,S_nTsize,S_nTndc,S_nTextX,S_nTextY, \
   DictText,DictTextO, S_nHalign,S_nValign, WnFillColor, S_nFillColor, \
   WnMerge,S_nName2,S_nVars2,S_nName1,S_nVars1,S_nName12,S_nVars12,Merge,MergeO, \
-  WavesMode
+  WavesMode,NWeightLast
 
   global Nplot, NNplot, S_nOpt3d
 
 #---------------------------------------------------------------------------
 
-  global NLast, NSelectLast, NVarlisLast, NSelectLast
+  global NLast, NVarlisLast, NSelectLast
 
   global FillColor
   #print("_Plot!")
   #reakpoint()
   #print(WavesMode)
 
-  if not len(Nhead):
+  if not len(m.Nhead):
     nError("  No Ntuple defined so far!  ")
     return
-  #endif not len(Nhead)
+  #endif not len(m.Nhead)
 
   WnPlot = _nTopLevel('Plot')
 
@@ -2738,19 +2742,40 @@ def _nPlot():
   widlab = 15
   wident = 15
 
-  try:
-    nid = GetIndexN(NLast)
-    nhead = Nhead[nid]
+  svar = ''
+  ssel = 'none'
+  swei = 'none'
+
+  nid = GetIndexN(NLast)
+  if nid != -1:
+    nhead = m.Nhead[nid]
     nNam = nhead[1]
-  except:
-    nNam = Nhead[-1][1]
+    if NWeightLast != '':
+      swei = NWeightLast
+    elif m.NWeightLast != '':
+      swei = m.NWeightLast
+    #endif
+    if NSelectLast != '':
+      ssel = NSelectLast
+    elif m.NSelectLast != '':
+      ssel = m.NSelectLast
+    #endif
+    if NVarlisLast != '':
+      svar = NVarlisLast
+    elif m.NVarlisLast != '':
+      svar = m.NVarlisLast
+    #endif
+  else:
+    nNam = m.Nhead[-1][1]
     nid = GetIndexN(nNam)
-    nhead = Nhead[nid]
+    nhead = m.Nhead[nid]
+  #endif
 
   ninfo(nid)
 
   NiLast = nid
   NLast = nNam
+  S_nName.set(nNam)
 
   if hasattr(Ax,'zaxis'):
     S_n3d.set('yes')
@@ -2758,13 +2783,8 @@ def _nPlot():
     S_n3d.set('no')
   #endif
 
-  svar = ''
-
-  try:
-    svar = NVarlisLast
-  except: svar = ''
-
   if svar == '':
+
     nvar = nhead[3]
     svar = nhead[4][0]
 
@@ -2782,16 +2802,8 @@ def _nPlot():
   snsep = S_nSep.get()
   if snsep == "none": snsep = 'blank'
 
-  try:
-    S_nSelect.set(NSelectLast)
-  except:
-    S_nSelect.set('none')
-
-  ssel = S_nSelect.get()
-  if ssel == '': ssel = 'none'
-
-  swei = S_nWeight.get()
-  if swei == '': swei = 'none'
+  S_nSelect.set(ssel)
+  S_nWeight.set(swei)
 
   scx = 1.
   scy = 1.
@@ -2856,6 +2868,7 @@ def _nPlot():
   NLast = nNam
   NSelectLast = ssel
   NVarlisLast = svar
+  NWeightLast = swei
 
   Nplot.unpost()
 
@@ -2883,7 +2896,7 @@ def ntupini():
   WnText,S_nText,S_nAngle,S_nTcolor,S_nTsize,S_nTndc,S_nTextX,S_nTextY, \
   DictText,DictTextO, S_nHalign,S_nValign, WnFillColor, S_nFillColor, \
   WnMerge,S_nName2,S_nVars2,S_nName1,S_nVars1,S_nName12,S_nVars12,Merge,MergeO, \
-  WavesMode
+  WavesMode,NWeightLast
 
   global Nplot, NNplot, S_nOpt3d
 
@@ -3135,6 +3148,9 @@ def ntupini():
 
 WavesMode = 'BRILL'
 
+global NWeightLast
+NWeightLast = ''
+
 global EbeamMin, EbeamMax, dEbeam, nEfold, EbeamList
 
 global Unamelist,Useed
@@ -3248,15 +3264,15 @@ def _set_uname():
   global Unamelist,Useed,Dsetup
 
   Unamelist = [ \
-  'Mthreads','Ebeam','Curr','Step','Nelec','Noranone','IfixPhase','Icohere','Ihbunch', \
-  'Bunchlen','BunchCharge','Modebunch','PinX','PinY','PinZ','PinW','PinH', \
-  'NpinY','NpinZ','Modepin','ModeSphere','Perlen','Shift','Nper','Nharm', \
-  'Harm','Beffv','Beffh','Ianalytic','Nepho','EphMin','EphMax','Espread','BetaH', \
+  'Mthreads','Ebeam','Curr','Step','Nelec','Noranone','IfixPhase','Ihbunch', \
+  'PinX','PinY','PinZ','PinW','PinH', \
+  'NpinY','NpinZ','iGenPho','S0Thresh','Modepin','Perlen','Shift','Nper','Nharm', \
+  'Harm','Beffv','Beffh','Nepho','EphMin','EphMax','Espread','BetaH', \
   'BetaV','EmitH','EmitV','Disph','Dispph','Dispv','Disppv','Modeph','Pherror', \
   'IFieldProp','PinXprop','PinWprop','PinHprop','NpinYprop','NpinZprop', \
   'PhGshift','IWigner','NyTheWig','TheYWig','NzTheWig','TheZWig', \
-  'iGenPho','iPhaseSpace','nEfold','NoSplineEfold', \
-  'Npho','ModeRan' \
+  'nEfold','NoSplineEfold', \
+#  'Npho','ModeRan' \
   ]
 #  'nElecAmpGenPho','Npho','ModeRan' \
 
@@ -3275,18 +3291,21 @@ def _set_uname():
   -1157173406, 63711032, -1870802148, -674825931]
 
   Dsetup['Mthreads'] = ['Number of threads (<0: Use all cores)',-1]
-  Dsetup['Icohere'] = ['',0]
+
+#  Dsetup['Icohere'] = ['',0]
   Dsetup['BunchCharge'] = ['Not yet',0.0]
-  Dsetup['Bunchlen'] = ['Not yet',0.0]
-  Dsetup['BunchCharge'] = ['Not yet',0.0]
+#  Dsetup['Bunchlen'] = ['Not yet',0.0]
+#  Dsetup['BunchCharge'] = ['Not yet',0.0]
   Dsetup['Ihbunch'] = ['Each n_th electron is recorded',1]
-  Dsetup['Modebunch'] = ['Not yet',0]
+#  Dsetup['Modebunch'] = ['Not yet',0]
   Dsetup['Modeph'] = ['Mode for phase-error',0]
   Dsetup['Noranone'] = ['No random change for first e-',1]
 
-  Dsetup['IfixPhase'] = ['Random phase for e-',0]
+#  Dsetup['IfixPhase'] = ['Random phase for e-',0]
   Dsetup['PhGshift'] = ['Global phase shift. 9999.: Hori. amplitude is zero for (PinX,PinY,PinZ)) ',9999.]
   Dsetup['GlobPhaseProp'] = ['Global phase shift. of prop. fields. 9999.: Hori. amplitude is zero for (PinX,PinY,PinZ)) ',0.0]
+  Dsetup['iGenPho'] = ['Generate photons from field amplitude',0]
+  Dsetup['S0Thresh'] = ['Rel. minimum of S0 for photons',1.0e-5]
 
   #reakpoint()
   Dsetup['IWigner'] = ['Calculate Wigner Distributions [-4,-3,-2,-1,0,1]',0]
@@ -3296,14 +3315,13 @@ def _set_uname():
   Dsetup['NzTheWig'] = ['   Number of hori. angle steps',51]
   Dsetup['TheZWig'] = ['   Hori. angle range',0.05]
   Dsetup['NoSplineEfold'] = ['   Suppress splines for E-spread folding',0]
-  Dsetup['iGenPho'] = ['   Generate photons from Wigner-Distribution [-1,0,1]',0]
   #reakpoint()
-  Dsetup['iPhaseSpace'] = ['   Pattern of five bits to generate photons (Option iGenPho)',1111]
+  #Dsetup['iPhaseSpace'] = ['   Pattern of five bits to generate photons (Option iGenPho)',1111]
 
 #  Dsetup['nElecAmpGenPho'] = ['Number of electrons to generated photons from field amplitude',0]
-  Dsetup['Npho'] = ['Number of photons per electron to be generated',1]
-  Dsetup['ModeRan'] = ['All grid points (zero) or Npho random grid points (not zero)','1']
-  Dsetup['nEfold'] = ['Number of E-spread steps for Wigner Dist.',1]
+#  Dsetup['Npho'] = ['Number of photons per electron to be generated',1]
+#  Dsetup['ModeRan'] = ['All grid points (zero) or Npho random grid points (not zero)','1']
+  Dsetup['nEfold'] = ['   Number of E-spread steps for Wigner Dist.',1]
   #Dsetup[''] = ['',]
 
   Dsetup['Statistic'] = ['Statistic on plots',getstat()]
@@ -3327,11 +3345,15 @@ UnduPar = ['Perlen','Nper','Beffv','Beffh','Ianalytic','Nharm','Harmonic','Shift
 
 BrillPar = ['nKvals','Kmin','Kmax','Nmin','Nmax','Mode']
 
-SpecPar = ['Mthreads','Nelec','Ihbunch','Modepin','Noranone','ModeSphere','Nepho','EphMin','EphMax','PinX', \
-'PinY','PinZ','PinW','PinH','NpinZ','NpinY','Step','Pherror', \
+#SpecPar = ['Mthreads','Nelec','Ihbunch','Modepin','Noranone','ModeSphere','Nepho','EphMin','EphMax','PinX', \
+SpecPar = ['Mthreads','Nelec','Ihbunch','Modepin','Noranone','Nepho','EphMin','EphMax','PinX', \
+'PinY','PinZ','PinW','PinH','NpinZ','NpinY','Step','Pherror','iGenPho','S0Thresh', \
 'IFieldProp','PinXprop','PinWprop','PinHprop','NpinYprop','NpinZprop', \
 'IfixPhase','PhGshift','IWigner','IWigNoFile','NyTheWig','TheYWig','NzTheWig','TheZWig', \
-'NoSplineEfold', 'iGenPho','iPhaseSpace','Npho','ModeRan','nEfold','Ifixseed']
+#'IfixPhase','PhGshift','IWigner','IWigNoFile','NyTheWig','TheYWig','NzTheWig','TheZWig', \
+#'NoSplineEfold', 'iGenPho','iPhaseSpace','nEfold','Ifixseed']
+'NoSplineEfold','nEfold','Ifixseed']
+#'NoSplineEfold', 'iGenPho','iPhaseSpace','Npho','ModeRan','nEfold','Ifixseed']
 #'NoSplineEfold', 'iGenPho','iPhaseSpace','nElecAmpGenPho','Npho','ModeRan','nEfold','Ifixseed']
 
 #PlotPar = ['Mode3d','Markersize','Linewidth','Linecolor','NxZones','NyZones','ClearCanvas','Statistic']
@@ -3937,7 +3959,7 @@ def _pFdProp(key='s0'):
   global LastPlot; LastPlot = ['FdProp',key]
   global nfdp
 
-  if Dsetup['IFieldProp'][1] == 0:
+  if Dsetup['IFieldProp'][1] == 0 and Dsetup['iGenPho'][1] == 0:
     print("\n *** Propagated field not available for this run.")
     print(" *** Check Set-Up/Spetra and rerun...\n")
     return
@@ -3945,6 +3967,10 @@ def _pFdProp(key='s0'):
 
   if Calculated_Spec == False or (Modepin != 0 and nexist("nbun") == 0) \
   or nexist("nfdp") == 0: _calc_spec()
+
+  if nexist("nfdp") == 0:
+    print("*** Ntuple nfld not existing ***")
+    return
 
   spinx = str(Dsetup['PinXprop'][1] / 1000) + 'm'
 
@@ -4009,8 +4035,6 @@ def _pFdProp(key='s0'):
       hnam = 'HpinProp_' + keyu
       hbook2(hnam,htit,NpinZprop,zmin,zmax,NpinYprop,ymin,ymax,overwrite=1)
       if Modepin != 0:
-        print("\n***Modepin != 0 not yet for propagated fields available ***")
-        return
         nproj2(nbun,"z:y",keyl,selgam,idh=hnam,ioverwrite=0)
       else:
         nproj2(nfdp,"z:y",keyl,selgam,idh=hnam,ioverwrite=0)
@@ -4018,16 +4042,12 @@ def _pFdProp(key='s0'):
       hplave(hnam,plopt)
     elif plopt == 'scat3d':
       if Modepin != 0:
-        print("\n***Modepin != 0 not yet for propagated fields available ***")
-        return
         nplot(nbun,"z:y:"+keyl+":"+keyl,selgam)
       else:
         nplot(nfdp,"z:y:"+keyl+":"+keyl,selgam)
       #endif
     else:
       if Modepin != 0:
-        print("\n***Modepin != 0 not yet for propagated fields available ***")
-        return
         nplot(nbun,"z:y",selgam,keyl)
       else:
         nplot(nfdp,"z:y",selgam,keyl)
@@ -4110,8 +4130,6 @@ def _pFdProp(key='s0'):
       hnam = 'HpinProp_' + keyu
       hbook2(hnam,htit,NpinZprop,zmin,zmax,NpinYprop,ymin,ymax,overwrite=1)
       if Modepin != 0:
-        print("\n***Modepin != 0 not yet for propagated fields available ***")
-        return
         nproj2(nbun,"z:y",keyl,selgam,idh=hnam,ioverwrite=0)
       else:
         nproj2(nfdp,"z:y",keyl,selgam,idh=hnam,ioverwrite=0)
@@ -4119,16 +4137,12 @@ def _pFdProp(key='s0'):
       hplave(hnam,plopt)
     elif plopt == 'scat3d':
       if Modepin != 0:
-        print("\n***Modepin != 0 not yet for propagated fields available ***")
-        return
         nplot(nbun,"z:y:"+keyl+":"+keyl,selgam)
       else:
         nplot(nfdp,"z:y:"+keyl+":"+keyl,selgam)
       #endif
     else:
       if Modepin != 0:
-        print("\n***Modepin != 0 not yet for propagated fields available ***")
-        return
         nplot(nbun,"z:y",selgam,keyl)
       else:
         nplot(nfdp,"z:y",selgam,keyl)
@@ -4177,8 +4191,6 @@ def _pFdProp(key='s0'):
         kl = 's' + p
         hbook2(hnam,htit,NpinZ,zmin,zmax,NpinY,ymin,ymax,overwrite=1)
         if Modepin != 0:
-          print("\n***Modepin != 0 not yet for propagated fields available ***")
-          return
           nproj2(nbun,"z:y",keyl,selgam,idh=hnam,ioverwrite=0)
         else:
           nproj2(nfld,"z:y",keyl,selgam,idh=hnam,ioverwrite=0)
@@ -4544,27 +4556,27 @@ def _pElecPhot(key='zy'):
   if keyl == 'eel':
     #ptstat(kstat)
     htit = 'Energy Distribution'
-    npl(nampele,"e*g")
+    npl(nampele,"e")
     txyz(htit,"E[GeV]")
   elif keyl == 'z':
     #ptstat(kstat)
     htit = 'Hori. Beam Profile at x = 0'
-    npl(nampele,"z*g")
+    npl(nampele,"z")
     txyz(htit,"z[mm]")
   elif keyl == 'zp':
     #ptstat(kstat)
     htit = 'Hori. Beam Slope Profile at x = 0'
-    npl(nampele,"zp*g")
+    npl(nampele,"zp")
     txyz(htit,"z'[mrad]")
   elif keyl == 'y':
     #ptstat(kstat)
     htit = 'Vert. Beam Profile at x = 0'
-    npl(nampele,"y*g")
+    npl(nampele,"y")
     txyz(htit,"y[mm]")
   elif keyl == 'yp':
     #ptstat(kstat)
     htit = 'Vert. Beam Slope Profile at x = 0'
-    npl(nampele,"yp*g")
+    npl(nampele,"yp")
     txyz(htit,"y'[mrad]")
   elif keyl == 'zzp':
     nplot(nampele,"z:zp")
@@ -4684,7 +4696,9 @@ def _pPhot(key='PhzyS0',select=''):
   global LastPlot; LastPlot = ['Photons',key]
   global Esel,IEsel,S_Esel,S_IEsel,dE, S_IEbeam, IEbeam, EbeamList
   global EbeamMin, EbeamMax, dEbeam, nEfold, EbeamList
+  global namppho,nampele
 
+  #print("_pPhot:")
   #reakpoint()
   debugbreak('_pPhot')
 
@@ -4701,7 +4715,14 @@ def _pPhot(key='PhzyS0',select=''):
 
   namppho = nget("namppho")
 
-  selgam = "iegam==" + str(IEsel)
+#  selgam = "iegam==" + str(IEsel)
+  selgam = "egam==" + str(Esel)
+
+  nzprop = int(Dsetup['NpinZprop'][1])
+  nyprop = int(Dsetup['NpinYprop'][1])
+  pinxprop = float(Dsetup['PinXprop'][1])
+  pinwprop = float(Dsetup['PinWprop'][1])
+  pinhprop = float(Dsetup['PinHprop'][1])
 
   nz = int(Dsetup['NpinZ'][1])
   ny = int(Dsetup['NpinY'][1])
@@ -4747,6 +4768,7 @@ def _pPhot(key='PhzyS0',select=''):
 
   if keyu == 'PHS0' or keyu == 'PHS1' or keyu == 'PHS2' or keyu == 'PHS3':
     kplane = -1
+
   elif keyu == 'PHZYS0' or keyu == 'PHZYS1' or keyu == 'PHZYS2' or keyu == 'PHZYS3':
     kplane = 1
   elif keyu == 'PHTZTYS0' or keyu == 'PHTZTYS1' or keyu == 'PHTZTYS2' or keyu == 'PHTZTYS3':
@@ -4755,6 +4777,14 @@ def _pPhot(key='PhzyS0',select=''):
     kplane = 3
   elif keyu == 'PHYTYS0' or keyu == 'PHYTYS1' or keyu == 'PHYTYS2' or keyu == 'PHYTYS3':
     kplane = 4
+
+  elif keyu == 'PHSZYS0' or keyu == 'PHSZYS1' or keyu == 'PHSZYS2' or keyu == 'PHSZYS3':
+    kplane = 5
+  elif keyu == 'PHSZS0':
+    kplane = 6
+  elif keyu == 'PHSYS0':
+    kplane = 7
+
   else:
     print('\n*** Unknown key:',key)
     return
@@ -4776,7 +4806,7 @@ def _pPhot(key='PhzyS0',select=''):
   if kplane == -1:
 
     nstok = keyu[-1]
-    sn = str(nstok)
+    sn = str(nstok) + '*g'
 
     nprof(namppho,"egam:s" + sn)
     ytit = 'N' + TeX_gamma + '/s/0.1' + ' %BW/mm$^{2}$/' + str(int(Curr*1000.+0.5)) + "mA"
@@ -4816,6 +4846,76 @@ def _pPhot(key='PhzyS0',select=''):
       npl(namppho,'z:y',sel,stok,plopt=plopt)
       txyz(htit,xtit,ytit,' ')
     #endif
+
+  elif kplane == 5:
+
+    nstok = keyu[-1]
+    sn = str(nstok)
+
+    hnam = 'HPhzyS_Source' + sn
+    htit = 'S' + sn
+    stok = 's' + sn +'*g*' + str(pinw*pinh/pinwprop/pinhprop)
+
+    set_plot_params_3d()
+
+    wtit = 'N' + TeX_gamma + '/s/0.1' + ' %BW/mm$^{2}$/' + str(int(Curr*1000.+0.5)) + "mA"
+
+    htit = 'S' + sn + ' (' + str(Esel) + ' eV)'
+
+    if not knpl:
+
+      zmax = abs(namppho.z-namppho.x*tz/1000.).max()
+      zmin = -zmax
+
+      if npinyprop > 1:
+        dy = (ymax-ymin) / (nyprop-1)
+      else: dy = ymax -ymin
+
+      if npinzprop > 1:
+        dz = (zmax-zmin) / (nzprop-1)
+      else: dz = zmax -zmin
+
+      h = hbook2(hnam,htit,
+                 nzprop,zmin-dz/2.,zmax+dz/2.,
+                 nyprop,ymin-dy/2.,ymax+dy/2.,
+                 overwrite=True)
+
+      istat = nproj2(namppho,'z-x/1000*tz:y-x/1000*ty',stok,sel,1.0,1.0,1.0,nzprop,nyprop,hnam)
+    #endif
+
+    xtit = 'z [mm]'
+    ytit = 'y [mm]'
+
+    if knpl == 0 and  h.y.min() < h.y.max():
+      hplot2d(hnam,plopt,tit=htit,xtit=xtit,ytit=ytit,ztit=wtit)
+    else:
+      npl(namppho,'z-x/1000*tz:y-x/1000*ty',sel,stok,plopt=plopt)
+      txyz(htit,xtit,ytit,' ')
+    #endif
+
+  elif kplane == 6:
+
+    nstok = keyu[-1]
+    sn = str(nstok) + '*g'
+    stok = 's' + sn +'*g*' + str(pinw*pinh/pinwprop/pinhprop)
+
+    set_plot_params()
+
+    ytit = 'N' + TeX_gamma + '/s/0.1' + ' %BW/mm$^{2}$/' + str(int(Curr*1000.+0.5)) + "mA"
+    npl(namppho,'z-x/1000*tz',sel,stok)
+    txyz("Profile of S0 in source plane",'z [mm]',ytit)
+
+  elif kplane == 7:
+
+    nstok = keyu[-1]
+    sn = str(nstok) + '*g'
+    stok = 's' + sn +'*g*' + str(pinw*pinh/pinwprop/pinhprop)
+
+    set_plot_params()
+
+    npl(namppho,'y-x/1000*ty',sel,stok)
+    ytit = 'N' + TeX_gamma + '/s/0.1' + ' %BW/mm$^{2}$/' + str(int(Curr*1000.+0.5)) + "mA"
+    txyz("Profile of S0 in source plane",'y [mm]',ytit)
 
   elif kplane == 2:
 
@@ -5474,6 +5574,8 @@ def _pFdSpec(key='s0'):
 
   #reakpoint()
 
+  Nepho = nfld.iegam.max()
+
   if keyl[0] == 's':
     if not Modepin:
       if Nepho > 1:
@@ -5547,6 +5649,8 @@ def _pFluxSpec(key='s0'):
   setlinecolor(Vsetup_Plot[3][1][1])
 
   #reakpoint()
+
+  Nepho = nflx.iegam.max()
 
   if k1 == 's':
     #reakpoint()
@@ -5630,11 +5734,11 @@ def _write_urad_phase_nam():
   #reakpoint()
 
   iwig = int(Dsetup['IWigner'][1])
-  igenpho = int(Dsetup['iGenPho'][1])
-  if not iwig: igenpho = 0
+  #igenpho = int(Dsetup['iGenPho'][1])
+  #if not iwig: igenpho = 0
 
 #  neleca = int(Dsetup['nElecAmpGenPho'][1])
-  npho = int(Dsetup['Npho'][1])
+  #npho = int(Dsetup['Npho'][1])
 
 #  if not npho or not neleca:
 #    npho = 0
@@ -5645,10 +5749,10 @@ def _write_urad_phase_nam():
 
   espread = float(Dsetup['Espread'][1])
 
-  Dsetup['Npho'][1] = npho
+  #Dsetup['Npho'][1] = npho
 #  Dsetup['nElecAmpGenPho'][1] = neleca
   Dsetup['IWigner'][1] = iwig
-  Dsetup['iGenPho'][1] = igenpho
+  #Dsetup['iGenPho'][1] = igenpho
   Dsetup['nEfold'][1] = nefold
   Dsetup['Espread'][1] = espread
 
@@ -5795,6 +5899,7 @@ def _dvsetup():
   #reakpoint()
   Vsetup_Spec = []
   for key in SpecPar:
+    #print(key)
     Vsetup_Spec.append([key,Dsetup[key]])
   #endfor
 
@@ -5844,7 +5949,17 @@ def __get_spec():
   global IWigner,nEfold,Esel,IEsel
   global nSigE
 
-#  debugbreak('_get_spec')
+  #print('_get_spec')
+  #reakpoint()
+
+  if nexist("nflx"): ndelete("nflx")
+  if nexist("nfdp"): ndelete("nfdp")
+  if nexist("nfld"): ndelete("nfld")
+  if nexist("nfldall"): ndelete("nfldall")
+  if nexist("nbun"): ndelete("nbun")
+  if nexist("nwig"): ndelete("nwig")
+  if nexist("namppho"): ndelete("namppho")
+  if nexist("nampele"): ndelete("nampele")
 
   if fexist("urad_phase_espread.flx"):
     nflx = ncread("nflx","iegam:iebeam:egam:ebeam:s0:s1:s2:s3:es0:es1:es2:es3:g","urad_phase_espread.flx")
@@ -5870,20 +5985,6 @@ def __get_spec():
     nbun = ncread("nbun","jbun:isub:ibu:bunchx:xi:yi:zi:ypi:zpi:xf:yf:zf:ypf:zpf:eel:deel:x:y:z:iegam:egam:spec:s0:s1:s2:s3:p:fb28:dt:exr:exi:eyr:eyi:ezr:ezi:bxr:bxi:byr:byi:bzr:bzi:g","urad_phase.bun")
     #ninfo("nbun")
 
-  fil = "ampgenpho.pho"
-  if fexist(fil):
-    #reakpoint() #3b
-    namppho = ncread("namppho","igam:iele:iegam:iebeam:ebeam:g:egam:x:y:z:ty:tz:s0:s1:s2:s3:s4",fil)
-    IPhot = namppho.iele.max()
-    #rint("3b",IPhot)
-    Npho = namppho.igam.max()
-#    Dsetup['nElecAmpGenPho'][1] = IPhot
-    Dsetup['Npho'][1] = Npho
-
-  fil = "ampgenpho.elc"
-  if fexist(fil):
-    nampele = ncread("nampele","i:e:g:y:z:yp:zp","ampgenpho.elc")
-
   iwig = 0
 
   fwige = 'urad_phase_espread.wig'
@@ -5896,17 +5997,11 @@ def __get_spec():
 
   fil = "ampgenpho.pho"
   if fexist(fil):
-    namppho = ncread("namppho","igam:iele:iegam:iebeam:ebeam:g:egam:x:y:z:ty:tz:s0:s1:s2:s3:s4",fil)
-    #reakpoint() #4
-    IPhot = namppho.iele.max()
-    #rint("4",IPhot)
-    Npho = namppho.igam.max()
-#    Dsetup['nElecAmpGenPho'][1] = IPhot
-    Dsetup['Npho'][1] = Npho
+    namppho = ncread("namppho","egam:x:y:z:ty:tz:s0:s1:s2:s3:g",fil)
 
   fil = "ampgenpho.elc"
   if fexist(fil):
-    nampele = ncread("nampele","i:e:g:y:z:yp:zp","ampgenpho.elc")
+    nampele = ncread("nampele","i:e:y:z:yp:zp","ampgenpho.elc")
 
   fpin = open("urad_phase.pin",'r')
 
@@ -5922,6 +6017,7 @@ def __get_spec():
   pinz = pincen[2]
 
   words = fpin.readline().strip().split()
+  #reakpoint()
   modepin = int(words[0])
   ifold = int(words[1])
   ifixphase = int(words[2])
@@ -5990,14 +6086,19 @@ def __get_spec():
 
   NcalcSpec += 1
 
-  global NLast, NSelect,S_nVars,S_nWeight,S_nSelect, NVarlisLast, NSelectLast
+  global Nhead,NLast, NSelect,S_nVars,S_nWeight,S_nSelect, NVarlisLast, NSelectLast,NWeightLast
+  Nhead = m.Nhead
   if NLast == -9999:
-    NLast = nget("nfld")
-    S_nVars.set("z:y")
-    S_nWeight.set("s0*whit")
-    S_nSelect.set("iegam==1")
-    NVarlisLast = 'z:y'
-    NSelectLast == "iegam==1"
+#    NLast = nget("nfld")
+    NLast = Nhead[-1][1]
+    NLast = nget(NLast)
+#    NLast = m.NLast
+    S_nVars.set("")
+    S_nWeight.set("")
+    S_nSelect.set("")
+    NVarlisLast = ''
+    NSelectLast == ""
+    NWeightLast == ''
     #endif
     NSelect == NLast
   #endif
@@ -6010,6 +6111,9 @@ def _get_spec():
   except:
     print('\n*** Failed to load previous run *** \n')
   #enddef
+
+  _setup_mplotspec()
+
 #enddef __get_spec()
 
 def _calc_spec():
@@ -6066,6 +6170,14 @@ def _calc_spec():
   print(' Loading N-tuples\n')
 
   #nsto = ncread("nsto","x:y:z:iegam:egam:s0:s1:s2:s3","urad_phase.sto")
+  if nexist("nflx"): ndelete("nflx")
+  if nexist("nfdp"): ndelete("nfdp")
+  if nexist("nfld"): ndelete("nfld")
+  if nexist("nfldall"): ndelete("nfldall")
+  if nexist("nbun"): ndelete("nbun")
+  if nexist("nwig"): ndelete("nwig")
+  if nexist("namppho"): ndelete("namppho")
+  if nexist("nampele"): ndelete("nampele")
 
   ifieldprop = Dsetup['IFieldProp'][1]
   iwigner = Dsetup['IWigner'][1]
@@ -6091,7 +6203,7 @@ def _calc_spec():
 
   if fexist("urad_phase.bun"):
     nbun = ncread("nbun","jbun:isub:ibu:bunchx:xi:yi:zi:ypi:zpi:xf:yf:zf:ypf:zpf:eel:deel:x:y:z:iegam:egam:spec:s0:s1:s2:s3:p:fb28:dt:exr:exi:eyr:eyi:ezr:ezi:bxr:bxi:byr:byi:bzr:bzi:g","urad_phase.bun")
-#    ninfo(nbun)
+    #ninfo(nbun)
   #endif
 
   fwige = 'urad_phase_espread.wig'
@@ -6129,6 +6241,7 @@ def _calc_spec():
 
   words = fpin.readline().strip().split()
   Modepin = int(words[0])
+  #reakpoint()
   ifold = int(words[1])
   ifixphase = int(words[2])
   ifieldprop = int(words[3])
@@ -6178,7 +6291,13 @@ def _calc_spec():
 
   _reset_mwigner()
 
+  global Nhead
+  Nhead = m.Nhead
+
   NcalcSpec += 1
+
+  _setup_mplotspec()
+
 #enddef _calc_spec()
 
 def _set_plot_spec(caller=''):
@@ -6474,14 +6593,14 @@ def _closeSetUp_Spec():
   #endif LastSetup
 
 #  neleca = int(Dsetup['nElecAmpGenPho'][1])
-  npho = int(Dsetup['Npho'][1])
+  #npho = int(Dsetup['Npho'][1])
 
 #  if not npho:
 #    npho = 0
 #    neleca = 0
 #  #endif
 
-  Dsetup['Npho'][1] = npho
+  #Dsetup['Npho'][1] = npho
 #  Dsetup['nElecAmpGenPho'][1] = neleca
 
   _dvsetup()
@@ -6533,7 +6652,7 @@ def _setup_spec():
   SetUp_Spec.geometry('+' + str(int(xm+wm/3)) + '+0')
 
   LastSetUp_Spec = 0
-
+  #print(Vsetup_Spec)
   for i in range(len(Vsetup_Spec)):
     f = Frame(SetUp_Spec)
     flab = Label(f,text=Vsetup_Spec[i][1][0],font=('arial',MyLabel_font_size))
@@ -6888,6 +7007,14 @@ def _writelastrun():
   debugbreak('_writelastrun')
   _UpdateVars()
 
+  #reakpoint()
+
+  Modepin = Dsetup['Modepin'][1]
+
+  if int(Dsetup['IFieldProp'][1]) != 0:
+    Modepin = 0
+    Dsetup['Modepin'][1] = 0
+
   fl = ".pybrill_last.dat"
   flb = ".pybrill_last.dat.bck"
 
@@ -6913,6 +7040,7 @@ def _readlastrun():
   Ifixseed,Kellip, Ianalytic
 
 #  debugbreak('_readlastrun')
+  #reakpoint()
   fl = ".pybrill_last.dat"
 
   if os.path.exists(fl):
@@ -6945,6 +7073,12 @@ def _readlastrun():
 
     Dsetup['NxZones'][1] = 1
     Dsetup['NyZones'][1] = 1
+
+    #reakpoint()
+
+    if int(Dsetup['IFieldProp'][1]) != 0:
+      Modepin = 0
+      Dsetup['Modepin'][1] = 0
 
   #endif
 
@@ -7450,6 +7584,10 @@ def _showMenu(menu,name):
     Nplot.unpost()
     menu.post(x,y)
   elif name == 'Nplot':
+    global Nhead,NLast,NiLast
+    Nhead = m.Nhead
+    #NLast = m.NLast
+    #NiLast = GetIndexN(NLast)
     x = xw + 24*fs
     y = yw + 40*fs
     MBrill.unpost()
@@ -7576,8 +7714,8 @@ IFieldProp = 0
 PinXprop = 0.0
 PinWprop = 0.1
 PinHprop = 0.1
-NpinZprop = 51
-NpinYprop = 51
+NpinZprop = 101
+NpinYprop = 101
 Ifixseed = 0
 
 IfixPhase = 0
@@ -7617,7 +7755,9 @@ Dsetup['PinW'] = ["Width of Pinhole [mm]",PinW]
 Dsetup['PinH'] = ["Height of Pinhole [mm]",PinH]
 Dsetup['NpinZ'] = ["Number of hori. points",NpinZ]
 Dsetup['NpinY'] = ["Number of vert. points",NpinY]
-Dsetup['ModeSphere'] = ["Arrange grid points on sphere [0,1]",ModeSphere]
+Dsetup['iGenPho'] = ['Generate photons from field amplitude',0]
+Dsetup['S0Thresh'] = ['Generate photons from field amplitude',1.0e-5]
+#Dsetup['ModeSphere'] = ["Arrange grid points on sphere [0,1]",ModeSphere]
 Dsetup['Step'] = ["Tracking step size [mm]",Step]
 Dsetup['Pherror'] = ["Phase errors",Pherror]
 
@@ -7649,9 +7789,8 @@ Dsetup['nEfold'] = ['Number of E-spread steps for Wigner and photon generation',
 Dsetup['NoSplineEfold'] = ['  Suppress splines for E-spread folding',NoSplineEfold]
 
 #Dsetup['nElecAmpGenPho'] = ['Number of electrons to generated photons from field amplitude',0]
-Dsetup['iGenPho'] = ['Generate photons from Wigner-Distribution [-1,0,1]',0]
-Dsetup['Npho'] = ['Number of photons per electron to be generated',0]
-Dsetup['ModeRan'] = ['   Photons for all grid points (zero) or from Npho random grid points (not zero)','1']
+#Dsetup['Npho'] = ['Number of photons per electron to be generated',0]
+#Dsetup['ModeRan'] = ['   Photons for all grid points (zero) or from Npho random grid points (not zero)','1']
 
 _vsetup_plot_ini()
 _dvsetup()
@@ -7821,6 +7960,7 @@ BBrill.pack(side=LEFT)
 global BSpec, MSpec, MFlux
 
 MSpec = Menu(Toolbar,tearoff=1,title='Spectra',font=Myfont)
+global mPlotSpec
 mPlotSpec = Menu(MSpec,tearoff=0,font=Myfont)
 
 MSpec.add_command(label='Calculate', command=_calc_spec)
@@ -7861,20 +8001,57 @@ IPhot = 0
 #rint("1",IPhot)
 Npho = 0
 
-mPlotSpec.add_cascade(label='Flux', menu=MFlux)
-if Modepin == 0:
-  mPlotSpec.add_cascade(label='Central Flux-density', menu=MFd)
-else:
-  mPlotSpec.add_cascade(label='Mean Flux-density', menu=MFd)
-#endif
-mPlotSpec.add_cascade(label='Distributions in Pinhole', menu=MDist)
-mPlotSpec.add_cascade(label='Distributions of Propagated Fields', menu=MProp)
-mPlotSpec.add_cascade(label='Wigner Distributions', menu=MWigner)
-mPlotSpec.add_cascade(label='Photons', menu=MPhot)
-if fexist("ampgenpho.pho"):
-  mPlotSpec.add_cascade(label='Electrons of Spect. Calculations', menu=MElec)
-if fexist("ampgenpho.elc"):
-  mPlotSpec.add_cascade(label='Electrons of Photon Generation', menu=MElecPhot)
+def _setup_mplotspec():
+
+  try:
+    mPlotSpec.delete('Flux')
+  except: pass
+  try:
+    mPlotSpec.delete('Central Flux-density')
+  except: pass
+  try:
+    mPlotSpec.delete('Mean Flux-density')
+  except: pass
+  try:
+    mPlotSpec.delete('Distributions in Pinhole')
+  except: pass
+  try:
+    mPlotSpec.delete('Distributions of Propagated Fields')
+  except: pass
+  try:
+    mPlotSpec.delete('Wigner Distributions')
+  except: pass
+  try:
+    mPlotSpec.delete('Photons')
+  except: pass
+  try:
+    mPlotSpec.delete('Electrons of Spect. Calculations')
+  except: pass
+  try:
+    mPlotSpec.delete('Electrons of Photon Generation')
+  except: pass
+  #endtry
+
+  mPlotSpec.add_cascade(label='Flux', menu=MFlux)
+  if Modepin == 0:
+    mPlotSpec.add_cascade(label='Central Flux-density', menu=MFd)
+  else:
+    mPlotSpec.add_cascade(label='Mean Flux-density', menu=MFd)
+  #endif
+  mPlotSpec.add_cascade(label='Distributions in Pinhole', menu=MDist)
+  if IFieldProp:
+    mPlotSpec.add_cascade(label='Distributions of Propagated Fields', menu=MProp)
+  if IWigner:
+    mPlotSpec.add_cascade(label='Wigner Distributions', menu=MWigner)
+  if fexist("ampgenpho.pho"):
+    mPlotSpec.add_cascade(label='Photons', menu=MPhot)
+
+  if fexist("urad_phase.bun"):
+    mPlotSpec.add_cascade(label='Electrons of Spect. Calculations', menu=MElec)
+  if fexist("ampgenpho.elc"):
+    mPlotSpec.add_cascade(label='Electrons of Photon Generation', menu=MElecPhot)
+
+#enddef _setup_mplotspec
 
 MElec.add_command(label="Zi-Zi'", command= lambda key='zizpi': _pElec(key))
 MElec.add_command(label="Yi-Yi'", command= lambda key='yiypi': _pElec(key))
@@ -8007,46 +8184,83 @@ IWigner = Dsetup['IWigner'][1]
 #reakpoint() #2
 #rint("2",IPhot)
 #IPhot = Dsetup['nElecAmpGenPho'][1]
-Npho = Dsetup['Npho'][1]
+#Npho = Dsetup['Npho'][1]
 nEfold = Dsetup['nEfold'][1]
 
 def _reset_mphot():
 
-  global MPhot, NPhotMentries,nEfold,IPhot
+  global MPhot, NPhotMentries,nEfold,IPhot, namppho,nampele
 
   #reakpoint()
 
   fil = "ampgenpho.pho"
+  if nexist("namppho"): ndelete("namppho")
   if fexist(fil):
-    namppho = ncread("namppho","igam:iele:iegam:iebeam:ebeam:g:egam:x:y:z:ty:tz:s0:s1:s2:s3:s4",fil)
-    IPhot = namppho.iele.max()
-    Npho = namppho.igam.max()
-    Dsetup['Npho'][1] = Npho
+    namppho = ncread("namppho","egam:x:y:z:ty:tz:s0:s1:s2:s3:g",fil)
 
   fil = "ampgenpho.elc"
+  if nexist("nampele"): ndelete("nampele")
   if fexist(fil):
-    nampele = ncread("nampele","i:e:g:y:z:yp:zp","ampgenpho.elc")
+    nampele = ncread("nampele","i:e:y:z:yp:zp","ampgenpho.elc")
 
   try:
     MPhot.delete('S0(z,y)')
+  except: pass
+  try:
     MPhot.delete('S1(z,y)')
+  except: pass
+  try:
     MPhot.delete('S2(z,y)')
+  except: pass
+  try:
     MPhot.delete('S3(z,y)')
+  except: pass
+  try:
     MPhot.delete('S0(z,Theta_z)')
+  except: pass
+  try:
     MPhot.delete('S1(z,Theta_z)')
+  except: pass
+  try:
     MPhot.delete('S2(z,Theta_z)')
+  except: pass
+  try:
     MPhot.delete('S3(z,Theta_z)')
+  except: pass
+  try:
     MPhot.delete('S0(y,Theta_y)')
+  except: pass
+  try:
     MPhot.delete('S1(y,Theta_y)')
+  except: pass
+  try:
     MPhot.delete('S2(y,Theta_y)')
+  except: pass
+  try:
     MPhot.delete('S3(y,Theta_y)')
+  except: pass
+  try:
     MPhot.delete('S0(Theta_z,Theta_y)')
+  except: pass
+  try:
     MPhot.delete('S1(Theta_z,Theta_y)')
+  except: pass
+  try:
     MPhot.delete('S2(Theta_z,Theta_y)')
+  except: pass
+  try:
     MPhot.delete('S3(Theta_z,Theta_y)')
+  except: pass
+  try:
     MPhot.delete('S0(Eph)')
+  except: pass
+  try:
     MPhot.delete('S1(Eph)')
+  except: pass
+  try:
     MPhot.delete('S2(Eph)')
+  except: pass
+  try:
     MPhot.delete('S3(Eph)')
   except: pass
 
@@ -8061,6 +8275,12 @@ def _reset_mphot():
   #rint("x",IPhot)
 
   fil = "ampgenpho.pho"
+
+  try: MPhot.delete('S0(z)')
+  except: pass
+  try: MPhot.delete('s0(y)')
+  except: pass
+
   if IPhot > 0 or fexist(fil):
 
     MPhot.add_command(label='S0(Eph)', command= lambda key='PhS0': _pPhot(key))
@@ -8071,6 +8291,7 @@ def _reset_mphot():
     NPhotMentries += 1
     MPhot.add_command(label='S3(Eph)', command= lambda key='PhS3': _pPhot(key))
     NPhotMentries += 1
+
     MPhot.add_command(label='S0(z,y)', command= lambda key='PhzyS0': _pPhot(key))
     NPhotMentries += 1
     MPhot.add_command(label='S1(z,y)', command= lambda key='PhzyS1': _pPhot(key))
@@ -8079,34 +8300,45 @@ def _reset_mphot():
     NPhotMentries += 1
     MPhot.add_command(label='S3(z,y)', command= lambda key='PhzyS3': _pPhot(key))
     NPhotMentries += 1
-    MPhot.add_command(label='S0(z,Theta_z)', command= lambda key='PhztzS0': _pPhot(key))
-    NPhotMentries += 1
-    MPhot.add_command(label='S1(z,Theta_z)', command= lambda key='PhztzS1': _pPhot(key))
-    NPhotMentries += 1
-    MPhot.add_command(label='S2(z,Theta_z)', command= lambda key='PhztzS2': _pPhot(key))
-    NPhotMentries += 1
-    MPhot.add_command(label='S3(z,Theta_z)', command= lambda key='PhztzS3': _pPhot(key))
-    NPhotMentries += 1
-    MPhot.add_command(label='S0(y,Theta_y)', command= lambda key='PhytyS0': _pPhot(key))
-    NPhotMentries += 1
-    MPhot.add_command(label='S1(y,Theta_y)', command= lambda key='PhytyS1': _pPhot(key))
-    NPhotMentries += 1
-    MPhot.add_command(label='S2(y,Theta_y)', command= lambda key='PhytyS2': _pPhot(key))
-    NPhotMentries += 1
-    MPhot.add_command(label='S3(y,Theta_y)', command= lambda key='PhytyS3': _pPhot(key))
-    NPhotMentries += 1
-    MPhot.add_command(label='S0(Theta_z,Theta_y)', command= lambda key='PhtztyS0': _pPhot(key))
-    NPhotMentries += 1
-    MPhot.add_command(label='S1(Theta_z,Theta_y)', command= lambda key='PhtztyS1': _pPhot(key))
-    NPhotMentries += 1
-    MPhot.add_command(label='S2(Theta_z,Theta_y)', command= lambda key='PhtztyS2': _pPhot(key))
-    NPhotMentries += 1
-    MPhot.add_command(label='S3(Theta_z,Theta_y)', command= lambda key='PhtztyS3': _pPhot(key))
-    NPhotMentries += 1
-  #endif
 
-  MPhot.add_command(label='Select E_photon', command=_setup_esel)
-  NPhotMentries += 1
+    if Dsetup['IFieldProp'][1] != 0:
+
+      try:
+        MPhot.delete('S0(z,y) in source plane')
+      except: pass
+      try:
+        MPhot.delete('S1(z,y) in source plane')
+      except: pass
+      try:
+        MPhot.delete('S2(z,y) in source plane')
+      except: pass
+
+      try:
+        MPhot.delete('S0(z) in source plane')
+      except: pass
+
+      try:
+        MPhot.delete('S0(y) in source plane')
+      except: pass
+
+
+      MPhot.add_command(label='S0(z,y) in source plane', command= lambda key='PhSzyS0': _pPhot(key))
+      NPhotMentries += 1
+      MPhot.add_command(label='S1(z,y) in source plane', command= lambda key='PhSzyS1': _pPhot(key))
+      NPhotMentries += 1
+      MPhot.add_command(label='S2(z,y) in source plane', command= lambda key='PhSzyS2': _pPhot(key))
+      NPhotMentries += 1
+      MPhot.add_command(label='S3(z,y) in source plane', command= lambda key='PhSzyS3': _pPhot(key))
+      NPhotMentries += 1
+      MPhot.add_command(label='S0(z) in source plane', command= lambda key='PhSzS0': _pPhot(key))
+      NPhotMentries += 1
+      MPhot.add_command(label='S0(y) in source plane', command= lambda key='PhSyS0': _pPhot(key))
+      NPhotMentries += 1
+    #endif
+    MPhot.add_command(label='Select E_photon', command=_setup_esel)
+    NPhotMentries += 1
+
+  #endif
 
   #MPhot.add_command(label='Select E_beam', command=_setup_ebeam)
   #NPhotMentries += 1
@@ -8121,6 +8353,7 @@ def _reset_mwigner():
 
   fwige = 'urad_phase_espread.wig'
   fwig = 'urad_phase.wig'
+  if nexist("nwig"): ndelete("nwig")
   if fexist(fwige):
     nwig = ncread("nwig","kpola:iz:iy:itz:ity:x:y:z:ty:tz:iegam:egam:eyr:eyi:ezr:ezi:wig",fwige)
   elif (fexist(fwig)):
