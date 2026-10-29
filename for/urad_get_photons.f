@@ -1,4 +1,4 @@
-*CMZ :          28/10/2026  09.46.15  by  Michael Scheer
+*CMZ :          29/10/2026  09.03.40  by  Michael Scheer
 *CMZ :  4.03/00 08/09/2026  12.41.50  by  Michael Scheer
 *CMZ :  4.02/01 31/08/2026  07.37.54  by  Michael Scheer
 *CMZ :  4.02/00 13/09/2025  10.16.17  by  Michael Scheer
@@ -242,6 +242,8 @@ c-----------------------------------------------------------------------
      &  i,iz,iy,k,ierr,iobs,icbrill,ifrq,iobfr,ndimpho,nobsvprop,npinzprop,npinyprop,l,npho,
      &  iobrf
 
+      integer :: igenpho=1
+
       integer ModeRan,ihbunch !All grid points (zero) or Nelec random grid points (not zero)
 
       real photons(9*npho),propweights(npho)
@@ -251,6 +253,8 @@ c-----------------------------------------------------------------------
       real*8 :: SPECNOR_SI = 5.0007272079722076d+39
 
       moderan=1
+
+      igenpho_u=igenpho
 
       ebeam_u=ebeam
       gamma_u=ebeam_u/emassg1

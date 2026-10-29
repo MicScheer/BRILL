@@ -1,4 +1,4 @@
-*CMZ :          26/10/2026  10.07.23  by  Michael Scheer
+*CMZ :          29/10/2026  09.52.31  by  Michael Scheer
 *CMZ :  4.03/00 07/10/2026  07.28.50  by  Michael Scheer
 *CMZ :  4.02/01 02/09/2026  08.56.08  by  Michael Scheer
 *CMZ :  4.02/00 16/09/2025  09.13.49  by  Michael Scheer
@@ -69,8 +69,8 @@ c      use uradphasemod
      &  ,  PinX=10000.0       !X of Pinhole [mm]
      &  ,  PinY=0.0           !Y of Pinhole [mm]
      &  ,  PinZ=0.0           !Z of Pinhole [mm]
-     &  ,  PinW=0.75          !Width of Pinhole [mm]
-     &  ,  PinH=0.75           !Height of Pinhole [mm]
+     &  ,  PinW=1.0          !Width of Pinhole [mm]
+     &  ,  PinH=1.0           !Height of Pinhole [mm]
 
      &  ,  Perlen=50.0        !Period-length [mm]
      &  ,  Shift=0.0          !Shift [mm] (for spectra only)
@@ -81,7 +81,7 @@ c      use uradphasemod
      &  ,  EphMin=695.0       !Min. Photon Energy [eV]
      &  ,  EphMax=705.0       !Max. Photon Energy [eV]
 
-     &  ,  Espread=0.0 !0.001      !Rel. energy spread
+     &  ,  Espread=0.0 !0.001 !Rel. energy spread
 
      &  ,  xBeta=0.0          !X-reference for optical functions
      &  ,  BetaH=14.0         !Hori. Beta function
@@ -108,7 +108,7 @@ c      common/wc/w
 
       integer ::
 
-     &  Nelec=1000000        !Nelec
+     &  Nelec=1 000 000        !Nelec
      &  ,  Noranone=1         !No random change for first e-
 
      &  ,  Nharm=1            !Number of harmonic Harm referes to, overwrites Beffv and Beffh

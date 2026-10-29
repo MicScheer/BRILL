@@ -1,4 +1,4 @@
-*CMZ :          27/10/2026  09.25.46  by  Michael Scheer
+*CMZ :          29/10/2026  11.13.15  by  Michael Scheer
 *CMZ :  4.03/00 07/10/2026  07.28.50  by  Michael Scheer
 *CMZ :  4.02/01 02/09/2026  08.56.08  by  Michael Scheer
 *CMZ :  4.02/00 16/09/2025  09.13.49  by  Michael Scheer
@@ -229,6 +229,11 @@ c      call util_random_init(isize,iseed)
         print*,""
         nelec=1
         modepin=0
+      endif
+
+      if (modepin.eq.0.and.nelec.gt.2000) then
+        print*,"--- Modepin is zero, but nelec is greater than 2000 ---"
+        print*,"--- That may take a while ... ---"
       endif
 
       if (nelecampgenpho.gt.0) nelec=1
@@ -671,7 +676,7 @@ c      endif
       open(newunit=lunpin,file='urad_phase.pin')
       write(luna,*)npinz,npiny,pinw,pinh
       write(luna,*)pincen
-      write(luna,*)modepin,ifold,ifixphase,ifieldprop,nelec,ihbunch,-ianalytic
+      write(luna,*)modepin,ifold,ifixphase,ifieldprop,nelec,ihbunch,-ianalytic,igenpho
       write(luna,*)betah,emith,betav,emitv,espread
       write(luna,*)npinzprop,npinyprop,pinxprop,pinwprop,pinhprop
       write(luna,*)nzthewig,nythewig,thezwig,theywig
@@ -1673,7 +1678,7 @@ c                  rn=rn/norm2(rn)
       subroutine u
       !allutil_break
       end
-*CMZ :          20/10/2026  11.02.17  by  Michael Scheer
+*CMZ :          28/10/2026  17.56.51  by  Michael Scheer
 *CMZ :  4.03/00 08/09/2026  12.41.50  by  Michael Scheer
 *CMZ :  4.02/01 31/08/2026  07.37.54  by  Michael Scheer
 *CMZ :  4.02/00 13/09/2025  10.16.17  by  Michael Scheer
@@ -1743,6 +1748,10 @@ c      endif
         if (modewave.ne.0) then
           npinzo_u=npinz
           npinyo_u=npiny
+        endif
+
+        if (modewave.eq.1) then
+          allocate(electrons_u(5*nelec))
         endif
 
         nelec_u=nelec
@@ -6107,7 +6116,7 @@ c                photons(ngam)=(erx**2+eix**2+ery**2+eiy**2+erz**2+eiz**2)*specn
 
       !allutil_break
       end
-*CMZ :          28/10/2026  09.46.15  by  Michael Scheer
+*CMZ :          29/10/2026  09.03.40  by  Michael Scheer
 *CMZ :  4.03/00 08/09/2026  12.41.50  by  Michael Scheer
 *CMZ :  4.02/01 31/08/2026  07.37.54  by  Michael Scheer
 *CMZ :  4.02/00 13/09/2025  10.16.17  by  Michael Scheer
@@ -6160,6 +6169,8 @@ c                photons(ngam)=(erx**2+eix**2+ery**2+eiy**2+erz**2+eiz**2)*specn
      &  i,iz,iy,k,ierr,iobs,icbrill,ifrq,iobfr,ndimpho,nobsvprop,npinzprop,npinyprop,l,npho,
      &  iobrf
 
+      integer :: igenpho=1
+
       integer ModeRan,ihbunch !All grid points (zero) or Nelec random grid points (not zero)
 
       real photons(9*npho),propweights(npho)
@@ -6169,6 +6180,8 @@ c                photons(ngam)=(erx**2+eix**2+ery**2+eiy**2+erz**2+eiz**2)*specn
       real*8 :: SPECNOR_SI = 5.0007272079722076d+39
 
       moderan=1
+
+      igenpho_u=igenpho
 
       ebeam_u=ebeam
       gamma_u=ebeam_u/emassg1

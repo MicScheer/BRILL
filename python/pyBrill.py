@@ -3486,7 +3486,7 @@ def _sel_Esel():
   Vsetup_Spec, LastSetUp_Spec, SetUp_Spec, ScreenWidth, ScreenHeight
 
   global Mthreads,Step,Nelec,Noranone,Icohere,Ihbunch,Bunchlen, \
-  Bunchcharge,Modebunch,PinX,PinY,PinZ,PinW,PinH,NpinY,NpinZ,modepin,modesphere, \
+  Bunchcharge,Modebunch,PinX,PinY,PinZ,PinW,PinH,NpinY,NpinZ,modepin,modesphere, iGenPho,\
   Shift,Nper,Nharm,Harm,Beffv,Beffh,Nepho,EphMin,EphMax, \
   Disph,Dispph,Dispv,Disppv,Pherror,Ifixseed,Ianalytic
 
@@ -3737,7 +3737,7 @@ def _setup_ebeam():
   Vsetup_Spec, LastSetUp_Spec, SetUp_Spec, ScreenWidth, ScreenHeight
 
   global Mthreads,Step,Nelec,Noranone,Icohere,Ihbunch,Bunchlen, \
-  Bunchcharge,Modebunch,PinX,PinY,PinZ,PinW,PinH,NpinY,NpinZ,modepin,modesphere, \
+  Bunchcharge,Modebunch,PinX,PinY,PinZ,PinW,PinH,NpinY,NpinZ,modepin,modesphere, iGenPho,\
   Shift,Nper,Nharm,Harm,Beffv,Beffh,Nepho,EphMin,EphMax, \
   Disph,Dispph,Dispv,Disppv,Pherror,Ifixseed,Ianalytic
 
@@ -3787,7 +3787,7 @@ def _setup_esel():
   Vsetup_Spec, LastSetUp_Spec, SetUp_Spec, ScreenWidth, ScreenHeight
 
   global Mthreads,Step,Nelec,Noranone,Icohere,Ihbunch,Bunchlen, \
-  Bunchcharge,Modebunch,PinX,PinY,PinZ,PinW,PinH,NpinY,NpinZ,modepin,modesphere, \
+  Bunchcharge,Modebunch,PinX,PinY,PinZ,PinW,PinH,NpinY,NpinZ,modepin,modesphere, iGenPho,\
   Shift,Nper,Nharm,Harm,Beffv,Beffh,Nepho,EphMin,EphMax, \
   Disph,Dispph,Dispv,Disppv,Pherror,Ifixseed,Ianalytic
 
@@ -3846,7 +3846,7 @@ def _ini_Ebeam():
   Vsetup_Spec, LastSetUp_Spec, SetUp_Spec, ScreenWidth, ScreenHeight
 
   global Mthreads,Step,Nelec,Noranone,Icohere,Ihbunch,Bunchlen, \
-  Bunchcharge,Modebunch,PinX,PinY,PinZ,PinW,PinH,NpinY,NpinZ,modepin,modesphere, \
+  Bunchcharge,Modebunch,PinX,PinY,PinZ,PinW,PinH,NpinY,NpinZ,modepin,modesphere, iGenPho,\
   Shift,Nper,Nharm,Harm,Beffv,Beffh,Nepho,EphMin,EphMax, \
   Disph,Dispph,Dispv,Disppv,Pherror,Ifixseed,Ianalytic
 
@@ -3889,7 +3889,7 @@ def _ini_Esel():
   Vsetup_Spec, LastSetUp_Spec, SetUp_Spec, ScreenWidth, ScreenHeight
 
   global Mthreads,Step,Nelec,Noranone,Icohere,Ihbunch,Bunchlen, \
-  Bunchcharge,Modebunch,PinX,PinY,PinZ,PinW,PinH,NpinY,NpinZ,modepin,modesphere, \
+  Bunchcharge,Modebunch,PinX,PinY,PinZ,PinW,PinH,NpinY,NpinZ,modepin,modesphere, iGenPho,\
   Shift,Nper,Nharm,Harm,Beffv,Beffh,Nepho,EphMin,EphMax, \
   Disph,Dispph,Dispv,Disppv,Pherror,Ifixseed,Ianalytic
 
@@ -3945,7 +3945,7 @@ def _pFdProp(key='s0'):
   Vsetup_Spec, LastSetUp_Spec, SetUp_Spec, ScreenWidth, ScreenHeight
 
   global Mthreads,Step,Nelec,Noranone,Icohere,Ihbunch,Bunchlen, \
-  Bunchcharge,Modebunch,PinX,PinY,PinZ,PinW,PinH,NpinY,NpinZ,modepin,modesphere, \
+  Bunchcharge,Modebunch,PinX,PinY,PinZ,PinW,PinH,NpinY,NpinZ,modepin,modesphere, iGenPho,\
   Shift,Nper,Nharm,Harm,Beffv,Beffh,Nepho,EphMin,EphMax, \
   Disph,Dispph,Dispv,Disppv,Pherror,Ifixseed,Ianalytic
 
@@ -4244,7 +4244,7 @@ def _pFdPin(key='s0'):
   Vsetup_Spec, LastSetUp_Spec, SetUp_Spec, ScreenWidth, ScreenHeight
 
   global Mthreads,Step,Nelec,Noranone,Icohere,Ihbunch,Bunchlen, \
-  Bunchcharge,Modebunch,PinX,PinY,PinZ,PinW,PinH,NpinY,NpinZ,modepin,modesphere, \
+  Bunchcharge,Modebunch,PinX,PinY,PinZ,PinW,PinH,NpinY,NpinZ,modepin,modesphere, iGenPho,\
   Shift,Nper,Nharm,Harm,Beffv,Beffh,Nepho,EphMin,EphMax, \
   Disph,Dispph,Dispv,Disppv,Pherror,Ifixseed,Ianalytic
 
@@ -4261,7 +4261,7 @@ def _pFdPin(key='s0'):
   #print("_pFdPin:",key,IEsel,Esel)
   #reakpoint()
 
-  if Calculated_Spec == False or (Modepin != 0 and nexist("nbun") == 0) \
+  if Calculated_Spec == False or (Modepin != 0 and nexist("nbun") == 0 and iGenPho == 0) \
   or nexist("nfld") == 0: _calc_spec()
 
   s0max = nflx.s0.max()
@@ -4515,7 +4515,7 @@ def _pElecPhot(key='zy'):
   Vsetup_Spec, LastSetUp_Spec, SetUp_Spec, ScreenWidth, ScreenHeight
 
   global Mthreads,Step,Nelec,Noranone,Icohere,Ihbunch,Bunchlen, \
-  Bunchcharge,Modebunch,PinX,PinY,PinZ,PinW,PinH,NpinY,NpinZ,modepin,modesphere, \
+  Bunchcharge,Modebunch,PinX,PinY,PinZ,PinW,PinH,NpinY,NpinZ,modepin,modesphere, iGenPho,\
   Shift,Nper,Nharm,Harm,Beffv,Beffh,Nepho,EphMin,EphMax, \
   Disph,Dispph,Dispv,Disppv,Pherror,Ifixseed,Ianalytic
 
@@ -4605,7 +4605,7 @@ def _pElec(key='zizpi'):
   Vsetup_Spec, LastSetUp_Spec, SetUp_Spec, ScreenWidth, ScreenHeight
 
   global Mthreads,Step,Nelec,Noranone,Icohere,Ihbunch,Bunchlen, \
-  Bunchcharge,Modebunch,PinX,PinY,PinZ,PinW,PinH,NpinY,NpinZ,modepin,modesphere, \
+  Bunchcharge,Modebunch,PinX,PinY,PinZ,PinW,PinH,NpinY,NpinZ,modepin,modesphere, iGenPho,\
   Shift,Nper,Nharm,Harm,Beffv,Beffh,Nepho,EphMin,EphMax, \
   Disph,Dispph,Dispv,Disppv,Pherror,Ifixseed,Ianalytic
 
@@ -4683,7 +4683,7 @@ def _pPhot(key='PhzyS0',select=''):
   Vsetup_Spec, LastSetUp_Spec, SetUp_Spec, ScreenWidth, ScreenHeight
 
   global Mthreads,Step,Nelec,Noranone,Icohere,Ihbunch,Bunchlen, \
-  Bunchcharge,Modebunch,PinX,PinY,PinZ,PinW,PinH,NpinY,NpinZ,modepin,modesphere, \
+  Bunchcharge,Modebunch,PinX,PinY,PinZ,PinW,PinH,NpinY,NpinZ,modepin,modesphere, iGenPho,\
   Shift,Nper,Nharm,Harm,Beffv,Beffh,Nepho,EphMin,EphMax, \
   Disph,Dispph,Dispv,Disppv,Pherror,Ifixseed,Ianalytic
 
@@ -4784,6 +4784,10 @@ def _pPhot(key='PhzyS0',select=''):
     kplane = 6
   elif keyu == 'PHSYS0':
     kplane = 7
+  elif keyu == 'PHZS0':
+    kplane = 8
+  elif keyu == 'PHYS0':
+    kplane = 9
 
   else:
     print('\n*** Unknown key:',key)
@@ -4896,24 +4900,46 @@ def _pPhot(key='PhzyS0',select=''):
   elif kplane == 6:
 
     nstok = keyu[-1]
-    sn = str(nstok) + '*g'
+    sn = str(nstok)
     stok = 's' + sn +'*g*' + str(pinw*pinh/pinwprop/pinhprop)
 
     set_plot_params()
 
     ytit = 'N' + TeX_gamma + '/s/0.1' + ' %BW/mm$^{2}$/' + str(int(Curr*1000.+0.5)) + "mA"
-    npl(namppho,'z-x/1000*tz',sel,stok)
+    nprof(namppho,'z-x/1000*tz',sel,stok)
     txyz("Profile of S0 in source plane",'z [mm]',ytit)
 
   elif kplane == 7:
 
     nstok = keyu[-1]
-    sn = str(nstok) + '*g'
+    sn = str(nstok)
     stok = 's' + sn +'*g*' + str(pinw*pinh/pinwprop/pinhprop)
+
+    ytit = 'N' + TeX_gamma + '/s/0.1' + ' %BW/mm$^{2}$/' + str(int(Curr*1000.+0.5)) + "mA"
+    nprof(namppho,'y-y/1000*tz',sel,stok)
+    txyz("Profile of S0 in source plane",'y [mm]',ytit)
+
+  elif kplane == 8:
+
+    nstok = keyu[-1]
+    sn = str(nstok) + '*g'
+    stok = 's' + sn
 
     set_plot_params()
 
-    npl(namppho,'y-x/1000*ty',sel,stok)
+    ytit = 'N' + TeX_gamma + '/s/0.1' + ' %BW/mm$^{2}$/' + str(int(Curr*1000.+0.5)) + "mA"
+    nprof(namppho,'z',sel,stok)
+    txyz("Profile of S0 in source plane",'z [mm]',ytit)
+
+  elif kplane == 9:
+
+    nstok = keyu[-1]
+    sn = str(nstok)
+    stok = 's' + sn +'*g*'
+
+    set_plot_params()
+
+    nprof(namppho,'y',sel,stok)
     ytit = 'N' + TeX_gamma + '/s/0.1' + ' %BW/mm$^{2}$/' + str(int(Curr*1000.+0.5)) + "mA"
     txyz("Profile of S0 in source plane",'y [mm]',ytit)
 
@@ -5033,7 +5059,7 @@ def _pWigner(key='WzzZ',select=''):
   Vsetup_Spec, LastSetUp_Spec, SetUp_Spec, ScreenWidth, ScreenHeight
 
   global Mthreads,Step,Nelec,Noranone,Icohere,Ihbunch,Bunchlen, \
-  Bunchcharge,Modebunch,PinX,PinY,PinZ,PinW,PinH,NpinY,NpinZ,modepin,modesphere, \
+  Bunchcharge,Modebunch,PinX,PinY,PinZ,PinW,PinH,NpinY,NpinZ,modepin,modesphere, iGenPho,\
   Shift,Nper,Nharm,Harm,Beffv,Beffh,Nepho,EphMin,EphMax, \
   Disph,Dispph,Dispv,Disppv,Pherror,Ifixseed,Ianalytic
 
@@ -5270,7 +5296,7 @@ def _pWignerE(key='WzzZ',select=''):
   Vsetup_Spec, LastSetUp_Spec, SetUp_Spec, ScreenWidth, ScreenHeight
 
   global Mthreads,Step,Nelec,Noranone,Icohere,Ihbunch,Bunchlen, \
-  Bunchcharge,Modebunch,PinX,PinY,PinZ,PinW,PinH,NpinY,NpinZ,modepin,modesphere, \
+  Bunchcharge,Modebunch,PinX,PinY,PinZ,PinW,PinH,NpinY,NpinZ,modepin,modesphere, iGenPho,\
   Shift,Nper,Nharm,Harm,Beffv,Beffh,Nepho,EphMin,EphMax, \
   Disph,Dispph,Dispv,Disppv,Pherror,Ifixseed,Ianalytic
 
@@ -5540,7 +5566,7 @@ def _pFdSpec(key='s0'):
   Vsetup_Spec, LastSetUp_Spec, SetUp_Spec, ScreenWidth, ScreenHeight
 
   global Mthreads,Step,Nelec,Noranone,Icohere,Ihbunch,Bunchlen, \
-  Bunchcharge,Modebunch,PinX,PinY,PinZ,PinW,PinH,NpinY,NpinZ,modepin,modesphere, \
+  Bunchcharge,Modebunch,PinX,PinY,PinZ,PinW,PinH,NpinY,NpinZ,modepin,modesphere, iGenPho,\
   Shift,Nper,Nharm,Harm,Beffv,Beffh,Nepho,EphMin,EphMax, \
   Disph,Dispph,Dispv,Disppv,Pherror,Ifixseed,Ianalytic
 
@@ -5613,7 +5639,7 @@ def _pFluxSpec(key='s0'):
   Vsetup_Spec, LastSetUp_Spec, SetUp_Spec, ScreenWidth, ScreenHeight
 
   global Mthreads,Step,Nelec,Noranone,Icohere,Ihbunch,Bunchlen, \
-  Bunchcharge,Modebunch,PinX,PinY,PinZ,PinW,PinH,NpinY,NpinZ,modepin,modesphere, \
+  Bunchcharge,Modebunch,PinX,PinY,PinZ,PinW,PinH,NpinY,NpinZ,modepin,modesphere, iGenPho,\
   Shift,Nper,Nharm,Harm,Beffv,Beffh,Nepho,EphMin,EphMax, \
   Disph,Dispph,Dispv,Disppv,Pherror,Ifixseed,Ianalytic
 
@@ -5718,7 +5744,7 @@ def _write_urad_phase_nam():
   Vsetup_Spec, LastSetUp_Spec, SetUp_Spec, ScreenWidth, ScreenHeight
 
   global Mthreads,Step,Nelec,Noranone,Icohere,Ihbunch,Bunchlen, \
-  Bunchcharge,Modebunch,PinX,PinY,PinZ,PinW,PinH,NpinY,NpinZ,modepin,modesphere, \
+  Bunchcharge,Modebunch,PinX,PinY,PinZ,PinW,PinH,NpinY,NpinZ,modepin,modesphere, iGenPho,\
   Shift,Nper,Nharm,Harm,Beffv,Beffh,Nepho,EphMin,EphMax, \
   Disph,Dispph,Dispv,Disppv,Pherror,Ifixseed,Ianalytic
 
@@ -5734,8 +5760,8 @@ def _write_urad_phase_nam():
   #reakpoint()
 
   iwig = int(Dsetup['IWigner'][1])
-  #igenpho = int(Dsetup['iGenPho'][1])
-  #if not iwig: igenpho = 0
+  #iGenPho = int(Dsetup['iGenPho'][1])
+  #if not iwig: iGenPho = 0
 
 #  neleca = int(Dsetup['nElecAmpGenPho'][1])
   #npho = int(Dsetup['Npho'][1])
@@ -5752,7 +5778,7 @@ def _write_urad_phase_nam():
   #Dsetup['Npho'][1] = npho
 #  Dsetup['nElecAmpGenPho'][1] = neleca
   Dsetup['IWigner'][1] = iwig
-  #Dsetup['iGenPho'][1] = igenpho
+  #Dsetup['iGenPho'][1] = iGenPho
   Dsetup['nEfold'][1] = nefold
   Dsetup['Espread'][1] = espread
 
@@ -5808,7 +5834,7 @@ def _write_urad_phase_nam_alt():
   Vsetup_Spec, LastSetUp_Spec, SetUp_Spec, ScreenWidth, ScreenHeight
 
   global Mthreads,Step,Nelec,Noranone,Icohere,Ihbunch,Bunchlen, \
-  Bunchcharge,Modebunch,PinX,PinY,PinZ,PinW,PinH,NpinY,NpinZ,modepin,modesphere, \
+  Bunchcharge,Modebunch,PinX,PinY,PinZ,PinW,PinH,NpinY,NpinZ,modepin,modesphere, iGenPho,\
   Shift,Nper,Nharm,Harm,Beffv,Beffh,Nepho,EphMin,EphMax, \
   Disph,Dispph,Dispv,Disppv,Pherror,Ifixseed,Ianalytic
 
@@ -5945,7 +5971,7 @@ def debug(s=''):
 def __get_spec():
 
   global Calculated_Spec, NcalcSpec, SpecPar,IPhot
-  global nsto,nflx,nfld,nbun,nfdp,nwig,nwge,namppho,nampele,Modepin
+  global nsto,nflx,nfld,nbun,nfdp,nwig,nwge,namppho,nampele,Modepin,iGenPho
   global IWigner,nEfold,Esel,IEsel
   global nSigE
 
@@ -6018,13 +6044,16 @@ def __get_spec():
 
   words = fpin.readline().strip().split()
   #reakpoint()
-  modepin = int(words[0])
+  Modepin = int(words[0])
+  Dsetup['Modepin'][1] = Modepin
   ifold = int(words[1])
   ifixphase = int(words[2])
   ifieldprop = int(words[3])
   nelec = int(words[4])
   ihbunch=int(words[5])
-  Ianalytic = float(words[6])
+  Ianalytic = int(words[6])
+  iGenPho = int(words[7])
+  Dsetup['iGenPho'][1] = iGenPho
 
   words = fpin.readline().strip().split()
   betah = float(words[0])
@@ -6241,6 +6270,7 @@ def _calc_spec():
 
   words = fpin.readline().strip().split()
   Modepin = int(words[0])
+  Dsetup['Modepin'][1] = Modepin
   #reakpoint()
   ifold = int(words[1])
   ifixphase = int(words[2])
@@ -6310,7 +6340,7 @@ def _set_plot_spec(caller=''):
   Vsetup_Spec, LastSetUp_Spec, SetUp_Spec, ScreenWidth, ScreenHeight
 
   global Mthreads,Step,Nelec,Noranone,Icohere,Ihbunch,Bunchlen, \
-  Bunchcharge,Modebunch,PinX,PinY,PinZ,PinW,PinH,NpinY,NpinZ,modepin,modesphere, \
+  Bunchcharge,Modebunch,PinX,PinY,PinZ,PinW,PinH,NpinY,NpinZ,modepin,modesphere, iGenPho,\
   Shift,Nper,Nharm,Harm,Beffv,Beffh,Nepho,EphMin,EphMax, \
   Disph,Dispph,Dispv,Disppv,Pherror,Ifixseed,Ianalytic
 
@@ -6504,7 +6534,7 @@ def _setup_plot():
   Vsetup_Spec, LastSetUp_Spec, SetUp_Spec, ScreenWidth, ScreenHeight
 
   global Mthreads,Step,Nelec,Noranone,Icohere,Ihbunch,Bunchlen, \
-  Bunchcharge,Modebunch,PinX,PinY,PinZ,PinW,PinH,NpinY,NpinZ,modepin,modesphere, \
+  Bunchcharge,Modebunch,PinX,PinY,PinZ,PinW,PinH,NpinY,NpinZ,modepin,modesphere, iGenPho,\
   Shift,Nper,Nharm,Harm,Beffv,Beffh,Nepho,EphMin,EphMax, \
   Disph,Dispph,Dispv,Disppv,Pherror,Ifixseed,Ianalytic
 
@@ -6622,7 +6652,7 @@ def _setup_spec():
   Vsetup_Spec, LastSetUp_Spec, SetUp_Spec, ScreenWidth, ScreenHeight
 
   global Mthreads,Step,Nelec,Noranone,Icohere,Ihbunch,Bunchlen, \
-  Bunchcharge,Modebunch,PinX,PinY,PinZ,PinW,PinH,NpinY,NpinZ,modepin,modesphere, \
+  Bunchcharge,Modebunch,PinX,PinY,PinZ,PinW,PinH,NpinY,NpinZ,modepin,modesphere, iGenPho,\
   Shift,Nper,Nharm,Harm,Beffv,Beffh,Nepho,EphMin,EphMax, \
   Disph,Dispph,Dispv,Disppv,Pherror,Ifixseed,Ianalytic
 
@@ -6734,7 +6764,7 @@ def _setup_brill():
   Vsetup_Spec, LastSetUp_Spec, SetUp_Spec, ScreenWidth, ScreenHeight
 
   global Mthreads,Step,Nelec,Noranone,Icohere,Ihbunch,Bunchlen, \
-  Bunchcharge,Modebunch,PinX,PinY,PinZ,PinW,PinH,NpinY,NpinZ,modepin,modesphere, \
+  Bunchcharge,Modebunch,PinX,PinY,PinZ,PinW,PinH,NpinY,NpinZ,modepin,modesphere, iGenPho,\
   Shift,Nper,Nharm,Harm,Beffv,Beffh,Nepho,EphMin,EphMax, \
   Disph,Dispph,Dispv,Disppv,Pherror,Ifixseed,Ianalytic
 
@@ -6842,7 +6872,7 @@ def _setup_undu():
   Vsetup_Spec, LastSetUp_Spec, SetUp_Spec, ScreenWidth, ScreenHeight
 
   global Mthreads,Step,Nelec,Noranone,Icohere,Ihbunch,Bunchlen, \
-  Bunchcharge,Modebunch,PinX,PinY,PinZ,PinW,PinH,NpinY,NpinZ,modepin,modesphere, \
+  Bunchcharge,Modebunch,PinX,PinY,PinZ,PinW,PinH,NpinY,NpinZ,modepin,modesphere, iGenPho,\
   Shift,Nper,Nharm,Harm,Beffv,Beffh,Nepho,EphMin,EphMax, \
   Disph,Dispph,Dispv,Disppv,Pherror,Ifixseed,Ianalytic
 
@@ -6954,7 +6984,7 @@ def _setup_beam():
   Vsetup_Spec, LastSetUp_Spec, SetUp_Spec, ScreenWidth, ScreenHeight
 
   global Mthreads,Step,Nelec,Noranone,Icohere,Ihbunch,Bunchlen, \
-  Bunchcharge,Modebunch,PinX,PinY,PinZ,PinW,PinH,NpinY,NpinZ,modepin,modesphere, \
+  Bunchcharge,Modebunch,PinX,PinY,PinZ,PinW,PinH,NpinY,NpinZ,modepin,modesphere, iGenPho,\
   Shift,Nper,Nharm,Harm,Beffv,Beffh,Nepho,EphMin,EphMax, \
   Disph,Dispph,Dispv,Disppv,Pherror,Ifixseed,Ianalytic
 
@@ -7011,9 +7041,10 @@ def _writelastrun():
 
   Modepin = Dsetup['Modepin'][1]
 
-  if int(Dsetup['IFieldProp'][1]) != 0:
-    Modepin = 0
-    Dsetup['Modepin'][1] = 0
+  if int(Dsetup['IFieldProp'][1]) != 0 and int(Dsetup['iGenPho'][1]) == 0: Modepin = 0
+  if int(Dsetup['iGenPho'][1]) != 0: Modepin = 1
+
+  Dsetup['Modepin'][1] = Modepin
 
   fl = ".pybrill_last.dat"
   flb = ".pybrill_last.dat.bck"
@@ -7076,9 +7107,9 @@ def _readlastrun():
 
     #reakpoint()
 
-    if int(Dsetup['IFieldProp'][1]) != 0:
-      Modepin = 0
-      Dsetup['Modepin'][1] = 0
+#    if int(Dsetup['iGenPho'][1]) != 0:
+#      Modepin = 1
+#      Dsetup['Modepin'][1] = Modepin
 
   #endif
 
@@ -7502,7 +7533,7 @@ def _setup():
   Vsetup_Spec, LastSetUp_Spec, SetUp_Spec, ScreenWidth, ScreenHeight
 
   global Mthreads,Step,Nelec,Noranone,Icohere,Ihbunch,Bunchlen, \
-  Bunchcharge,Modebunch,PinX,PinY,PinZ,PinW,PinH,NpinY,NpinZ,modepin,modesphere, \
+  Bunchcharge,Modebunch,PinX,PinY,PinZ,PinW,PinH,NpinY,NpinZ,modepin,modesphere, iGenPho,\
   Shift,Nper,Nharm,Harm,Beffv,Beffh,Nepho,EphMin,EphMax, \
   Disph,Dispph,Dispv,Disppv,Pherror,Ifixseed,Ianalytic
 
@@ -8118,6 +8149,7 @@ MDist.add_command(label='Power', command= lambda key='p': _pFdPin(key))
 MDist.add_command(label='Select E_photon', command=_setup_esel)
 #MDist.add_command(label='Select E_beam', command=_setup_ebeam)
 
+#reakpoint()
 if Modepin:
   MDistProfStokes.add_command(label='Hori. Profile S0', command= lambda key='hps0': _pFdPin(key))
   MDistProfStokes.add_command(label='Hori. Profile S1', command= lambda key='hps1': _pFdPin(key))
@@ -8276,10 +8308,11 @@ def _reset_mphot():
 
   fil = "ampgenpho.pho"
 
-  try: MPhot.delete('S0(z)')
+  try: MPhot.delete('Profile of S0(z)')
   except: pass
-  try: MPhot.delete('s0(y)')
+  try: MPhot.delete('Profile of S0(y)')
   except: pass
+
 
   if IPhot > 0 or fexist(fil):
 
@@ -8301,6 +8334,12 @@ def _reset_mphot():
     MPhot.add_command(label='S3(z,y)', command= lambda key='PhzyS3': _pPhot(key))
     NPhotMentries += 1
 
+    NPhotMentries += 1
+    MPhot.add_command(label='Profile of S0(z)', command= lambda key='PhzS0': _pPhot(key))
+    NPhotMentries += 1
+    MPhot.add_command(label='Profile of S0(y)', command= lambda key='PhyS0': _pPhot(key))
+    NPhotMentries += 1
+
     if Dsetup['IFieldProp'][1] != 0:
 
       try:
@@ -8312,13 +8351,16 @@ def _reset_mphot():
       try:
         MPhot.delete('S2(z,y) in source plane')
       except: pass
-
       try:
-        MPhot.delete('S0(z) in source plane')
+        MPhot.delete('S3(z,y) in source plane')
       except: pass
 
       try:
-        MPhot.delete('S0(y) in source plane')
+        MPhot.delete('Profile of S0(z) in source plane')
+      except: pass
+
+      try:
+        MPhot.delete('Profile of S0(y) in source plane')
       except: pass
 
 
@@ -8330,9 +8372,9 @@ def _reset_mphot():
       NPhotMentries += 1
       MPhot.add_command(label='S3(z,y) in source plane', command= lambda key='PhSzyS3': _pPhot(key))
       NPhotMentries += 1
-      MPhot.add_command(label='S0(z) in source plane', command= lambda key='PhSzS0': _pPhot(key))
+      MPhot.add_command(label='Profile of S0(z) in source plane', command= lambda key='PhSzS0': _pPhot(key))
       NPhotMentries += 1
-      MPhot.add_command(label='S0(y) in source plane', command= lambda key='PhSyS0': _pPhot(key))
+      MPhot.add_command(label='Profile of S0(y) in source plane', command= lambda key='PhSyS0': _pPhot(key))
       NPhotMentries += 1
     #endif
     MPhot.add_command(label='Select E_photon', command=_setup_esel)
