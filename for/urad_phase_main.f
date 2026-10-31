@@ -1,4 +1,4 @@
-*CMZ :          29/10/2026  11.13.15  by  Michael Scheer
+*CMZ :          31/10/2026  11.43.57  by  Michael Scheer
 *CMZ :  4.03/00 07/10/2026  07.28.50  by  Michael Scheer
 *CMZ :  4.02/01 02/09/2026  08.56.08  by  Michael Scheer
 *CMZ :  4.02/00 16/09/2025  09.13.49  by  Michael Scheer
@@ -1149,7 +1149,7 @@ c     &          photons_u(l+5:l+8)/1.0e6*propweights(npho)
             open(newunit=lunaele,file='ampgenpho.elc')
             comlin='* ampgenpho.elc'
             write(lunaele,'(a)') trim(comlin)
-            comlin='* y z yp zp E'
+            comlin='* i y z yp zp E'
             write(lunaele,'(a)') trim(comlin)
 
             !allu
