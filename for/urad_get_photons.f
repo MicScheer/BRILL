@@ -497,7 +497,7 @@ c-----------------------------------------------------------------------
       ihbunch_u=ihbunch
 
       end
-*CMZ :          28/10/2026  09.50.30  by  Michael Scheer
+*CMZ :          31/10/2026  14.09.53  by  Michael Scheer
 *CMZ :  4.03/00 08/09/2026  12.41.50  by  Michael Scheer
 *CMZ :  4.02/01 31/08/2026  07.37.54  by  Michael Scheer
 *CMZ :  4.02/00 13/09/2025  10.16.17  by  Michael Scheer
@@ -546,25 +546,31 @@ c            if(stokes_u(1,iobfr).gt.s0max(iepho)) s0max(iepho)=stokes_u(1,iobfr
 c          enddo
 c        enddo
 
+        iepho=0
         do l=1,ndimpho,9
-          if (nepho.gt.1) then
-            iepho=nint(photons_u(l)/depho)+1
-          else
-            iepho=1
-          endif
+c          if (nepho.gt.1) then
+c            iepho=nint((photons_u(l)-epho_u(1))/depho)+1
+            iepho=iepho+1
+            if (iepho.gt.nepho) iepho=1
+c          else
+c            iepho=1
+c          endif
           if (photons_u(l+5).gt.s0max(iepho)) then
             ks0max=l
             s0max(iepho)=photons_u(l+5)
           endif
         enddo
 
+        iepho=0
         nphothresh=0
         do l=1,ndimpho,9
-          if (nepho.gt.1) then
-            iepho=nint(photons_u(l)/depho)+1
-          else
-            iepho=1
-          endif
+c          if (nepho.gt.1) then
+c            iepho=nint(photons_u(l)/depho)+1
+c          else
+c            iepho=1
+c          endif
+            iepho=iepho+1
+            if (iepho.gt.nepho) iepho=1
           if (photons_u(l+5).ge.s0max(iepho)*s0thresh) then
             nphothresh=nphothresh+1
             s0sum(iepho)=s0sum(iepho)+photons_u(l+5)
@@ -615,14 +621,17 @@ c        print*,s0sum,s0meanprop
 
         k=1
         npho=0
+        iepho=0
         do l=1,ndimpho,9
           npho=npho+1
           k=l
-          if (nepho.gt.1) then
-            iepho=nint(photons_u(l)/depho)+1
-          else
-            iepho=1
-          endif
+c          if (nepho.gt.1) then
+c            iepho=nint(photons_u(l)/depho)+1
+c          else
+c            iepho=1
+c          endif
+            iepho=iepho+1
+            if (iepho.gt.nepho) iepho=1
           if (photons_u(l+5).lt.s0max(iepho)*s0thresh) then
             photons(k)=photons_u(k)
             photons(k+1:k+4)=photons_u(k+1:k+4)*1.0e3
